@@ -60,11 +60,11 @@ sistema-demandas-crie/
 
 | Integrante | Função | Disciplina |
 | --- | --- | --- |
-| Inácio Fontes | Gerente de Projeto e Analista de Requisitos | Engenharia de Software (BRAENSO) |
+| Vinícius Marrocos | Gerente de Projeto e Analista de Requisitos | Engenharia de Software (BRAENSO) |
 | Henry Claro | Analista de Banco de Dados | Banco de Dados 1 (BRABCD1) |
-| Gabriel Borba | Analista de Interface e Experiência do Usuário | Interface Humano-Computador (BRAINHC) |
-| Miguel Vaz de Souza | Desenvolvedor Back-end | Programação Orientada a Objetos (BRAPROB) |
-| Vinícius Marrocos | Desenvolvedor Front-end | Desenvolvimento Web Front End (BRADWFR) |
+| Inácio Fontes | Analista de Interface e Experiência do Usuário | Interface Humano-Computador (BRAINHC) |
+| Miguel Vaz | Desenvolvedor Back-end | Programação Orientada a Objetos (BRAPROB) |
+| Gabriel Borba | Desenvolvedor Front-end | Desenvolvimento Web Front End (BRADWFR) |
 
 ---
 
