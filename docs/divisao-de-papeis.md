@@ -20,7 +20,7 @@ Duas consequências práticas:
 
 ## 2. Atribuições
 
-### Inácio Fontes — Gerente de Projeto e Analista de Requisitos
+### Vinícius Marrocos — Gerente de Projeto e Analista de Requisitos
 **Disciplina:** Engenharia de Software (BRAENSO)
 
 **Responsabilidades**
@@ -58,7 +58,7 @@ Duas consequências práticas:
 
 ---
 
-### Gabriel Borba — Analista de Interface e Experiência do Usuário
+### Inácio Fontes — Analista de Interface e Experiência do Usuário
 **Disciplina:** Interface Humano-Computador (BRAINHC)
 
 **Responsabilidades**
@@ -97,7 +97,7 @@ Duas consequências práticas:
 
 ---
 
-### Vinícius Marrocos — Desenvolvedor Front-end
+### Gabriel Borba — Desenvolvedor Front-end
 **Disciplina:** Desenvolvimento Web Front End (BRADWFR) — React
 
 **Responsabilidades**
@@ -133,12 +133,12 @@ Estas não pertencem a uma frente e precisam de nome definido:
 A ordem importa. Quem atrasa trava o próximo:
 
 1. **Contato com o CRIE** → define o problema real
-2. **Requisitos (Inácio)** → transformam o problema em especificação
+2. **Requisitos (Vinícius)** → transformam o problema em especificação
 3. **Minimundo e DER (Henry)** → estruturam os dados
-4. **Personas e protótipo (Gabriel)** → definem as telas
+4. **Personas e protótipo (Inácio)** → definem as telas
 5. **Modelo relacional fechado (Henry)** → libera o back-end
 6. **API (Miguel)** → libera a integração do front-end
-7. **Testes de usabilidade (Gabriel)** → validam com o público-alvo
+7. **Testes de usabilidade (Inácio)** → validam com o público-alvo
 
 O gargalo mais provável do semestre é o passo 5. Se o modelo relacional escorregar para o fim de outubro, back-end e front-end ficam espremidos em três semanas.
 
@@ -148,11 +148,11 @@ O gargalo mais provável do semestre é o passo 5. Se o modelo relacional escorr
 
 | Entrega | Data | Peso | Quem lidera |
 | --- | --- | --- | --- |
-| ET1 | 03/09 | 5% | Inácio + contato com o CRIE |
-| ET2 | 01/10 | 10% | Inácio + B + C |
+| ET1 | 03/09 | 5% | Vinícius + contato com o CRIE |
+| ET2 | 01/10 | 10% | Vinícius + B + C |
 | ET3 | 22/10 | 10% | Henry + D |
 | ET4 | 05/11 | 15% | Miguel + E |
-| EXPOEX | 18/11 | 35% | Gabriel (banner) — mas **todos** apresentam |
+| EXPOEX | 18/11 | 35% | Inácio (banner) — mas **todos** apresentam |
 | ET5 | 26/11 | 20% | Todos |
 | Simulado ENADE | — | 5% | Individual |
 
