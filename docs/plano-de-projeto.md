@@ -85,11 +85,11 @@ Isso não é excesso de zelo: é requisito não funcional formal do projeto (RNF
 
 | Integrante | Cargo | Disciplina |
 | --- | --- | --- |
-| Inácio Fontes | Gerente de Projeto e Analista de Requisitos | Engenharia de Software (BRAENSO) |
+| Vinícius Marrocos | Gerente de Projeto e Analista de Requisitos | Engenharia de Software (BRAENSO) |
 | Henry Claro | Analista de Banco de Dados | Banco de Dados 1 (BRABCD1) |
-| Gabriel Borba | Analista de Interface e Experiência do Usuário | Interface Humano-Computador (BRAINHC) |
+| Inácio Fontes | Analista de Interface e Experiência do Usuário | Interface Humano-Computador (BRAINHC) |
 | Miguel Vaz de Souza | Desenvolvedor Back-end | Programação Orientada a Objetos (BRAPROB) |
-| Vinícius Marrocos | Desenvolvedor Front-end | Desenvolvimento Web Front End (BRADWFR) |
+| Gabriel Borba | Desenvolvedor Front-end | Desenvolvimento Web Front End (BRADWFR) |
 
 Cada um é **dono** da sua frente: responde pela entrega, cobra quem precisa contribuir e apresenta o resultado. Não significa trabalhar sozinho — a partir de outubro, quem estiver com carga menor migra para o desenvolvimento.
 
@@ -105,7 +105,7 @@ Cada um é **dono** da sua frente: responde pela entrega, cobra quem precisa con
 
 ## 6. Como cada frente se desenvolve ao longo do semestre
 
-### 6.1 Inácio Fontes — Gerente de Projeto e Analista de Requisitos
+### 6.1 Vinícius Marrocos — Gerente de Projeto e Analista de Requisitos
 
 **Agosto e início de setembro**
 Criar o board no Trello, com as colunas Backlog / A Fazer / Em Andamento / Em Revisão / Concluído e as cores por disciplina definidas pelo professor. Adicionar o professor como membro. Criar o repositório Git e definir padrão de commits e branches. Montar a versão 1 do relatório.
@@ -141,7 +141,7 @@ Escrever a seção de banco de dados do relatório e apoiar o desenvolvimento.
 
 ---
 
-### 6.3 Gabriel Borba — Analista de Interface e Experiência do Usuário
+### 6.3 Inácio Fontes — Analista de Interface e Experiência do Usuário
 
 **Setembro**
 Construir personas e cenários a partir do contato com o CRIE. Levantar com a instituição a terminologia usada internamente, quantos computadores existem e onde ficam.
@@ -174,7 +174,7 @@ Concluir as funcionalidades, apoiar a integração com o front-end e escrever a 
 
 ---
 
-### 6.5 Vinícius Marrocos — Desenvolvedor Front-end
+### 6.5 Gabriel Borba — Desenvolvedor Front-end
 
 **Setembro**
 Apoiar o Gabriel na prototipação, já pensando em como as telas viram componentes. Definir com o Miguel o contrato da API.
@@ -194,12 +194,12 @@ Integrar com a API real. Implementar validações de formulário e requisições
 Quem atrasa, trava o próximo:
 
 1. Contato com o CRIE → define o problema
-2. Requisitos (Inácio) → transformam o problema em especificação
+2. Requisitos (Vinícius) → transformam o problema em especificação
 3. Minimundo e DER (Henry) → estruturam os dados
-4. Personas e protótipo (Gabriel) → definem as telas
+4. Personas e protótipo (Inácio) → definem as telas
 5. **Modelo relacional fechado (Henry)** → libera o back-end
 6. API (Miguel) → libera a integração do front-end
-7. Testes de usabilidade (Gabriel) → validam com o público-alvo
+7. Testes de usabilidade (Inácio) → validam com o público-alvo
 
 O passo 5 é o gargalo mais provável do semestre.
 
