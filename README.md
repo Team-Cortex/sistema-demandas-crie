@@ -57,6 +57,7 @@ sistema-demandas-crie/
 | [`docs/contrato-api.md`](docs/contrato-api.md) | Proposta de contrato HTTP entre o React e o Flask |
 | [`docs/specs/`](docs/specs/) | Comportamento do servidor, na ordem de implementação |
 | [`docs/estado-do-projeto.md`](docs/estado-do-projeto.md) | Mapa geral do que o sistema é hoje, mantido pela frente de back-end |
+| [`docs/commits.md`](docs/commits.md) | Como a frente de back-end separa cada mudança num commit |
 | [`docs/documentacao.md`](docs/documentacao.md) | Quando a frente de back-end atualiza o mapa no mesmo commit |
 
 ---
