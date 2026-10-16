@@ -38,10 +38,10 @@ O sistema centraliza esse registro, torna o andamento visível e preserva o hist
 
 ```
 sistema-demandas-crie/
-├── docs/          documentação do projeto
-├── backend/       API em Flask
-├── frontend/      interface em React
-└── docker-compose.yml
+├── docs/                 documentação compartilhada
+├── backend/              servidor Flask
+├── frontend/             cliente React
+└── docker-compose.yml    PostgreSQL local
 ```
 
 ---
@@ -82,9 +82,8 @@ cp .env.example .env        # preencher os valores
 pip install -r requirements.txt
 flask run
 
-# Front-end
+# Cliente
 cd frontend
-cp .env.example .env
 npm install
 npm run dev
 ```
