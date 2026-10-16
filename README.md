@@ -53,8 +53,11 @@ sistema-demandas-crie/
 | [`docs/plano-de-projeto.md`](docs/plano-de-projeto.md) | Escopo, cronograma, dependências e como cada frente se desenvolve ao longo do semestre |
 | [`docs/requisitos.md`](docs/requisitos.md) | Requisitos funcionais e não funcionais, rastreabilidade e critérios de aceitação |
 | [`docs/divisao-de-papeis.md`](docs/divisao-de-papeis.md) | Atribuições detalhadas de cada integrante |
+| [`docs/arquitetura.md`](docs/arquitetura.md) | Cliente-servidor, camadas do servidor e decisões já tomadas |
 | [`docs/contrato-api.md`](docs/contrato-api.md) | Proposta de contrato HTTP entre o React e o Flask |
 | [`docs/specs/`](docs/specs/) | Comportamento do servidor, na ordem de implementação |
+| [`docs/estado-do-projeto.md`](docs/estado-do-projeto.md) | Mapa geral do que o sistema é hoje, mantido pela frente de back-end |
+| [`docs/documentacao.md`](docs/documentacao.md) | Quando a frente de back-end atualiza o mapa no mesmo commit |
 
 ---
 
