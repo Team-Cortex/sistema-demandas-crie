@@ -53,6 +53,7 @@ sistema-demandas-crie/
 | [`docs/plano-de-projeto.md`](docs/plano-de-projeto.md) | Escopo, cronograma, dependências e como cada frente se desenvolve ao longo do semestre |
 | [`docs/requisitos.md`](docs/requisitos.md) | Requisitos funcionais e não funcionais, rastreabilidade e critérios de aceitação |
 | [`docs/divisao-de-papeis.md`](docs/divisao-de-papeis.md) | Atribuições detalhadas de cada integrante |
+| [`docs/contrato-api.md`](docs/contrato-api.md) | Proposta de contrato HTTP entre o React e o Flask |
 
 ---
 
