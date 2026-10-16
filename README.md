@@ -72,7 +72,7 @@ sistema-demandas-crie/
 
 ## Como rodar localmente
 
-*Instruções serão adicionadas conforme o desenvolvimento avança.*
+O servidor é o Flask em `backend/`. O cliente é o React em `frontend/`, com os mesmos arquivos que estavam na raiz. Detalhe do servidor em [`backend/README.md`](backend/README.md).
 
 ```bash
 # Subir o banco de dados
