@@ -78,7 +78,7 @@ sistema-demandas-crie/
 # Subir o banco de dados
 docker compose up -d
 
-# Back-end
+# Servidor
 cd backend
 cp .env.example .env        # preencher os valores
 pip install -r requirements.txt
