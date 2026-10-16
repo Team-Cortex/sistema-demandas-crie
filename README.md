@@ -54,6 +54,7 @@ sistema-demandas-crie/
 | [`docs/requisitos.md`](docs/requisitos.md) | Requisitos funcionais e não funcionais, rastreabilidade e critérios de aceitação |
 | [`docs/divisao-de-papeis.md`](docs/divisao-de-papeis.md) | Atribuições detalhadas de cada integrante |
 | [`docs/contrato-api.md`](docs/contrato-api.md) | Proposta de contrato HTTP entre o React e o Flask |
+| [`docs/specs/`](docs/specs/) | Comportamento do servidor, na ordem de implementação |
 
 ---
 
