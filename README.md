@@ -38,10 +38,10 @@ O sistema centraliza esse registro, torna o andamento visível e preserva o hist
 
 ```
 sistema-demandas-crie/
-├── docs/          documentação do projeto
-├── backend/       API em Flask
-├── frontend/      interface em React
-└── docker-compose.yml
+├── docs/                 documentação compartilhada
+├── backend/              servidor Flask
+├── frontend/             cliente React
+└── docker-compose.yml    PostgreSQL local
 ```
 
 ---
@@ -53,6 +53,12 @@ sistema-demandas-crie/
 | [`docs/plano-de-projeto.md`](docs/plano-de-projeto.md) | Escopo, cronograma, dependências e como cada frente se desenvolve ao longo do semestre |
 | [`docs/requisitos.md`](docs/requisitos.md) | Requisitos funcionais e não funcionais, rastreabilidade e critérios de aceitação |
 | [`docs/divisao-de-papeis.md`](docs/divisao-de-papeis.md) | Atribuições detalhadas de cada integrante |
+| [`docs/arquitetura.md`](docs/arquitetura.md) | Cliente-servidor, camadas do servidor e decisões já tomadas |
+| [`docs/contrato-api.md`](docs/contrato-api.md) | Proposta de contrato HTTP entre o React e o Flask |
+| [`docs/specs/`](docs/specs/) | Comportamento do servidor, na ordem de implementação |
+| [`docs/estado-do-projeto.md`](docs/estado-do-projeto.md) | Mapa geral do que o sistema é hoje, mantido pela frente de back-end |
+| [`docs/commits.md`](docs/commits.md) | Como a frente de back-end separa cada mudança num commit |
+| [`docs/documentacao.md`](docs/documentacao.md) | Quando a frente de back-end atualiza o mapa no mesmo commit |
 
 ---
 
@@ -70,21 +76,20 @@ sistema-demandas-crie/
 
 ## Como rodar localmente
 
-*Instruções serão adicionadas conforme o desenvolvimento avança.*
+O servidor é o Flask em `backend/`. O cliente é o React em `frontend/`, com os mesmos arquivos que estavam na raiz. Detalhe do servidor em [`backend/README.md`](backend/README.md).
 
 ```bash
 # Subir o banco de dados
 docker compose up -d
 
-# Back-end
+# Servidor
 cd backend
 cp .env.example .env        # preencher os valores
 pip install -r requirements.txt
 flask run
 
-# Front-end
+# Cliente
 cd frontend
-cp .env.example .env
 npm install
 npm run dev
 ```
