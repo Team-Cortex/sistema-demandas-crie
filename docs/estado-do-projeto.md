@@ -44,7 +44,7 @@ Login, usuários, demandas, assistidos e reuniões estão especificados e ainda 
 
 ## 3.1 Models no servidor
 
-Entidades SQLAlchemy em `backend/app/models/`, testadas contra SQLite em memória. O script relacional do Henry continua sendo a referência do banco; se divergir, o model se ajusta.
+Entidades SQLAlchemy em `backend/app/models/`, testadas contra SQLite em memória. O schema sai de `backend/migrations/` (`flask db upgrade`); a migração inicial `b0f13416410c` cria as tabelas abaixo e, no banco, recusa UPDATE/DELETE em `historico_demanda` e `evolucao` e DELETE em `demanda` e `encaminhamento` (trigger). O script relacional do Henry continua sendo a referência do banco; se divergir, o model e a migração se ajustam.
 
 | Model | Tabela | Situação |
 | --- | --- | --- |
