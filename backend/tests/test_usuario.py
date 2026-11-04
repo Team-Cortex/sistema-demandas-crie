@@ -1,7 +1,7 @@
 import pytest
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
-from app.models import Usuario
+from app.models import Direcao, Profissional, Usuario
 
 SENHA = "senha-ficticia-1"
 
@@ -9,9 +9,8 @@ SENHA = "senha-ficticia-1"
 def novo(**campos):
     campos.setdefault("nome", "Pessoa Fictícia")
     campos.setdefault("email", "pessoa@exemplo.test")
-    campos.setdefault("perfil", "direcao")
     campos.setdefault("senha", SENHA)
-    return Usuario(**campos)
+    return Direcao(**campos)
 
 
 def test_usuario_guarda_atributos_comuns(db):
@@ -52,12 +51,28 @@ def test_definir_senha_troca_o_hash():
 
 @pytest.mark.parametrize("curta", ["", "1234567", None])
 def test_senha_curta_e_recusada(curta):
-    usuario = Usuario(nome="X", email="x@exemplo.test", perfil="direcao")
+    usuario = Direcao(nome="X", email="x@exemplo.test")
     with pytest.raises(ValueError, match="no mínimo 8"):
         usuario.definir_senha(curta)
 
 
 def test_usuario_sem_senha_nao_e_gravado(db):
-    db.session.add(Usuario(nome="Sem", email="sem@exemplo.test", perfil="direcao"))
+    db.session.add(Direcao(nome="Sem", email="sem@exemplo.test"))
     with pytest.raises(IntegrityError):
         db.session.commit()
+
+
+def test_direcao_grava_perfil_e_volta_como_direcao(db):
+    db.session.add(novo())
+    db.session.commit()
+    db.session.expunge_all()
+
+    carregado = db.session.query(Usuario).one()
+    assert type(carregado) is Direcao
+    assert carregado.perfil == "direcao"
+
+
+@pytest.mark.parametrize("abstrata", [Usuario, Profissional])
+def test_classes_abstratas_nao_viram_linha(abstrata):
+    with pytest.raises(InvalidRequestError):
+        abstrata(nome="X", email="x@exemplo.test", senha=SENHA)

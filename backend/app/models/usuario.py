@@ -28,6 +28,12 @@ class Usuario(db.Model):
     # Encapsulamento: o hash só é lido e escrito por definir_senha e senha_confere.
     _senha_hash = db.Column("senha_hash", db.String(255), nullable=False)
 
+    # Herança de tabela única: `perfil` escolhe a subclasse ao carregar a linha.
+    __mapper_args__ = {
+        "polymorphic_on": perfil,
+        "polymorphic_abstract": True,
+    }
+
     def __init__(self, senha=None, **campos):
         if campos.get("email") is not None:
             campos["email"] = campos["email"].strip().lower()
@@ -47,4 +53,16 @@ class Usuario(db.Model):
         return check_password_hash(self._senha_hash, senha)
 
     def __repr__(self):
-        return f"<Usuario {self.id} {self.perfil}>"
+        return f"<{type(self).__name__} {self.id}>"
+
+
+class Direcao(Usuario):
+    """Direção da instituição. Cadastra usuários e emite relatórios."""
+
+    __mapper_args__ = {"polymorphic_identity": "direcao"}
+
+
+class Profissional(Usuario):
+    """O que é comum a quem atende assistidos. Não vira linha sozinha."""
+
+    __mapper_args__ = {"polymorphic_abstract": True}

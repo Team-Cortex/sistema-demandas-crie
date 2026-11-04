@@ -5,6 +5,6 @@ Destino de encaminhamento, categorias de demanda e campos do assistido
 continuam em aberto no contrato da API.
 """
 
-from app.models.usuario import Usuario
+from app.models.usuario import Direcao, Profissional, Usuario
 
-__all__ = ["Usuario"]
+__all__ = ["Direcao", "Profissional", "Usuario"]

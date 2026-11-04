@@ -48,7 +48,7 @@ Entidades SQLAlchemy em `backend/app/models/`, testadas contra SQLite em memóri
 
 | Model | Tabela | Situação |
 | --- | --- | --- |
-| `Usuario` | `usuario` | nome, e-mail único, ativo, perfil, criado_em; senha só como hash, via `definir_senha` e `senha_confere` |
+| `Usuario` → `Direcao`, `Profissional` (abstratas: `Usuario`, `Profissional`) | `usuario`, herança de tabela única por `perfil` | nome, e-mail único, ativo, perfil, criado_em; senha só como hash, via `definir_senha` e `senha_confere` |
 
 ## 4. Decisões abertas
 
