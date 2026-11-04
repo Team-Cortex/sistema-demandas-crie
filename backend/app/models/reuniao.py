@@ -15,6 +15,13 @@ class Setor(str, enum.Enum):
     CONVIVENCIA = "convivencia"
 
 
+reuniao_participante = db.Table(
+    "reuniao_participante",
+    db.Column("reuniao_id", db.ForeignKey("reuniao.id"), primary_key=True),
+    db.Column("usuario_id", db.ForeignKey("usuario.id"), primary_key=True),
+)
+
+
 class Reuniao(db.Model):
     __tablename__ = "reuniao"
 
@@ -25,6 +32,12 @@ class Reuniao(db.Model):
         nullable=False,
     )
     criado_em = db.Column(db.DateTime(timezone=True), nullable=False, default=agora)
+
+    participantes = db.relationship(
+        "Usuario",
+        secondary=reuniao_participante,
+        order_by="Usuario.nome",
+    )
 
     def __repr__(self):
         return f"<Reuniao {self.id} {self.setor.value if self.setor else None} {self.data}>"
