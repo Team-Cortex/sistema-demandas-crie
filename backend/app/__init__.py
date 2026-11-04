@@ -4,6 +4,7 @@ O cliente React conversa com este processo por JSON em /api.
 Nenhuma rota daqui abre o banco para o navegador.
 """
 
+import importlib
 import os
 
 from flask import Flask
@@ -34,8 +35,17 @@ def create_app(config_object=None):
         CORS(app, resources={r"/api/*": {"origins": origens}})
 
     if app.config.get("SQLALCHEMY_DATABASE_URI"):
+        # Registra as tabelas no metadata para o Alembic enxergar.
+        importlib.import_module("app.models")
+
         db.init_app(app)
-        migrate.init_app(app, db)
+        migrate.init_app(
+            app,
+            db,
+            directory=os.path.join(os.path.dirname(os.path.dirname(__file__)), "migrations"),
+            compare_type=True,
+            render_as_batch=True,
+        )
 
     if app.config.get("JWT_SECRET_KEY"):
         jwt.init_app(app)
