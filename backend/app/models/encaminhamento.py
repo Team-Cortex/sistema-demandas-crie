@@ -32,18 +32,48 @@ class Encaminhamento(db.Model):
         db.ForeignKey("demanda.id", ondelete="RESTRICT"), nullable=True, index=True
     )
 
-    responsavel = db.relationship("Usuario")
+    # RF28: o desfecho chega depois, uma vez, com quem registrou e quando.
+    desfecho = db.Column(db.Text)
+    desfecho_autor_id = db.Column(db.ForeignKey("usuario.id", ondelete="RESTRICT"))
+    desfecho_em = db.Column(db.DateTime(timezone=True))
+
+    responsavel = db.relationship("Usuario", foreign_keys=[responsavel_id])
+    desfecho_autor = db.relationship("Usuario", foreign_keys=[desfecho_autor_id])
     assistido = db.relationship("Assistido")
     demanda = db.relationship("Demanda")
+
+    @property
+    def pendente(self):
+        return self.desfecho is None
+
+    def registrar_desfecho(self, texto, autor):
+        from app.errors import ErroDeNegocio
+
+        if autor is None:
+            raise ValueError("Todo desfecho precisa de autor.")
+        if not isinstance(texto, str) or not texto.strip():
+            raise ValueError("Escreva o desfecho do encaminhamento.")
+        if not self.pendente:
+            raise ErroDeNegocio("Este encaminhamento já tem desfecho registrado.")
+        self.desfecho = texto.strip()
+        self.desfecho_autor = autor
+        self.desfecho_em = agora()
 
     __table_args__ = (
         db.CheckConstraint(
             "assistido_id IS NOT NULL OR demanda_id IS NOT NULL",
             name="ck_encaminhamento_tem_vinculo",
         ),
+        db.CheckConstraint(
+            "(desfecho IS NULL AND desfecho_autor_id IS NULL AND desfecho_em IS NULL)"
+            " OR (desfecho IS NOT NULL AND desfecho_autor_id IS NOT NULL AND desfecho_em IS NOT NULL)",
+            name="ck_encaminhamento_desfecho_completo",
+        ),
     )
 
     def __init__(self, **campos):
+        if {"desfecho", "desfecho_autor", "desfecho_autor_id", "desfecho_em"} & set(campos):
+            raise ValueError("O desfecho é registrado depois, por registrar_desfecho.")
         tem_assistido = campos.get("assistido") is not None or campos.get("assistido_id") is not None
         tem_demanda = campos.get("demanda") is not None or campos.get("demanda_id") is not None
         if not (tem_assistido or tem_demanda):

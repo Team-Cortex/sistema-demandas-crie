@@ -3,6 +3,7 @@ from datetime import date
 import pytest
 from sqlalchemy.exc import IntegrityError
 
+from app.errors import ErroDeNegocio
 from app.models import (
     Assistido,
     AssistenteSocial,
@@ -137,4 +138,62 @@ def test_banco_recusa_encaminhamento_sem_vinculo(db, base):
             ),
             {"r": base["assistente"].id},
         )
+    db.session.rollback()
+
+def test_nasce_pendente(base):
+    encaminhamento = novo(base)
+    assert encaminhamento.pendente is True
+    assert encaminhamento.desfecho is None
+
+
+def test_registra_desfecho_com_autor_e_momento(db, base):
+    encaminhamento = novo(base)
+    db.session.add(encaminhamento)
+    db.session.commit()
+
+    encaminhamento.registrar_desfecho("  Família atendida; CadÚnico atualizado. ", base["assistente"])
+    db.session.commit()
+    encaminhamento_id = encaminhamento.id
+    db.session.expunge_all()
+
+    salvo = db.session.get(Encaminhamento, encaminhamento_id)
+    assert salvo.pendente is False
+    assert salvo.desfecho == "Família atendida; CadÚnico atualizado."
+    assert salvo.desfecho_autor.email == "a@exemplo.test"
+    assert salvo.desfecho_em is not None
+
+
+def test_desfecho_nao_e_sobrescrito(db, base):
+    encaminhamento = novo(base)
+    encaminhamento.registrar_desfecho("Primeiro.", base["assistente"])
+    with pytest.raises(ErroDeNegocio, match="já tem desfecho"):
+        encaminhamento.registrar_desfecho("Segundo.", base["assistente"])
+    assert encaminhamento.desfecho == "Primeiro."
+
+
+@pytest.mark.parametrize("vazio", ["", "  ", None])
+def test_desfecho_vazio_e_recusado(base, vazio):
+    encaminhamento = novo(base)
+    with pytest.raises(ValueError, match="desfecho"):
+        encaminhamento.registrar_desfecho(vazio, base["assistente"])
+    assert encaminhamento.pendente
+
+
+def test_desfecho_sem_autor_e_recusado(base):
+    with pytest.raises(ValueError, match="autor"):
+        novo(base).registrar_desfecho("Ok.", None)
+
+
+def test_desfecho_nao_vem_na_criacao(base):
+    with pytest.raises(ValueError, match="registrado depois"):
+        novo(base, desfecho="Já resolvido.")
+
+
+def test_banco_recusa_desfecho_pela_metade(db, base):
+    from sqlalchemy import text
+
+    db.session.add(novo(base))
+    db.session.commit()
+    with pytest.raises(IntegrityError):
+        db.session.execute(text("UPDATE encaminhamento SET desfecho = 'sem autor'"))
     db.session.rollback()
