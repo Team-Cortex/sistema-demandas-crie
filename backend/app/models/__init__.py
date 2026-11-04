@@ -5,6 +5,7 @@ Destino de encaminhamento, categorias de demanda e campos do assistido
 continuam em aberto no contrato da API.
 """
 
+from app.models.assistido import Assistido
 from app.models.usuario import (
     CLASSE_POR_PERFIL,
     AssistenteSocial,
@@ -15,6 +16,7 @@ from app.models.usuario import (
 )
 
 __all__ = [
+    "Assistido",
     "CLASSE_POR_PERFIL",
     "AssistenteSocial",
     "Direcao",
