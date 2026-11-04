@@ -2,7 +2,7 @@
 
 Mapa geral do sistema, para quem abre o repositório sem a conversa anterior. Atualizado em 13/10/2026.
 
-Quem mantém este arquivo é a frente de back-end. A atualização acompanha os commits dessa frente quando um fato daqui muda ([`documentacao.md`](documentacao.md)). Não é diário de commits e não é obrigação das outras frentes manterem este texto em tempo real.
+Quem mantém este arquivo é a frente de back-end. A atualização acompanha os commits dessa frente quando um fato daqui muda. Não é diário de commits e não é obrigação das outras frentes manterem este texto em tempo real.
 
 ---
 
