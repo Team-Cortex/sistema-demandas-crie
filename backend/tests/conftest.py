@@ -1,6 +1,8 @@
 import pytest
 
+import app.models  # noqa: F401  registra as tabelas no metadata
 from app import create_app
+from app.extensions import db as _db
 from config import TestingConfig
 
 
@@ -12,6 +14,16 @@ def app():
 @pytest.fixture
 def client(app):
     return app.test_client()
+
+
+@pytest.fixture
+def db(app):
+    """Banco SQLite em memória, criado e descartado a cada teste."""
+    with app.app_context():
+        _db.create_all()
+        yield _db
+        _db.session.remove()
+        _db.drop_all()
 
 
 @pytest.fixture

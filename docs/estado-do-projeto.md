@@ -40,7 +40,15 @@ Contrato HTTP: [`contrato-api.md`](contrato-api.md). Comportamento do servidor: 
 | GET | `/api/saude` | `{"ok": true, "status": "ok"}` |
 | GET | `/api/teste` | `Hello World` |
 
-Login, usuários, demandas, assistidos e reuniões estão especificados e ainda não têm rota. Não há tabela de domínio no servidor: o modelo relacional segue com o Henry.
+Login, usuários, demandas, assistidos e reuniões estão especificados e ainda não têm rota.
+
+## 3.1 Models no servidor
+
+Entidades SQLAlchemy em `backend/app/models/`, testadas contra SQLite em memória. O script relacional do Henry continua sendo a referência do banco; se divergir, o model se ajusta.
+
+| Model | Tabela | Situação |
+| --- | --- | --- |
+| `Usuario` | `usuario` | nome, e-mail único, ativo, perfil, criado_em |
 
 ## 4. Decisões abertas
 
