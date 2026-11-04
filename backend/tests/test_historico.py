@@ -155,3 +155,39 @@ def test_mudanca_sem_autor_e_recusada(base):
     # Sem autor, o estado não muda: não existe mudança sem rastro.
     assert demanda.estado is EstadoDemanda.ABERTA
     assert len(demanda.historico) == 1
+
+def test_anotacao_vira_item_sem_mudar_estado(db, base):
+    demanda = _nova(base, base["diretora"])
+    db.session.add(demanda)
+    item = demanda.anotar("  Família pediu retorno por telefone.  ", base["responsavel"])
+    db.session.commit()
+
+    assert demanda.estado is EstadoDemanda.ABERTA
+    assert item.tipo is TipoHistorico.ANOTACAO
+    assert item.texto == "Família pediu retorno por telefone."
+    assert item.autor is base["responsavel"]
+    assert item.estado_anterior is None and item.estado_novo is None
+    assert [i.tipo for i in demanda.historico] == [TipoHistorico.ESTADO, TipoHistorico.ANOTACAO]
+
+
+@pytest.mark.parametrize("vazio", ["", "   ", None])
+def test_anotacao_vazia_e_recusada(base, vazio):
+    demanda = _nova(base, base["diretora"])
+    with pytest.raises(ValueError, match="texto da anotação"):
+        demanda.anotar(vazio, base["responsavel"])
+    assert len(demanda.historico) == 1
+
+
+def test_anotacao_sem_autor_e_recusada(base):
+    demanda = _nova(base, base["diretora"])
+    with pytest.raises(ValueError, match="autor"):
+        demanda.anotar("algo", None)
+
+
+def test_anotacao_em_demanda_encerrada_continua_permitida(db, base):
+    demanda = _nova(base, base["diretora"])
+    demanda.mudar_estado(EstadoDemanda.CANCELADA, base["diretora"])
+    demanda.anotar("Cancelada porque a família mudou de cidade.", base["diretora"])
+    db.session.add(demanda)
+    db.session.commit()
+    assert demanda.historico[-1].tipo is TipoHistorico.ANOTACAO

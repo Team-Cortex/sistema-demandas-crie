@@ -161,6 +161,18 @@ class Demanda(db.Model):
             )
         )
 
+    def anotar(self, texto, autor):
+        """Registra uma anotação de acompanhamento. Não muda o estado."""
+        from app.models.historico import HistoricoDemanda, TipoHistorico
+
+        if autor is None:
+            raise ValueError("Toda alteração precisa de autor.")
+        if not isinstance(texto, str) or not texto.strip():
+            raise ValueError("Escreva o texto da anotação.")
+        item = HistoricoDemanda(autor=autor, tipo=TipoHistorico.ANOTACAO, texto=texto.strip())
+        self.historico.append(item)
+        return item
+
     def reatribuir(self, novo_responsavel):
         """Troca o responsável e devolve o anterior. Spec 02: inexistente ou inativo → 404."""
         from app.models.usuario import Usuario
