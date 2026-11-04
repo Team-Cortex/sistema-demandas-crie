@@ -66,3 +66,19 @@ class Profissional(Usuario):
     """O que é comum a quem atende assistidos. Não vira linha sozinha."""
 
     __mapper_args__ = {"polymorphic_abstract": True}
+
+
+class AssistenteSocial(Profissional):
+    __mapper_args__ = {"polymorphic_identity": "assistente_social"}
+
+
+class EquipePedagogica(Profissional):
+    __mapper_args__ = {"polymorphic_identity": "equipe_pedagogica"}
+
+
+# Perfil aceito na API → classe. Usado pelo cadastro de usuários (spec 01).
+CLASSE_POR_PERFIL = {
+    "direcao": Direcao,
+    "assistente_social": AssistenteSocial,
+    "equipe_pedagogica": EquipePedagogica,
+}

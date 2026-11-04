@@ -1,7 +1,14 @@
 import pytest
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
-from app.models import Direcao, Profissional, Usuario
+from app.models import (
+    CLASSE_POR_PERFIL,
+    AssistenteSocial,
+    Direcao,
+    EquipePedagogica,
+    Profissional,
+    Usuario,
+)
 
 SENHA = "senha-ficticia-1"
 
@@ -76,3 +83,32 @@ def test_direcao_grava_perfil_e_volta_como_direcao(db):
 def test_classes_abstratas_nao_viram_linha(abstrata):
     with pytest.raises(InvalidRequestError):
         abstrata(nome="X", email="x@exemplo.test", senha=SENHA)
+
+@pytest.mark.parametrize(
+    "perfil, classe",
+    [("assistente_social", AssistenteSocial), ("equipe_pedagogica", EquipePedagogica)],
+)
+def test_profissionais_voltam_na_subclasse_certa(db, perfil, classe):
+    db.session.add(classe(nome="P", email=f"{perfil}@exemplo.test", senha=SENHA))
+    db.session.commit()
+    db.session.expunge_all()
+
+    carregado = db.session.query(Usuario).one()
+    assert type(carregado) is classe
+    assert isinstance(carregado, Profissional)
+    assert carregado.perfil == perfil
+
+
+def test_consulta_por_profissional_nao_traz_direcao(db):
+    db.session.add_all([
+        novo(email="d@exemplo.test"),
+        AssistenteSocial(nome="A", email="a@exemplo.test", senha=SENHA),
+        EquipePedagogica(nome="E", email="e@exemplo.test", senha=SENHA),
+    ])
+    db.session.commit()
+    perfis = sorted(p.perfil for p in db.session.query(Profissional).all())
+    assert perfis == ["assistente_social", "equipe_pedagogica"]
+
+
+def test_mapa_de_perfis_cobre_os_tres_da_spec():
+    assert set(CLASSE_POR_PERFIL) == {"direcao", "assistente_social", "equipe_pedagogica"}
