@@ -39,5 +39,14 @@ class Reuniao(db.Model):
         order_by="Usuario.nome",
     )
 
+    # Spec 04: a ficha da reunião mostra as demandas nascidas nela, com o estado atual.
+    # Alterar a reunião não apaga demanda já ligada.
+    demandas = db.relationship(
+        "Demanda",
+        back_populates="reuniao",
+        order_by="(Demanda.criado_em, Demanda.id)",
+        passive_deletes="all",
+    )
+
     def __repr__(self):
         return f"<Reuniao {self.id} {self.setor.value if self.setor else None} {self.data}>"

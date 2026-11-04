@@ -72,3 +72,56 @@ def test_participante_repetido_vira_uma_linha_so(db):
             reuniao_participante.insert().values(reuniao_id=reuniao.id, usuario_id=a.id)
         )
     db.session.rollback()
+
+def test_ficha_da_reuniao_mostra_demandas_com_estado_atual(db):
+    from app.models import Demanda, EstadoDemanda, Prioridade
+
+    a = AssistenteSocial(nome="A", email="a@exemplo.test", senha=SENHA)
+    reuniao = Reuniao(data=date(2026, 10, 6), setor=Setor.SAUDE, participantes=[a])
+    outra = Reuniao(data=date(2026, 10, 7), setor=Setor.PEDAGOGICO, participantes=[a])
+    db.session.add_all([a, reuniao, outra])
+
+    def abrir(texto, origem):
+        demanda = Demanda.abrir(a, descricao=texto, prioridade=Prioridade.MEDIA,
+                                prazo=date(2026, 11, 1), responsavel=a, reuniao=origem)
+        db.session.add(demanda)
+        db.session.flush()
+        return demanda
+
+    primeira = abrir("primeira", reuniao)
+    abrir("segunda", reuniao)
+    abrir("de outra reunião", outra)
+    primeira.mudar_estado(EstadoDemanda.EM_ANDAMENTO, a)
+    db.session.commit()
+    reuniao_id = reuniao.id
+    db.session.expunge_all()
+
+    ficha = db.session.get(Reuniao, reuniao_id)
+    assert [(d.descricao, d.estado) for d in ficha.demandas] == [
+        ("primeira", EstadoDemanda.EM_ANDAMENTO),
+        ("segunda", EstadoDemanda.ABERTA),
+    ]
+
+
+def test_reuniao_sem_demanda_traz_lista_vazia(db):
+    reuniao = Reuniao(data=date(2026, 10, 6), setor=Setor.SAUDE)
+    db.session.add(reuniao)
+    db.session.commit()
+    assert reuniao.demandas == []
+
+
+def test_trocar_participantes_nao_mexe_nas_demandas(db):
+    from app.models import Demanda, Prioridade
+
+    a = AssistenteSocial(nome="A", email="a@exemplo.test", senha=SENHA)
+    b = EquipePedagogica(nome="B", email="b@exemplo.test", senha=SENHA)
+    reuniao = Reuniao(data=date(2026, 10, 6), setor=Setor.SAUDE, participantes=[a])
+    db.session.add_all([a, b, reuniao, Demanda.abrir(a, descricao="x", prioridade=Prioridade.BAIXA,
+                                                    prazo=date(2026, 11, 1), responsavel=a,
+                                                    reuniao=reuniao)])
+    db.session.commit()
+    reuniao.participantes = [b]
+    reuniao.data = date(2026, 10, 8)
+    db.session.commit()
+    assert len(reuniao.demandas) == 1
+    assert db.session.query(Demanda).count() == 1
