@@ -111,7 +111,10 @@ def carregar_demonstracao(db, direcao, senha, hoje=None):
     db.session.add(encaminhamento)
     db.session.flush()
 
+    cenarios = carregar_cenarios(db, direcao, assistente, educadora, assistido, reuniao, hoje)
+
     return {
+        "cenarios": cenarios,
         "assistente": assistente,
         "educadora": educadora,
         "assistido": assistido,
@@ -120,6 +123,100 @@ def carregar_demonstracao(db, direcao, senha, hoje=None):
         "evolucao": evolucao,
         "encaminhamento": encaminhamento,
     }
+
+
+def carregar_cenarios(db, direcao, assistente, educadora, assistido, reuniao, hoje):
+    """Demandas em cada situação que o painel precisa mostrar (card #57)."""
+    from app.models import (
+        Assistido,
+        Demanda,
+        Encaminhamento,
+        EstadoDemanda,
+        Evolucao,
+        Prioridade,
+        Reuniao,
+        Setor,
+    )
+
+    E = EstadoDemanda
+    outro = Assistido(nome_tratamento="Assistido Fictício B")
+    outro.vincular_profissional(educadora, hoje - timedelta(days=30))
+    reuniao_pedagogica = Reuniao(
+        data=hoje - timedelta(days=21), setor=Setor.PEDAGOGICO, participantes=[direcao, educadora]
+    )
+    reuniao_saude = Reuniao(
+        data=hoje - timedelta(days=14), setor=Setor.SAUDE, participantes=[direcao, assistente]
+    )
+    db.session.add_all([outro, reuniao_pedagogica, reuniao_saude])
+
+    # (nome, descrição, prioridade, prazo em dias a partir de hoje, responsável,
+    #  reunião, assistido, caminho de estados)
+    roteiro = [
+        ("aberta", "Pedir material adaptado para a turma da tarde.", Prioridade.BAIXA, 20,
+         educadora, reuniao_pedagogica, None, []),
+        ("vencida", "Agendar avaliação fonoaudiológica na rede municipal.", Prioridade.ALTA, -5,
+         assistente, reuniao_saude, outro, []),
+        ("em_andamento", "Articular transporte adaptado com a Secretaria de Educação.", Prioridade.ALTA, 10,
+         assistente, reuniao, assistido, [E.EM_ANDAMENTO]),
+        ("aguardando_terceiros", "Aguardar retorno do CAPSi sobre vaga.", Prioridade.MEDIA, 7,
+         assistente, reuniao_saude, outro, [E.EM_ANDAMENTO, E.AGUARDANDO_TERCEIROS]),
+        ("vencida_em_andamento", "Renovar o BPC junto ao INSS.", Prioridade.ALTA, -2,
+         assistente, reuniao, assistido, [E.EM_ANDAMENTO]),
+        ("concluida", "Solicitar vaga na escola estadual do bairro.", Prioridade.MEDIA, -10,
+         educadora, reuniao_pedagogica, outro, [E.EM_ANDAMENTO, E.CONCLUIDA]),
+        ("cancelada", "Pedir cesta básica emergencial.", Prioridade.MEDIA, -3,
+         assistente, reuniao_saude, None, [E.CANCELADA]),
+    ]
+
+    demandas = {}
+    for nome, descricao, prioridade, dias, responsavel, origem, quem, caminho in roteiro:
+        demanda = Demanda.abrir(
+            direcao,
+            descricao=descricao + " (fictício)",
+            prioridade=prioridade,
+            prazo=hoje + timedelta(days=dias),
+            responsavel=responsavel,
+            reuniao=origem,
+            assistido=quem,
+        )
+        for passo in caminho:
+            demanda.mudar_estado(passo, responsavel)
+        db.session.add(demanda)
+        demandas[nome] = demanda
+
+    demandas["aguardando_terceiros"].anotar("CAPSi pediu nova ligação na próxima semana.", assistente)
+    demandas["cancelada"].anotar("Família já recebeu pelo CRAS; demanda sem objeto.", assistente)
+    demandas["em_andamento"].reatribuir(educadora, direcao)
+
+    resolvido = Encaminhamento(
+        demanda=demandas["concluida"],
+        destino="Escola Estadual (fictícia)",
+        data=hoje - timedelta(days=12),
+        responsavel=educadora,
+    )
+    resolvido.registrar_desfecho("Matrícula confirmada.", educadora)
+    db.session.add_all([
+        resolvido,
+        Encaminhamento(
+            assistido=outro,
+            destino="CAPSi (fictício)",
+            data=hoje - timedelta(days=9),
+            responsavel=assistente,
+        ),
+    ])
+
+    original = Evolucao.lancar(
+        educadora,
+        assistido=outro,
+        data=hoje - timedelta(days=6),
+        area_atuacao="Pedagógica",
+        descricao="Leitura de palavras simples com apoio (registro fictício).",
+    )
+    db.session.add(original)
+    db.session.flush()
+    db.session.add(original.retificar(educadora, descricao="Leitura de sílabas simples com apoio (registro fictício)."))
+    db.session.flush()
+    return demandas
 
 
 def semear(db, variaveis, hoje=None):
