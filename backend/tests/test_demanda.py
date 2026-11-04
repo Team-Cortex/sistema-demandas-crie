@@ -212,7 +212,6 @@ def test_demanda_ligada_a_um_assistido(db, base):
 
 
 def test_assistido_inexistente_e_recusado_pelo_banco(db, base):
-    db.session.execute(text("PRAGMA foreign_keys = ON"))
     db.session.add(nova(base, assistido_id=9999))
     with pytest.raises(IntegrityError):
         db.session.commit()
