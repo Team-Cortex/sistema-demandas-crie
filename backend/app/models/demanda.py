@@ -85,6 +85,11 @@ class Demanda(db.Model):
     responsavel = db.relationship("Usuario")
     reuniao = db.relationship("Reuniao")
     assistido = db.relationship("Assistido")
+    historico = db.relationship(
+        "HistoricoDemanda",
+        back_populates="demanda",
+        order_by="(HistoricoDemanda.ocorrido_em, HistoricoDemanda.id)",
+    )
 
     def __init__(self, **campos):
         descricao = campos.get("descricao")
