@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 import pytest
+from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
 from app.models import (
@@ -153,3 +154,29 @@ def test_chamada_e_a_mesma_para_todo_perfil():
         EquipePedagogica(nome="E", email="e@exemplo.test", senha=SENHA),
     ]
     assert all(u.pode_ver_evolucao(_assistido()) for u in usuarios)
+
+def test_senha_nunca_e_recuperavel_em_texto_puro(db):
+    usuario = novo()
+    db.session.add(usuario)
+    db.session.commit()
+
+    # Não há atributo público com a senha nem com o hash.
+    assert not hasattr(usuario, "senha")
+    assert not hasattr(usuario, "senha_hash")
+    publicos = {nome: getattr(usuario, nome) for nome in dir(usuario) if not nome.startswith("_")}
+    assert SENHA not in [v for v in publicos.values() if isinstance(v, str)]
+
+    # No banco só existe o hash, e ele não contém a senha.
+    gravado = db.session.execute(text("SELECT senha_hash FROM usuario")).scalar_one()
+    assert gravado != SENHA
+    assert SENHA not in gravado
+    assert gravado.startswith(("scrypt:", "pbkdf2:"))
+
+    # A representação textual também não vaza nada.
+    assert SENHA not in repr(usuario)
+    assert gravado not in repr(usuario)
+
+
+def test_mesma_senha_gera_hashes_diferentes():
+    a, b = novo(email="a@exemplo.test"), novo(email="b@exemplo.test")
+    assert a._senha_hash != b._senha_hash
