@@ -33,7 +33,9 @@ def db(app):
         _db.create_all()
         yield _db
         _db.session.remove()
-        _db.drop_all()
+        # Em memória: fechar a conexão descarta o banco. drop_all esbarraria
+        # na chave estrangeira das tabelas que se referenciam (retificação).
+        _db.engine.dispose()
 
 
 @pytest.fixture
