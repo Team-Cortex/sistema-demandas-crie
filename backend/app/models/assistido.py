@@ -41,6 +41,31 @@ class Assistido(db.Model):
         cascade="all, delete-orphan",
     )
 
+    # Ficha do assistido (spec 03, RF20): as três listas em ordem cronológica.
+    # Sem cascade de exclusão: esses registros nunca saem com o assistido.
+    demandas = db.relationship(
+        "Demanda",
+        back_populates="assistido",
+        order_by="(Demanda.criado_em, Demanda.id)",
+        passive_deletes="all",
+    )
+    evolucoes = db.relationship(
+        "Evolucao",
+        back_populates="assistido",
+        order_by="(Evolucao.data, Evolucao.ocorrido_em, Evolucao.id)",
+        passive_deletes="all",
+    )
+    encaminhamentos = db.relationship(
+        "Encaminhamento",
+        back_populates="assistido",
+        order_by="(Encaminhamento.data, Encaminhamento.id)",
+        passive_deletes="all",
+    )
+
+    @property
+    def evolucoes_vigentes(self):
+        return [e for e in self.evolucoes if e.vigente]
+
     @property
     def profissionais(self):
         return [a.profissional for a in self.acompanhamentos]

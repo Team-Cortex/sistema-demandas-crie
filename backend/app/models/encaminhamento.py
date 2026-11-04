@@ -43,7 +43,7 @@ class Encaminhamento(SemExclusao, db.Model):
 
     responsavel = db.relationship("Usuario", foreign_keys=[responsavel_id])
     desfecho_autor = db.relationship("Usuario", foreign_keys=[desfecho_autor_id])
-    assistido = db.relationship("Assistido")
+    assistido = db.relationship("Assistido", back_populates="encaminhamentos")
     demanda = db.relationship("Demanda")
 
     @property

@@ -49,7 +49,7 @@ Entidades SQLAlchemy em `backend/app/models/`, testadas contra SQLite em memóri
 | Model | Tabela | Situação |
 | --- | --- | --- |
 | `Usuario` → `Direcao`, `Profissional` → `AssistenteSocial`, `EquipePedagogica` (abstratas: `Usuario`, `Profissional`) | `usuario`, herança de tabela única por `perfil` | nome, e-mail único, ativo, perfil, criado_em; senha só como hash, via `definir_senha` e `senha_confere`; `pode_ver_evolucao` por perfil, acesso aberto com a regra restritiva desligada (`Profissional.acesso_restrito`) |
-| `Assistido` | `assistido` | só `nome_tratamento` enquanto A3 estiver aberta; ativo, criado_em |
+| `Assistido` | `assistido` | só `nome_tratamento` enquanto A3 estiver aberta; ativo, criado_em; ficha com `demandas`, `evolucoes` e `encaminhamentos` em ordem cronológica, sem cascade de exclusão |
 | `AssistidoProfissional` | `assistido_profissional` | quem acompanha quem, com `data_inicio`; alimenta a regra restritiva desligada |
 | `Reuniao` | `reuniao`, `reuniao_participante` | data, setor fechado em `pedagogico`, `saude`, `convivencia` e participantes |
 | `Demanda` | `demanda` | descrição, categoria opcional até 80 (A2), prioridade `baixa`/`media`/`alta`, responsável, prazo, reunião de origem, assistido opcional; estado fechado em `EstadoDemanda`, nasce `aberta`; transições da spec 02 validadas no próprio atributo; `Demanda.abrir(autor, ...)` e `mudar_estado(novo, autor)` gravam o histórico sozinhos, recusa vira 400 e não grava nada; `anotar(texto, autor)` grava anotação sem mudar o estado; `reatribuir(novo, autor)` recusa responsável inexistente ou inativo com 404 e anota a troca no histórico |

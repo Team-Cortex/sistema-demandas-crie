@@ -89,7 +89,7 @@ class Demanda(SemExclusao, db.Model):
 
     responsavel = db.relationship("Usuario")
     reuniao = db.relationship("Reuniao")
-    assistido = db.relationship("Assistido")
+    assistido = db.relationship("Assistido", back_populates="demandas")
     historico = db.relationship(
         "HistoricoDemanda",
         back_populates="demanda",

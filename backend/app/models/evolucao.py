@@ -40,7 +40,7 @@ class Evolucao(SomenteInsercao, db.Model):
         db.ForeignKey("evolucao.id", ondelete="RESTRICT"), nullable=True, unique=True
     )
 
-    assistido = db.relationship("Assistido")
+    assistido = db.relationship("Assistido", back_populates="evolucoes")
     profissional = db.relationship("Usuario", foreign_keys=[profissional_id])
     autor = db.relationship("Usuario", foreign_keys=[autor_id])
     retifica = db.relationship(
