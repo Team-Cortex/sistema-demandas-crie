@@ -46,6 +46,16 @@ class Encaminhamento(db.Model):
     def pendente(self):
         return self.desfecho is None
 
+    @classmethod
+    def pendentes(cls, responsavel_id=None, assistido_id=None):
+        """Encaminhamentos sem desfecho, do mais antigo para o mais novo (RF29)."""
+        consulta = db.select(cls).where(cls.desfecho.is_(None))
+        if responsavel_id is not None:
+            consulta = consulta.where(cls.responsavel_id == responsavel_id)
+        if assistido_id is not None:
+            consulta = consulta.where(cls.assistido_id == assistido_id)
+        return db.session.scalars(consulta.order_by(cls.data, cls.id)).all()
+
     def registrar_desfecho(self, texto, autor):
         from app.errors import ErroDeNegocio
 

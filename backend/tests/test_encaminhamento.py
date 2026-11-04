@@ -9,6 +9,7 @@ from app.models import (
     AssistenteSocial,
     Demanda,
     Encaminhamento,
+    EquipePedagogica,
     Prioridade,
     Reuniao,
     Setor,
@@ -197,3 +198,35 @@ def test_banco_recusa_desfecho_pela_metade(db, base):
     with pytest.raises(IntegrityError):
         db.session.execute(text("UPDATE encaminhamento SET desfecho = 'sem autor'"))
     db.session.rollback()
+
+def test_pendentes_traz_so_os_sem_desfecho_do_mais_antigo(db, base):
+    educadora = EquipePedagogica(nome="Educadora", email="e@exemplo.test", senha=SENHA)
+    db.session.add(educadora)
+    resolvido = novo(base, destino="CAPS", data=date(2026, 10, 1))
+    resolvido.registrar_desfecho("Consulta marcada.", base["assistente"])
+    db.session.add_all([
+        resolvido,
+        novo(base, destino="CRAS", data=date(2026, 10, 20)),
+        novo(base, destino="UBS", data=date(2026, 10, 5)),
+        novo(base, destino="Escola", data=date(2026, 10, 12), responsavel=educadora,
+             demanda=base["demanda_sem_assistido"]),
+    ])
+    db.session.commit()
+
+    assert [e.destino for e in Encaminhamento.pendentes()] == ["UBS", "Escola", "CRAS"]
+    assert [e.destino for e in Encaminhamento.pendentes(responsavel_id=educadora.id)] == ["Escola"]
+    assert [e.destino for e in Encaminhamento.pendentes(assistido_id=base["assistido"].id)] == [
+        "UBS",
+        "CRAS",
+    ]
+
+
+def test_registrar_desfecho_tira_da_lista_de_pendentes(db, base):
+    encaminhamento = novo(base)
+    db.session.add(encaminhamento)
+    db.session.commit()
+    assert Encaminhamento.pendentes() == [encaminhamento]
+
+    encaminhamento.registrar_desfecho("Resolvido.", base["assistente"])
+    db.session.commit()
+    assert Encaminhamento.pendentes() == []
