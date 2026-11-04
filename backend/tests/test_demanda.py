@@ -7,6 +7,7 @@ from sqlalchemy import text
 
 from app.errors import ErroDeNegocio
 from app.models import (
+    Assistido,
     AssistenteSocial,
     Demanda,
     Direcao,
@@ -189,3 +190,29 @@ def test_encerrada_so_em_concluida_ou_cancelada(base):
         demanda = nova(base)
         _levar_ate(demanda, estado)
         assert demanda.encerrada is (estado in (A.CONCLUIDA, A.CANCELADA))
+
+def test_demanda_sem_assistido_e_valida(db, base):
+    db.session.add(nova(base))
+    db.session.commit()
+    salva = db.session.query(Demanda).one()
+    assert salva.assistido_id is None
+    assert salva.assistido is None
+
+
+def test_demanda_ligada_a_um_assistido(db, base):
+    assistido = Assistido(nome_tratamento="Fictício E")
+    demanda = nova(base, assistido=assistido)
+    db.session.add(demanda)
+    db.session.commit()
+    demanda_id = demanda.id
+    db.session.expunge_all()
+
+    salva = db.session.get(Demanda, demanda_id)
+    assert salva.assistido.nome_tratamento == "Fictício E"
+
+
+def test_assistido_inexistente_e_recusado_pelo_banco(db, base):
+    db.session.execute(text("PRAGMA foreign_keys = ON"))
+    db.session.add(nova(base, assistido_id=9999))
+    with pytest.raises(IntegrityError):
+        db.session.commit()

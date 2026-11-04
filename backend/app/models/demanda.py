@@ -73,6 +73,8 @@ class Demanda(db.Model):
 
     responsavel_id = db.Column(db.ForeignKey("usuario.id"), nullable=False, index=True)
     reuniao_id = db.Column(db.ForeignKey("reuniao.id"), nullable=False, index=True)
+    # Opcional: nem toda demanda é sobre uma pessoa atendida (RF11).
+    assistido_id = db.Column(db.ForeignKey("assistido.id"), nullable=True, index=True)
 
     criado_em = db.Column(db.DateTime(timezone=True), nullable=False, default=agora)
     atualizado_em = db.Column(
@@ -81,6 +83,7 @@ class Demanda(db.Model):
 
     responsavel = db.relationship("Usuario")
     reuniao = db.relationship("Reuniao")
+    assistido = db.relationship("Assistido")
 
     def __init__(self, **campos):
         descricao = campos.get("descricao")
