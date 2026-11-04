@@ -18,6 +18,14 @@ class Prioridade(str, enum.Enum):
     ALTA = "alta"
 
 
+class EstadoDemanda(str, enum.Enum):
+    ABERTA = "aberta"
+    EM_ANDAMENTO = "em_andamento"
+    AGUARDANDO_TERCEIROS = "aguardando_terceiros"
+    CONCLUIDA = "concluida"
+    CANCELADA = "cancelada"
+
+
 def _enum(classe, nome):
     return db.Enum(
         classe,
@@ -35,6 +43,13 @@ class Demanda(db.Model):
     categoria = db.Column(db.String(CATEGORIA_MAXIMA))
     prioridade = db.Column(_enum(Prioridade, "prioridade"), nullable=False)
     prazo = db.Column(db.Date, nullable=False, index=True)
+    # Enumeração fechada: o banco não aceita estado fora da lista.
+    estado = db.Column(
+        _enum(EstadoDemanda, "estado_demanda"),
+        nullable=False,
+        default=EstadoDemanda.ABERTA,
+        index=True,
+    )
 
     responsavel_id = db.Column(db.ForeignKey("usuario.id"), nullable=False, index=True)
     reuniao_id = db.Column(db.ForeignKey("reuniao.id"), nullable=False, index=True)
@@ -58,6 +73,7 @@ class Demanda(db.Model):
             if categoria and len(categoria) > CATEGORIA_MAXIMA:
                 raise ValueError(f"A categoria aceita até {CATEGORIA_MAXIMA} caracteres.")
             campos["categoria"] = categoria
+        campos.setdefault("estado", EstadoDemanda.ABERTA)
         super().__init__(**campos)
 
     def __repr__(self):

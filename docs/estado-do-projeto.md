@@ -52,7 +52,7 @@ Entidades SQLAlchemy em `backend/app/models/`, testadas contra SQLite em memóri
 | `Assistido` | `assistido` | só `nome_tratamento` enquanto A3 estiver aberta; ativo, criado_em |
 | `AssistidoProfissional` | `assistido_profissional` | quem acompanha quem, com `data_inicio`; alimenta a regra restritiva desligada |
 | `Reuniao` | `reuniao`, `reuniao_participante` | data, setor fechado em `pedagogico`, `saude`, `convivencia` e participantes |
-| `Demanda` | `demanda` | descrição, categoria opcional até 80 (A2), prioridade `baixa`/`media`/`alta`, responsável, prazo, reunião de origem |
+| `Demanda` | `demanda` | descrição, categoria opcional até 80 (A2), prioridade `baixa`/`media`/`alta`, responsável, prazo, reunião de origem; estado fechado em `EstadoDemanda`, nasce `aberta` |
 
 ## 4. Decisões abertas
 

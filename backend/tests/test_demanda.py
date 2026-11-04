@@ -3,7 +3,17 @@ from datetime import date
 import pytest
 from sqlalchemy.exc import IntegrityError, StatementError
 
-from app.models import AssistenteSocial, Demanda, Direcao, Prioridade, Reuniao, Setor
+from sqlalchemy import text
+
+from app.models import (
+    AssistenteSocial,
+    Demanda,
+    Direcao,
+    EstadoDemanda,
+    Prioridade,
+    Reuniao,
+    Setor,
+)
 
 SENHA = "senha-ficticia-1"
 
@@ -72,3 +82,32 @@ def test_campos_obrigatorios(db, base, campo):
     db.session.add(nova(base, **{campo: None}))
     with pytest.raises(IntegrityError):
         db.session.commit()
+
+def test_estados_sao_os_cinco_da_spec():
+    assert [e.value for e in EstadoDemanda] == [
+        "aberta",
+        "em_andamento",
+        "aguardando_terceiros",
+        "concluida",
+        "cancelada",
+    ]
+
+
+def test_demanda_nasce_aberta(db, base):
+    demanda = nova(base)
+    assert demanda.estado is EstadoDemanda.ABERTA
+    db.session.add(demanda)
+    db.session.commit()
+    assert db.session.query(Demanda).one().estado is EstadoDemanda.ABERTA
+
+
+def test_estado_em_texto_livre_e_recusado(db, base):
+    db.session.add(nova(base, estado="esquecida"))
+    with pytest.raises(StatementError):
+        db.session.commit()
+
+
+def test_banco_guarda_o_valor_do_estado(db, base):
+    db.session.add(nova(base))
+    db.session.commit()
+    assert db.session.execute(text("SELECT estado FROM demanda")).scalar_one() == "aberta"
