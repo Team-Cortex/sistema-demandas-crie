@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy import event
 
 import app.models  # noqa: F401  registra as tabelas no metadata
 from app import create_app
@@ -16,10 +17,19 @@ def client(app):
     return app.test_client()
 
 
+def _liga_chave_estrangeira(conexao, _registro):
+    cursor = conexao.cursor()
+    cursor.execute("PRAGMA foreign_keys = ON")
+    cursor.close()
+
+
 @pytest.fixture
 def db(app):
     """Banco SQLite em memória, criado e descartado a cada teste."""
     with app.app_context():
+        # O PostgreSQL sempre aplica chave estrangeira; o SQLite só com o pragma.
+        event.listen(_db.engine, "connect", _liga_chave_estrangeira)
+        _db.engine.dispose()
         _db.create_all()
         yield _db
         _db.session.remove()
