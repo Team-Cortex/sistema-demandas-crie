@@ -6,6 +6,7 @@ continuam em aberto no contrato da API.
 """
 
 from app.models.assistido import Assistido, AssistidoProfissional
+from app.models.reuniao import Reuniao, Setor
 from app.models.usuario import (
     CLASSE_POR_PERFIL,
     AssistenteSocial,
@@ -23,5 +24,7 @@ __all__ = [
     "Direcao",
     "EquipePedagogica",
     "Profissional",
+    "Reuniao",
+    "Setor",
     "Usuario",
 ]

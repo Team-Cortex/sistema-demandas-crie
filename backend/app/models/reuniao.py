@@ -1,1 +1,30 @@
-"""Reunião e participantes. Spec 04."""
+"""Reunião de setor. Spec 04.
+
+Há três reuniões semanais, uma por setor. A demanda nasce numa delas.
+"""
+
+import enum
+
+from app.extensions import db
+from app.models.usuario import agora
+
+
+class Setor(str, enum.Enum):
+    PEDAGOGICO = "pedagogico"
+    SAUDE = "saude"
+    CONVIVENCIA = "convivencia"
+
+
+class Reuniao(db.Model):
+    __tablename__ = "reuniao"
+
+    id = db.Column(db.Integer, primary_key=True)
+    data = db.Column(db.Date, nullable=False, index=True)
+    setor = db.Column(
+        db.Enum(Setor, name="setor", values_callable=lambda e: [m.value for m in e], validate_strings=True),
+        nullable=False,
+    )
+    criado_em = db.Column(db.DateTime(timezone=True), nullable=False, default=agora)
+
+    def __repr__(self):
+        return f"<Reuniao {self.id} {self.setor.value if self.setor else None} {self.data}>"
