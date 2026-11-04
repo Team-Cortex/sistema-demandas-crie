@@ -52,6 +52,10 @@ class Usuario(db.Model):
             return False
         return check_password_hash(self._senha_hash, senha)
 
+    def pode_ver_evolucao(self, assistido):
+        """Polimorfismo: cada perfil responde. A rota não olha a classe."""
+        raise NotImplementedError
+
     def __repr__(self):
         return f"<{type(self).__name__} {self.id}>"
 
@@ -61,11 +65,28 @@ class Direcao(Usuario):
 
     __mapper_args__ = {"polymorphic_identity": "direcao"}
 
+    def pode_ver_evolucao(self, assistido):
+        return bool(self.ativo)
+
 
 class Profissional(Usuario):
     """O que é comum a quem atende assistidos. Não vira linha sozinha."""
 
     __mapper_args__ = {"polymorphic_abstract": True}
+
+    # A direção do CRIE escolheu acesso aberto (relatório v2, spec 01).
+    # A regra restritiva continua aqui, desligada.
+    acesso_restrito = False
+
+    def acompanha(self, assistido):
+        return self in getattr(assistido, "profissionais", ())
+
+    def pode_ver_evolucao(self, assistido):
+        if not self.ativo:
+            return False
+        if self.acesso_restrito:
+            return self.acompanha(assistido)
+        return True
 
 
 class AssistenteSocial(Profissional):

@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pytest
 from sqlalchemy.exc import IntegrityError, InvalidRequestError
 
@@ -112,3 +114,42 @@ def test_consulta_por_profissional_nao_traz_direcao(db):
 
 def test_mapa_de_perfis_cobre_os_tres_da_spec():
     assert set(CLASSE_POR_PERFIL) == {"direcao", "assistente_social", "equipe_pedagogica"}
+
+def _assistido(*profissionais):
+    return SimpleNamespace(profissionais=list(profissionais))
+
+
+def test_direcao_ativa_ve_evolucao_de_qualquer_assistido():
+    assert novo().pode_ver_evolucao(_assistido()) is True
+
+
+def test_usuario_inativo_nao_ve_evolucao():
+    assert novo(ativo=False).pode_ver_evolucao(_assistido()) is False
+    inativo = AssistenteSocial(nome="A", email="a@exemplo.test", senha=SENHA, ativo=False)
+    assert inativo.pode_ver_evolucao(_assistido(inativo)) is False
+
+
+@pytest.mark.parametrize("classe", [AssistenteSocial, EquipePedagogica])
+def test_acesso_aberto_profissional_ve_mesmo_sem_acompanhar(classe):
+    profissional = classe(nome="P", email="p@exemplo.test", senha=SENHA)
+    assert profissional.pode_ver_evolucao(_assistido()) is True
+
+
+def test_acesso_restrito_so_quem_acompanha(monkeypatch):
+    monkeypatch.setattr(Profissional, "acesso_restrito", True)
+    quem_acompanha = AssistenteSocial(nome="A", email="a@exemplo.test", senha=SENHA)
+    outro = EquipePedagogica(nome="E", email="e@exemplo.test", senha=SENHA)
+    assistido = _assistido(quem_acompanha)
+
+    assert quem_acompanha.pode_ver_evolucao(assistido) is True
+    assert outro.pode_ver_evolucao(assistido) is False
+    assert novo().pode_ver_evolucao(assistido) is True
+
+
+def test_chamada_e_a_mesma_para_todo_perfil():
+    usuarios = [
+        novo(email="d@exemplo.test"),
+        AssistenteSocial(nome="A", email="a@exemplo.test", senha=SENHA),
+        EquipePedagogica(nome="E", email="e@exemplo.test", senha=SENHA),
+    ]
+    assert all(u.pode_ver_evolucao(_assistido()) for u in usuarios)
