@@ -3,9 +3,19 @@ from sqlalchemy.exc import IntegrityError
 
 from app.models import Usuario
 
+SENHA = "senha-ficticia-1"
+
+
+def novo(**campos):
+    campos.setdefault("nome", "Pessoa Fictícia")
+    campos.setdefault("email", "pessoa@exemplo.test")
+    campos.setdefault("perfil", "direcao")
+    campos.setdefault("senha", SENHA)
+    return Usuario(**campos)
+
 
 def test_usuario_guarda_atributos_comuns(db):
-    usuario = Usuario(nome="Ana Fictícia", email=" Ana@Exemplo.test ", perfil="direcao")
+    usuario = novo(nome="Ana Fictícia", email=" Ana@Exemplo.test ")
     db.session.add(usuario)
     db.session.commit()
 
@@ -18,8 +28,36 @@ def test_usuario_guarda_atributos_comuns(db):
 
 
 def test_email_repetido_e_recusado_pelo_banco(db):
-    db.session.add(Usuario(nome="Um", email="mesmo@exemplo.test", perfil="direcao"))
+    db.session.add(novo(email="mesmo@exemplo.test"))
     db.session.commit()
-    db.session.add(Usuario(nome="Dois", email="MESMO@exemplo.test", perfil="direcao"))
+    db.session.add(novo(email="MESMO@exemplo.test"))
+    with pytest.raises(IntegrityError):
+        db.session.commit()
+
+
+def test_senha_confere_so_com_a_senha_certa():
+    usuario = novo()
+    assert usuario.senha_confere(SENHA) is True
+    assert usuario.senha_confere("outra-senha-1") is False
+    assert usuario.senha_confere("") is False
+    assert usuario.senha_confere(None) is False
+
+
+def test_definir_senha_troca_o_hash():
+    usuario = novo()
+    usuario.definir_senha("nova-senha-ficticia")
+    assert usuario.senha_confere("nova-senha-ficticia") is True
+    assert usuario.senha_confere(SENHA) is False
+
+
+@pytest.mark.parametrize("curta", ["", "1234567", None])
+def test_senha_curta_e_recusada(curta):
+    usuario = Usuario(nome="X", email="x@exemplo.test", perfil="direcao")
+    with pytest.raises(ValueError, match="no mínimo 8"):
+        usuario.definir_senha(curta)
+
+
+def test_usuario_sem_senha_nao_e_gravado(db):
+    db.session.add(Usuario(nome="Sem", email="sem@exemplo.test", perfil="direcao"))
     with pytest.raises(IntegrityError):
         db.session.commit()
