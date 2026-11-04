@@ -24,9 +24,33 @@ class Encaminhamento(db.Model):
     observacao = db.Column(db.Text)
     criado_em = db.Column(db.DateTime(timezone=True), nullable=False, default=agora)
 
+    # Contrato: `assistido_id` ou `demanda_id`. Pode ter os dois, nunca nenhum.
+    assistido_id = db.Column(
+        db.ForeignKey("assistido.id", ondelete="RESTRICT"), nullable=True, index=True
+    )
+    demanda_id = db.Column(
+        db.ForeignKey("demanda.id", ondelete="RESTRICT"), nullable=True, index=True
+    )
+
     responsavel = db.relationship("Usuario")
+    assistido = db.relationship("Assistido")
+    demanda = db.relationship("Demanda")
+
+    __table_args__ = (
+        db.CheckConstraint(
+            "assistido_id IS NOT NULL OR demanda_id IS NOT NULL",
+            name="ck_encaminhamento_tem_vinculo",
+        ),
+    )
 
     def __init__(self, **campos):
+        tem_assistido = campos.get("assistido") is not None or campos.get("assistido_id") is not None
+        tem_demanda = campos.get("demanda") is not None or campos.get("demanda_id") is not None
+        if not (tem_assistido or tem_demanda):
+            raise ValueError("Informe o assistido ou a demanda do encaminhamento.")
+        if campos.get("demanda") is not None and not tem_assistido:
+            # Encaminhar a demanda de alguém também encaminha a pessoa.
+            campos["assistido"] = campos["demanda"].assistido
         destino = campos.get("destino")
         if not isinstance(destino, str) or not destino.strip():
             raise ValueError("Informe o destino do encaminhamento.")
