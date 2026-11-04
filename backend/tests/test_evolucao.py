@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 from sqlalchemy.exc import IntegrityError
@@ -24,13 +24,13 @@ def base(db):
     }
 
 
-def nova(base, **campos):
+def nova(base, autor=None, **campos):
     campos.setdefault("assistido", base["assistido"])
     campos.setdefault("profissional", base["educadora"])
     campos.setdefault("data", date(2026, 10, 14))
     campos.setdefault("area_atuacao", "Pedagógica")
     campos.setdefault("descricao", "Participou da atividade em grupo com apoio visual.")
-    return Evolucao(**campos)
+    return Evolucao.lancar(autor or base["educadora"], **campos)
 
 
 def test_evolucao_grava_os_campos_do_card(db, base):
@@ -60,7 +60,7 @@ def test_area_longa_e_recusada(base):
         nova(base, area_atuacao="x" * 81)
 
 
-@pytest.mark.parametrize("campo", ["assistido", "profissional", "data"])
+@pytest.mark.parametrize("campo", ["assistido", "data"])
 def test_vinculos_e_data_obrigatorios(db, base, campo):
     db.session.add(nova(base, **{campo: None}))
     with pytest.raises(IntegrityError):
@@ -69,3 +69,36 @@ def test_vinculos_e_data_obrigatorios(db, base, campo):
 
 def test_repr_nao_expoe_a_descricao(base):
     assert "atividade" not in repr(nova(base))
+
+
+def test_lancar_registra_autor_e_momento(db, base):
+    antes = datetime.now(timezone.utc) - timedelta(seconds=1)
+    evolucao = nova(base, autor=base["assistente"], profissional=base["educadora"])
+    db.session.add(evolucao)
+    db.session.commit()
+
+    assert evolucao.autor is base["assistente"]
+    assert evolucao.profissional is base["educadora"]
+    assert evolucao.ocorrido_em.replace(tzinfo=timezone.utc) >= antes
+
+
+def test_profissional_padrao_e_o_autor(base):
+    evolucao = Evolucao.lancar(
+        base["assistente"],
+        assistido=base["assistido"],
+        data=date(2026, 10, 15),
+        area_atuacao="Serviço social",
+        descricao="Visita domiciliar realizada.",
+    )
+    assert evolucao.profissional is base["assistente"]
+
+
+def test_lancar_sem_autor_e_recusado(base):
+    with pytest.raises(ValueError, match="autor"):
+        Evolucao.lancar(None, assistido=base["assistido"], data=date(2026, 10, 15),
+                        area_atuacao="X", descricao="Y")
+
+
+def test_momento_nao_vem_de_fora(base):
+    with pytest.raises(ValueError, match="registrado pelo servidor"):
+        nova(base, ocorrido_em=datetime(2020, 1, 1, tzinfo=timezone.utc))

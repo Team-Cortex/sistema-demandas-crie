@@ -26,10 +26,28 @@ class Evolucao(db.Model):
     area_atuacao = db.Column(db.String(AREA_MAXIMA), nullable=False, index=True)
     descricao = db.Column(db.Text, nullable=False)
 
+    # RF22: quem lançou e quando. Preenchidos pelo servidor, nunca pelo corpo.
+    autor_id = db.Column(db.ForeignKey("usuario.id", ondelete="RESTRICT"), nullable=False)
+    ocorrido_em = db.Column(db.DateTime(timezone=True), nullable=False, default=agora)
+
     assistido = db.relationship("Assistido")
-    profissional = db.relationship("Usuario")
+    profissional = db.relationship("Usuario", foreign_keys=[profissional_id])
+    autor = db.relationship("Usuario", foreign_keys=[autor_id])
+
+    @classmethod
+    def lancar(cls, autor, **campos):
+        """Lança a evolução com a autoria do usuário logado.
+
+        O profissional responsável, se não vier, é o próprio autor.
+        """
+        if autor is None:
+            raise ValueError("Toda evolução precisa de autor.")
+        campos.setdefault("profissional", autor)
+        return cls(autor=autor, **campos)
 
     def __init__(self, **campos):
+        if "ocorrido_em" in campos:
+            raise ValueError("O momento do lançamento é registrado pelo servidor.")
         for campo, mensagem in (
             ("descricao", "Escreva a descrição da evolução."),
             ("area_atuacao", "Informe a área de atuação."),
