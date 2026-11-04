@@ -54,6 +54,26 @@ class Evolucao(SomenteInsercao, db.Model):
     def vigente(self):
         return self.retificada_por is None
 
+    @classmethod
+    def do_assistido(cls, assistido_id, de=None, ate=None, area_atuacao=None, incluir_retificadas=False):
+        """Evoluções do assistido em ordem cronológica (RF23), com filtros (RF25).
+
+        `de` e `ate` são inclusivos e comparam a data da evolução.
+        Por padrão só traz a versão vigente de cada evolução.
+        """
+        consulta = db.select(cls).where(cls.assistido_id == assistido_id)
+        if de is not None:
+            consulta = consulta.where(cls.data >= de)
+        if ate is not None:
+            consulta = consulta.where(cls.data <= ate)
+        if area_atuacao:
+            consulta = consulta.where(db.func.lower(cls.area_atuacao) == area_atuacao.strip().lower())
+        if not incluir_retificadas:
+            retificadas = db.select(cls.retifica_id).where(cls.retifica_id.is_not(None))
+            consulta = consulta.where(cls.id.not_in(retificadas))
+        consulta = consulta.order_by(cls.data, cls.ocorrido_em, cls.id)
+        return db.session.scalars(consulta).all()
+
     @property
     def versoes_anteriores(self):
         """Da mais recente para a original."""

@@ -222,3 +222,57 @@ def test_banco_impede_apagar_assistido_com_evolucao(db, base):
     with pytest.raises(IntegrityError):
         db.session.execute(text("DELETE FROM assistido"))
     db.session.rollback()
+
+@pytest.fixture
+def varias(db, base):
+    outro = Assistido(nome_tratamento="Fictício G")
+    db.session.add(outro)
+    dados = [
+        (date(2026, 10, 20), "Pedagógica", "c"),
+        (date(2026, 10, 1), "Saúde", "a"),
+        (date(2026, 10, 10), "Pedagógica", "b"),
+        (date(2026, 10, 30), "Serviço social", "d"),
+    ]
+    for data, area, texto in dados:
+        db.session.add(nova(base, data=data, area_atuacao=area, descricao=texto))
+    db.session.add(nova(base, assistido=outro, data=date(2026, 10, 5), descricao="de outro"))
+    db.session.commit()
+    return base["assistido"].id
+
+
+def _textos(evolucoes):
+    return [e.descricao for e in evolucoes]
+
+
+def test_lista_em_ordem_cronologica_so_do_assistido(varias):
+    assert _textos(Evolucao.do_assistido(varias)) == ["a", "b", "c", "d"]
+
+
+def test_filtra_por_periodo_inclusivo(varias):
+    resultado = Evolucao.do_assistido(varias, de=date(2026, 10, 10), ate=date(2026, 10, 20))
+    assert _textos(resultado) == ["b", "c"]
+    assert _textos(Evolucao.do_assistido(varias, de=date(2026, 10, 21))) == ["d"]
+    assert _textos(Evolucao.do_assistido(varias, ate=date(2026, 10, 1))) == ["a"]
+
+
+def test_filtra_por_area_sem_diferenciar_maiusculas(varias):
+    assert _textos(Evolucao.do_assistido(varias, area_atuacao=" pedagógica ")) == ["b", "c"]
+
+
+def test_combina_periodo_e_area(varias):
+    resultado = Evolucao.do_assistido(varias, de=date(2026, 10, 15), area_atuacao="Pedagógica")
+    assert _textos(resultado) == ["c"]
+
+
+def test_lista_mostra_so_a_versao_vigente(db, base, varias):
+    original = db.session.scalars(db.select(Evolucao).filter_by(descricao="b")).one()
+    db.session.add(original.retificar(base["educadora"], descricao="b corrigida"))
+    db.session.commit()
+
+    assert _textos(Evolucao.do_assistido(varias)) == ["a", "b corrigida", "c", "d"]
+    completo = Evolucao.do_assistido(varias, incluir_retificadas=True)
+    assert sorted(_textos(completo)) == ["a", "b", "b corrigida", "c", "d"]
+
+
+def test_assistido_sem_evolucao_devolve_lista_vazia(db, base):
+    assert Evolucao.do_assistido(base["assistido"].id) == []
