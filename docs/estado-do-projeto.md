@@ -53,7 +53,7 @@ Entidades SQLAlchemy em `backend/app/models/`, testadas contra SQLite em memóri
 | `AssistidoProfissional` | `assistido_profissional` | quem acompanha quem, com `data_inicio`; alimenta a regra restritiva desligada |
 | `Reuniao` | `reuniao`, `reuniao_participante` | data, setor fechado em `pedagogico`, `saude`, `convivencia` e participantes |
 | `Demanda` | `demanda` | descrição, categoria opcional até 80 (A2), prioridade `baixa`/`media`/`alta`, responsável, prazo, reunião de origem, assistido opcional; estado fechado em `EstadoDemanda`, nasce `aberta`; transições da spec 02 validadas no próprio atributo; `Demanda.abrir(autor, ...)` e `mudar_estado(novo, autor)` gravam o histórico sozinhos, recusa vira 400 e não grava nada; `anotar(texto, autor)` grava anotação sem mudar o estado; `reatribuir(novo, autor)` recusa responsável inexistente ou inativo com 404 e anota a troca no histórico |
-| `HistoricoDemanda` | `historico_demanda` | ligado à demanda; autor, tipo `estado`/`anotacao`, estado anterior e novo, texto, `ocorrido_em`; lido em ordem cronológica |
+| `HistoricoDemanda` | `historico_demanda` | ligado à demanda; autor, tipo `estado`/`anotacao`, estado anterior e novo, texto, `ocorrido_em`; lido em ordem cronológica; somente inserção: a sessão recusa alterar e excluir (`app/models/imutavel.py`), e a demanda também não admite exclusão |
 
 ## 4. Decisões abertas
 

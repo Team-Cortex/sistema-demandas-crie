@@ -10,6 +10,7 @@ from sqlalchemy.orm import validates
 
 from app.errors import ErroDeNegocio, NaoEncontrado
 from app.extensions import db
+from app.models.imutavel import SemExclusao
 from app.models.usuario import agora
 
 CATEGORIA_MAXIMA = 80  # decisão A2: texto curto, sem catálogo
@@ -56,7 +57,11 @@ def _enum(classe, nome):
     )
 
 
-class Demanda(db.Model):
+class Demanda(SemExclusao, db.Model):
+    """Não há exclusão: cancelar é mudança de estado (spec 02, RNF19)."""
+
+    nome_registro = "A demanda"
+
     __tablename__ = "demanda"
 
     id = db.Column(db.Integer, primary_key=True)

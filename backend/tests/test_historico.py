@@ -4,6 +4,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 
 from app.errors import ErroDeNegocio
+from app.models.imutavel import RegistroImutavel
 from app.models import (
     AssistenteSocial,
     Demanda,
@@ -213,3 +214,72 @@ def test_reatribuicao_recusada_nao_grava_historico(base):
     with pytest.raises(NaoEncontrado):
         demanda.reatribuir(None, base["diretora"])
     assert len(demanda.historico) == 1
+
+def _gravada(db, base):
+    demanda = _nova(base, base["diretora"])
+    demanda.anotar("Primeira anotação.", base["responsavel"])
+    db.session.add(demanda)
+    db.session.commit()
+    return demanda
+
+
+def test_historico_nao_tem_metodo_de_alterar_nem_excluir():
+    publicos = {n for n in dir(HistoricoDemanda) if not n.startswith("_")}
+    assert not publicos & {"excluir", "apagar", "remover", "editar", "alterar", "atualizar"}
+
+
+def test_sessao_recusa_excluir_item_do_historico(db, base):
+    demanda = _gravada(db, base)
+    db.session.delete(demanda.historico[0])
+    with pytest.raises(RegistroImutavel, match="não admite exclusão"):
+        db.session.commit()
+    db.session.rollback()
+    assert db.session.query(HistoricoDemanda).count() == 2
+
+
+def test_sessao_recusa_alterar_item_do_historico(db, base):
+    demanda = _gravada(db, base)
+    demanda.historico[1].texto = "Texto reescrito."
+    with pytest.raises(RegistroImutavel, match="não admite alteração"):
+        db.session.commit()
+    db.session.rollback()
+    assert db.session.query(HistoricoDemanda).filter_by(texto="Primeira anotação.").count() == 1
+
+
+def test_tirar_da_lista_nao_apaga_nem_desvincula(db, base):
+    demanda = _gravada(db, base)
+    demanda.historico.remove(demanda.historico[1])
+    with pytest.raises(RegistroImutavel):
+        db.session.commit()
+    db.session.rollback()
+
+
+def test_demanda_nao_pode_ser_excluida(db, base):
+    demanda = _gravada(db, base)
+    db.session.delete(demanda)
+    with pytest.raises(RegistroImutavel, match="A demanda não admite exclusão"):
+        db.session.commit()
+    db.session.rollback()
+    assert db.session.query(Demanda).count() == 2
+
+
+def test_banco_impede_apagar_demanda_que_tem_historico(db, base):
+    from sqlalchemy import text
+
+    _gravada(db, base)
+    with pytest.raises(IntegrityError):
+        db.session.execute(text("DELETE FROM demanda"))
+    db.session.rollback()
+
+
+def test_imutavel_vira_400_pelo_tratador(app, db, base):
+    demanda = _gravada(db, base)
+
+    @app.get("/api/_prova_imutavel")
+    def _prova():
+        db.session.delete(demanda.historico[0])
+        db.session.commit()
+
+    resposta = app.test_client().get("/api/_prova_imutavel")
+    assert resposta.status_code == 400
+    assert resposta.get_json() == {"erro": "O histórico da demanda não admite exclusão."}
