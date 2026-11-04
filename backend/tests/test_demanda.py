@@ -1,16 +1,16 @@
 from datetime import date
 
 import pytest
+from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError, StatementError
 
-from sqlalchemy import text
-
-from app.errors import ErroDeNegocio
+from app.errors import ErroDeNegocio, NaoEncontrado
 from app.models import (
     Assistido,
     AssistenteSocial,
     Demanda,
     Direcao,
+    EquipePedagogica,
     EstadoDemanda,
     Prioridade,
     Reuniao,
@@ -215,3 +215,46 @@ def test_assistido_inexistente_e_recusado_pelo_banco(db, base):
     db.session.add(nova(base, assistido_id=9999))
     with pytest.raises(IntegrityError):
         db.session.commit()
+
+
+def test_reatribui_para_outro_profissional_ativo(db, base):
+    demanda = nova(base)
+    db.session.add(demanda)
+    db.session.commit()
+    outra = EquipePedagogica(nome="Educadora", email="e@exemplo.test", senha=SENHA)
+    db.session.add(outra)
+
+    anterior = demanda.reatribuir(outra)
+    assert anterior.email == "a@exemplo.test"
+    db.session.commit()
+    demanda_id = demanda.id
+    db.session.expunge_all()
+
+    assert db.session.get(Demanda, demanda_id).responsavel.email == "e@exemplo.test"
+
+
+def test_reatribuir_para_inativo_devolve_404(base):
+    demanda = nova(base)
+    inativa = EquipePedagogica(nome="Saiu", email="s@exemplo.test", senha=SENHA, ativo=False)
+    with pytest.raises(NaoEncontrado, match="inexistente ou inativo"):
+        demanda.reatribuir(inativa)
+    assert demanda.responsavel is base["responsavel"]
+
+
+@pytest.mark.parametrize("invalido", [None, 9999, "a@exemplo.test"])
+def test_reatribuir_para_inexistente_devolve_404(base, invalido):
+    demanda = nova(base)
+    with pytest.raises(NaoEncontrado):
+        demanda.reatribuir(invalido)
+
+
+def test_nao_encontrado_vira_404_pelo_tratador(app, base):
+    demanda = nova(base)
+
+    @app.get("/api/_prova_reatribuir")
+    def _prova():
+        demanda.reatribuir(None)
+
+    resposta = app.test_client().get("/api/_prova_reatribuir")
+    assert resposta.status_code == 404
+    assert resposta.get_json() == {"erro": "Responsável inexistente ou inativo."}

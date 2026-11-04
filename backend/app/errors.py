@@ -13,6 +13,12 @@ class PermissaoNegada(Exception):
         super().__init__(mensagem)
 
 
+class NaoEncontrado(Exception):
+    def __init__(self, mensagem="Recurso inexistente."):
+        self.mensagem = mensagem
+        super().__init__(mensagem)
+
+
 def registrar_erros(app):
     @app.errorhandler(ErroDeNegocio)
     def negocio(erro):
@@ -21,6 +27,10 @@ def registrar_erros(app):
     @app.errorhandler(PermissaoNegada)
     def permissao(erro):
         return jsonify({"erro": erro.mensagem}), 403
+
+    @app.errorhandler(NaoEncontrado)
+    def nao_encontrado(erro):
+        return jsonify({"erro": erro.mensagem}), 404
 
     @app.errorhandler(404)
     def inexistente(_erro):

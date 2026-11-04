@@ -8,7 +8,7 @@ import enum
 
 from sqlalchemy.orm import validates
 
-from app.errors import ErroDeNegocio
+from app.errors import ErroDeNegocio, NaoEncontrado
 from app.extensions import db
 from app.models.usuario import agora
 
@@ -43,6 +43,7 @@ TRANSICOES = {
 }
 
 TRANSICAO_RECUSADA = "Esta demanda não pode mudar para esse estado."
+RESPONSAVEL_INVALIDO = "Responsável inexistente ou inativo."
 
 
 def _enum(classe, nome):
@@ -124,6 +125,16 @@ class Demanda(db.Model):
         """Aplica a transição e devolve o estado anterior."""
         anterior = self.estado
         self.estado = novo
+        return anterior
+
+    def reatribuir(self, novo_responsavel):
+        """Troca o responsável e devolve o anterior. Spec 02: inexistente ou inativo → 404."""
+        from app.models.usuario import Usuario
+
+        if not isinstance(novo_responsavel, Usuario) or not novo_responsavel.ativo:
+            raise NaoEncontrado(RESPONSAVEL_INVALIDO)
+        anterior = self.responsavel
+        self.responsavel = novo_responsavel
         return anterior
 
     @property
