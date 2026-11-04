@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError, StatementError
 
 from sqlalchemy import text
 
+from app.errors import ErroDeNegocio
 from app.models import (
     AssistenteSocial,
     Demanda,
@@ -101,13 +102,90 @@ def test_demanda_nasce_aberta(db, base):
     assert db.session.query(Demanda).one().estado is EstadoDemanda.ABERTA
 
 
-def test_estado_em_texto_livre_e_recusado(db, base):
-    db.session.add(nova(base, estado="esquecida"))
-    with pytest.raises(StatementError):
-        db.session.commit()
+def test_estado_em_texto_livre_e_recusado(base):
+    with pytest.raises(ErroDeNegocio):
+        nova(base, estado="esquecida")
+
+
+def test_banco_tambem_recusa_texto_livre(db, base):
+    db.session.add(nova(base))
+    db.session.commit()
+    with pytest.raises(IntegrityError):
+        db.session.execute(text("UPDATE demanda SET estado = 'esquecida'"))
+    db.session.rollback()
 
 
 def test_banco_guarda_o_valor_do_estado(db, base):
     db.session.add(nova(base))
     db.session.commit()
     assert db.session.execute(text("SELECT estado FROM demanda")).scalar_one() == "aberta"
+
+A = EstadoDemanda
+ACEITAS = [
+    (A.ABERTA, A.EM_ANDAMENTO),
+    (A.ABERTA, A.CANCELADA),
+    (A.EM_ANDAMENTO, A.AGUARDANDO_TERCEIROS),
+    (A.EM_ANDAMENTO, A.CONCLUIDA),
+    (A.EM_ANDAMENTO, A.CANCELADA),
+    (A.AGUARDANDO_TERCEIROS, A.EM_ANDAMENTO),
+    (A.AGUARDANDO_TERCEIROS, A.CANCELADA),
+]
+CAMINHO = {
+    A.ABERTA: [],
+    A.EM_ANDAMENTO: [A.EM_ANDAMENTO],
+    A.AGUARDANDO_TERCEIROS: [A.EM_ANDAMENTO, A.AGUARDANDO_TERCEIROS],
+    A.CONCLUIDA: [A.EM_ANDAMENTO, A.CONCLUIDA],
+    A.CANCELADA: [A.CANCELADA],
+}
+
+
+def _levar_ate(demanda, estado):
+    for passo in CAMINHO[estado]:
+        demanda.mudar_estado(passo)
+
+
+@pytest.mark.parametrize("de, para", ACEITAS)
+def test_transicao_aceita(base, de, para):
+    demanda = nova(base)
+    _levar_ate(demanda, de)
+    assert demanda.pode_mudar_para(para) is True
+    assert demanda.mudar_estado(para) is de
+    assert demanda.estado is para
+
+
+RECUSADAS = [(de, para) for de in A for para in A if (de, para) not in ACEITAS]
+
+
+@pytest.mark.parametrize("de, para", RECUSADAS)
+def test_transicao_recusada(base, de, para):
+    demanda = nova(base)
+    _levar_ate(demanda, de)
+    assert demanda.pode_mudar_para(para) is False
+    with pytest.raises(ErroDeNegocio, match="não pode mudar para esse estado"):
+        demanda.mudar_estado(para)
+    assert demanda.estado is de
+
+
+def test_concluida_para_aberta_devolve_400_pelo_tratador(app, base):
+    demanda = nova(base)
+    _levar_ate(demanda, A.CONCLUIDA)
+
+    @app.get("/api/_prova_transicao")
+    def _prova():
+        demanda.mudar_estado("aberta")
+
+    resposta = app.test_client().get("/api/_prova_transicao")
+    assert resposta.status_code == 400
+    assert resposta.get_json() == {"erro": "Esta demanda não pode mudar para esse estado."}
+
+
+def test_demanda_nao_nasce_em_outro_estado(base):
+    with pytest.raises(ErroDeNegocio, match="nasce aberta"):
+        nova(base, estado=A.CONCLUIDA)
+
+
+def test_encerrada_so_em_concluida_ou_cancelada(base):
+    for estado in A:
+        demanda = nova(base)
+        _levar_ate(demanda, estado)
+        assert demanda.encerrada is (estado in (A.CONCLUIDA, A.CANCELADA))

@@ -6,6 +6,9 @@ e em qual reunião nasceu.
 
 import enum
 
+from sqlalchemy.orm import validates
+
+from app.errors import ErroDeNegocio
 from app.extensions import db
 from app.models.usuario import agora
 
@@ -26,12 +29,29 @@ class EstadoDemanda(str, enum.Enum):
     CANCELADA = "cancelada"
 
 
+# Spec 02, decisão de 13/10/2026. Concluída e cancelada são finais.
+TRANSICOES = {
+    EstadoDemanda.ABERTA: {EstadoDemanda.EM_ANDAMENTO, EstadoDemanda.CANCELADA},
+    EstadoDemanda.EM_ANDAMENTO: {
+        EstadoDemanda.AGUARDANDO_TERCEIROS,
+        EstadoDemanda.CONCLUIDA,
+        EstadoDemanda.CANCELADA,
+    },
+    EstadoDemanda.AGUARDANDO_TERCEIROS: {EstadoDemanda.EM_ANDAMENTO, EstadoDemanda.CANCELADA},
+    EstadoDemanda.CONCLUIDA: set(),
+    EstadoDemanda.CANCELADA: set(),
+}
+
+TRANSICAO_RECUSADA = "Esta demanda não pode mudar para esse estado."
+
+
 def _enum(classe, nome):
     return db.Enum(
         classe,
         name=nome,
         values_callable=lambda e: [m.value for m in e],
         validate_strings=True,
+        create_constraint=True,
     )
 
 
@@ -75,6 +95,37 @@ class Demanda(db.Model):
             campos["categoria"] = categoria
         campos.setdefault("estado", EstadoDemanda.ABERTA)
         super().__init__(**campos)
+
+    @validates("estado")
+    def _valida_estado(self, _chave, novo):
+        try:
+            novo = EstadoDemanda(novo)
+        except ValueError:
+            raise ErroDeNegocio(TRANSICAO_RECUSADA) from None
+        atual = self.estado
+        if atual is None:
+            if novo is not EstadoDemanda.ABERTA:
+                raise ErroDeNegocio("Toda demanda nasce aberta.")
+            return novo
+        if novo not in TRANSICOES[EstadoDemanda(atual)]:
+            raise ErroDeNegocio(TRANSICAO_RECUSADA)
+        return novo
+
+    def pode_mudar_para(self, novo):
+        try:
+            return EstadoDemanda(novo) in TRANSICOES[self.estado]
+        except ValueError:
+            return False
+
+    def mudar_estado(self, novo):
+        """Aplica a transição e devolve o estado anterior."""
+        anterior = self.estado
+        self.estado = novo
+        return anterior
+
+    @property
+    def encerrada(self):
+        return self.estado in (EstadoDemanda.CONCLUIDA, EstadoDemanda.CANCELADA)
 
     def __repr__(self):
         return f"<Demanda {self.id}>"
