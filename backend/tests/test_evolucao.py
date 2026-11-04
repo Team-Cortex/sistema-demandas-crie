@@ -4,6 +4,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 
 from app.errors import ErroDeNegocio
+from app.models.imutavel import RegistroImutavel
 from app.models import Assistido, AssistenteSocial, Direcao, EquipePedagogica, Evolucao
 
 SENHA = "senha-ficticia-1"
@@ -177,3 +178,47 @@ def test_retificacao_com_descricao_vazia_e_recusada(db, base):
     v1 = _gravada(db, base)
     with pytest.raises(ValueError, match="descrição"):
         v1.retificar(base["educadora"], descricao="  ")
+
+def test_evolucao_nao_admite_exclusao(db, base):
+    v1 = _gravada(db, base)
+    db.session.delete(v1)
+    with pytest.raises(RegistroImutavel, match="A evolução não admite exclusão"):
+        db.session.commit()
+    db.session.rollback()
+    assert db.session.query(Evolucao).count() == 1
+
+
+def test_evolucao_nao_admite_edicao_destrutiva(db, base):
+    v1 = _gravada(db, base)
+    v1.descricao = "Reescrita por cima."
+    with pytest.raises(RegistroImutavel, match="não admite alteração"):
+        db.session.commit()
+    db.session.rollback()
+    assert db.session.query(Evolucao).one().descricao.startswith("Participou")
+
+
+def test_retificar_nao_conta_como_alterar_a_anterior(db, base):
+    v1 = _gravada(db, base)
+    db.session.add(v1.retificar(base["educadora"], descricao="Corrigida."))
+    db.session.commit()
+    assert db.session.query(Evolucao).count() == 2
+
+
+def test_banco_impede_apagar_versao_retificada(db, base):
+    from sqlalchemy import text
+
+    v1 = _gravada(db, base)
+    db.session.add(v1.retificar(base["educadora"], descricao="Corrigida."))
+    db.session.commit()
+    with pytest.raises(IntegrityError):
+        db.session.execute(text("DELETE FROM evolucao WHERE id = :id"), {"id": v1.id})
+    db.session.rollback()
+
+
+def test_banco_impede_apagar_assistido_com_evolucao(db, base):
+    from sqlalchemy import text
+
+    _gravada(db, base)
+    with pytest.raises(IntegrityError):
+        db.session.execute(text("DELETE FROM assistido"))
+    db.session.rollback()

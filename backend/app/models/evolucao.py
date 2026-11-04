@@ -5,6 +5,7 @@ histórico da demanda. Contrato: /api/assistidos/<id>/evolucoes.
 """
 
 from app.extensions import db
+from app.models.imutavel import SomenteInsercao
 from app.models.usuario import agora
 
 # QA06 em aberto: enquanto a instituição não fecha a lista de áreas,
@@ -12,8 +13,11 @@ from app.models.usuario import agora
 AREA_MAXIMA = 80
 
 
-class Evolucao(db.Model):
+class Evolucao(SomenteInsercao, db.Model):
+    """Sem exclusão e sem edição destrutiva (RF26): corrigir é `retificar`."""
+
     __tablename__ = "evolucao"
+    nome_registro = "A evolução"
 
     id = db.Column(db.Integer, primary_key=True)
     assistido_id = db.Column(
