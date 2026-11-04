@@ -40,6 +40,30 @@ flask db upgrade
 
 `flask db downgrade` desfaz a última migração.
 
+## Dados fictícios (seed)
+
+Para desenvolvimento e demonstração. **Nunca com dado real do CRIE.**
+
+1. No `.env`, preencha `SEED_DIRECAO_SENHA` e `SEED_SENHA_PADRAO` com senhas suas, de pelo menos 8 caracteres. Nome e e-mail da direção já vêm no `.env.example`.
+2. Com o banco migrado (`flask db upgrade`), rode a partir de `backend/`:
+
+```bash
+python seed.py
+```
+
+O que entra:
+
+| Tipo | Conteúdo |
+| --- | --- |
+| Usuários | uma direção (do `.env`), uma assistente social e um profissional da equipe pedagógica, todos `@exemplo.test` |
+| Assistidos | dois, com nome de tratamento fictício e profissionais vinculados |
+| Reuniões | uma por setor (pedagógico, saúde, convivência), com participantes |
+| Demandas | uma em cada estado, duas vencidas ainda abertas, com anotações e uma troca de responsável no histórico |
+| Evoluções | uma simples e uma retificada |
+| Encaminhamentos | pendentes e um com desfecho |
+
+Os profissionais entram com a senha de `SEED_SENHA_PADRAO`. Rodar de novo não duplica nada. Com `FLASK_ENV=production` o comando recusa e sai com erro.
+
 ## Testes
 
 ```bash

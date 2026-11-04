@@ -86,6 +86,8 @@ docker compose up -d
 cd backend
 cp .env.example .env        # preencher os valores
 pip install -r requirements.txt
+flask db upgrade            # cria as tabelas
+python seed.py              # opcional: dados fictícios de demonstração
 flask run
 
 # Cliente
