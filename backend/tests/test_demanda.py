@@ -225,7 +225,7 @@ def test_reatribui_para_outro_profissional_ativo(db, base):
     outra = EquipePedagogica(nome="Educadora", email="e@exemplo.test", senha=SENHA)
     db.session.add(outra)
 
-    anterior = demanda.reatribuir(outra)
+    anterior = demanda.reatribuir(outra, base["diretora"])
     assert anterior.email == "a@exemplo.test"
     db.session.commit()
     demanda_id = demanda.id
@@ -238,7 +238,7 @@ def test_reatribuir_para_inativo_devolve_404(base):
     demanda = nova(base)
     inativa = EquipePedagogica(nome="Saiu", email="s@exemplo.test", senha=SENHA, ativo=False)
     with pytest.raises(NaoEncontrado, match="inexistente ou inativo"):
-        demanda.reatribuir(inativa)
+        demanda.reatribuir(inativa, base["diretora"])
     assert demanda.responsavel is base["responsavel"]
 
 
@@ -246,7 +246,7 @@ def test_reatribuir_para_inativo_devolve_404(base):
 def test_reatribuir_para_inexistente_devolve_404(base, invalido):
     demanda = nova(base)
     with pytest.raises(NaoEncontrado):
-        demanda.reatribuir(invalido)
+        demanda.reatribuir(invalido, base["diretora"])
 
 
 def test_nao_encontrado_vira_404_pelo_tratador(app, base):
@@ -254,7 +254,7 @@ def test_nao_encontrado_vira_404_pelo_tratador(app, base):
 
     @app.get("/api/_prova_reatribuir")
     def _prova():
-        demanda.reatribuir(None)
+        demanda.reatribuir(None, base["diretora"])
 
     resposta = app.test_client().get("/api/_prova_reatribuir")
     assert resposta.status_code == 404

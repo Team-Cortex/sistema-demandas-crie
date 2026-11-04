@@ -173,14 +173,21 @@ class Demanda(db.Model):
         self.historico.append(item)
         return item
 
-    def reatribuir(self, novo_responsavel):
-        """Troca o responsável e devolve o anterior. Spec 02: inexistente ou inativo → 404."""
+    def reatribuir(self, novo_responsavel, autor):
+        """Troca o responsável, anota no histórico e devolve o anterior.
+
+        Spec 02: inexistente ou inativo → 404.
+        """
         from app.models.usuario import Usuario
 
+        if autor is None:
+            raise ValueError("Toda alteração precisa de autor.")
         if not isinstance(novo_responsavel, Usuario) or not novo_responsavel.ativo:
             raise NaoEncontrado(RESPONSAVEL_INVALIDO)
         anterior = self.responsavel
         self.responsavel = novo_responsavel
+        de = anterior.nome if anterior else "ninguém"
+        self.anotar(f"Responsável trocado: {de} → {novo_responsavel.nome}.", autor)
         return anterior
 
     @property

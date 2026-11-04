@@ -8,6 +8,7 @@ from app.models import (
     AssistenteSocial,
     Demanda,
     Direcao,
+    EquipePedagogica,
     EstadoDemanda,
     HistoricoDemanda,
     Prioridade,
@@ -191,3 +192,24 @@ def test_anotacao_em_demanda_encerrada_continua_permitida(db, base):
     db.session.add(demanda)
     db.session.commit()
     assert demanda.historico[-1].tipo is TipoHistorico.ANOTACAO
+
+def test_reatribuicao_grava_anotacao_de_sistema_com_o_autor(db, base):
+    demanda = _nova(base, base["diretora"])
+    outra = EquipePedagogica(nome="Educadora", email="e@exemplo.test", senha=SENHA)
+    db.session.add_all([demanda, outra])
+    demanda.reatribuir(outra, base["diretora"])
+    db.session.commit()
+
+    item = demanda.historico[-1]
+    assert item.tipo is TipoHistorico.ANOTACAO
+    assert item.autor is base["diretora"]
+    assert item.texto == "Responsável trocado: Assistente → Educadora."
+
+
+def test_reatribuicao_recusada_nao_grava_historico(base):
+    from app.errors import NaoEncontrado
+
+    demanda = _nova(base, base["diretora"])
+    with pytest.raises(NaoEncontrado):
+        demanda.reatribuir(None, base["diretora"])
+    assert len(demanda.historico) == 1
