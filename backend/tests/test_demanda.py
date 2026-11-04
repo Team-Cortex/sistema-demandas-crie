@@ -142,7 +142,7 @@ CAMINHO = {
 
 def _levar_ate(demanda, estado):
     for passo in CAMINHO[estado]:
-        demanda.mudar_estado(passo)
+        demanda.mudar_estado(passo, demanda.responsavel)
 
 
 @pytest.mark.parametrize("de, para", ACEITAS)
@@ -150,7 +150,7 @@ def test_transicao_aceita(base, de, para):
     demanda = nova(base)
     _levar_ate(demanda, de)
     assert demanda.pode_mudar_para(para) is True
-    assert demanda.mudar_estado(para) is de
+    assert demanda.mudar_estado(para, base["responsavel"]) is de
     assert demanda.estado is para
 
 
@@ -163,7 +163,7 @@ def test_transicao_recusada(base, de, para):
     _levar_ate(demanda, de)
     assert demanda.pode_mudar_para(para) is False
     with pytest.raises(ErroDeNegocio, match="não pode mudar para esse estado"):
-        demanda.mudar_estado(para)
+        demanda.mudar_estado(para, base["responsavel"])
     assert demanda.estado is de
 
 
@@ -173,7 +173,7 @@ def test_concluida_para_aberta_devolve_400_pelo_tratador(app, base):
 
     @app.get("/api/_prova_transicao")
     def _prova():
-        demanda.mudar_estado("aberta")
+        demanda.mudar_estado("aberta", base["responsavel"])
 
     resposta = app.test_client().get("/api/_prova_transicao")
     assert resposta.status_code == 400
@@ -190,6 +190,7 @@ def test_encerrada_so_em_concluida_ou_cancelada(base):
         demanda = nova(base)
         _levar_ate(demanda, estado)
         assert demanda.encerrada is (estado in (A.CONCLUIDA, A.CANCELADA))
+
 
 def test_demanda_sem_assistido_e_valida(db, base):
     db.session.add(nova(base))

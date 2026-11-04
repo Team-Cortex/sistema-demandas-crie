@@ -126,11 +126,40 @@ class Demanda(db.Model):
         except ValueError:
             return False
 
-    def mudar_estado(self, novo):
-        """Aplica a transição e devolve o estado anterior."""
+    @classmethod
+    def abrir(cls, autor, **campos):
+        """Cria a demanda já com o primeiro item de histórico."""
+        demanda = cls(**campos)
+        demanda._registrar_estado(autor, None, EstadoDemanda.ABERTA)
+        return demanda
+
+    def mudar_estado(self, novo, autor):
+        """Aplica a transição, grava o histórico e devolve o estado anterior.
+
+        Se a transição for recusada, nada é gravado.
+        """
+        if autor is None:
+            raise ValueError("Toda alteração precisa de autor.")
         anterior = self.estado
         self.estado = novo
+        self._registrar_estado(autor, anterior, self.estado)
         return anterior
+
+    def _registrar_estado(self, autor, anterior, novo):
+        from app.models.historico import HistoricoDemanda, TipoHistorico
+
+        if autor is None:
+            raise ValueError("Toda alteração precisa de autor.")
+        texto = f"{anterior.value} → {novo.value}" if anterior else f"aberta por {autor.nome}"
+        self.historico.append(
+            HistoricoDemanda(
+                autor=autor,
+                tipo=TipoHistorico.ESTADO,
+                estado_anterior=anterior,
+                estado_novo=novo,
+                texto=texto,
+            )
+        )
 
     def reatribuir(self, novo_responsavel):
         """Troca o responsável e devolve o anterior. Spec 02: inexistente ou inativo → 404."""

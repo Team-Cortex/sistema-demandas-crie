@@ -1,8 +1,9 @@
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 from sqlalchemy.exc import IntegrityError
 
+from app.errors import ErroDeNegocio
 from app.models import (
     AssistenteSocial,
     Demanda,
@@ -86,3 +87,71 @@ def test_campos_obrigatorios_do_historico(db, base, campo):
     db.session.add(HistoricoDemanda(**campos))
     with pytest.raises(IntegrityError):
         db.session.commit()
+
+
+def _nova(base, autor):
+    return Demanda.abrir(
+        autor,
+        descricao="Solicitar laudo no CAPS",
+        prioridade=Prioridade.ALTA,
+        prazo=date(2026, 11, 10),
+        responsavel=base["responsavel"],
+        reuniao=base["demanda"].reuniao,
+    )
+
+
+def test_abrir_grava_o_primeiro_item(db, base):
+    antes = datetime.now(timezone.utc) - timedelta(seconds=1)
+    demanda = _nova(base, base["diretora"])
+    db.session.add(demanda)
+    db.session.commit()
+
+    (item,) = demanda.historico
+    assert item.tipo is TipoHistorico.ESTADO
+    assert item.estado_anterior is None
+    assert item.estado_novo is EstadoDemanda.ABERTA
+    assert item.autor is base["diretora"]
+    assert item.ocorrido_em.replace(tzinfo=timezone.utc) >= antes
+
+
+def test_cada_mudanca_aceita_gera_um_item_com_autor_e_o_que_mudou(db, base):
+    demanda = _nova(base, base["diretora"])
+    db.session.add(demanda)
+    demanda.mudar_estado(EstadoDemanda.EM_ANDAMENTO, base["responsavel"])
+    demanda.mudar_estado(EstadoDemanda.AGUARDANDO_TERCEIROS, base["responsavel"])
+    db.session.commit()
+    demanda_id = demanda.id
+    db.session.expunge_all()
+
+    itens = db.session.get(Demanda, demanda_id).historico
+    assert [(i.estado_anterior, i.estado_novo) for i in itens] == [
+        (None, EstadoDemanda.ABERTA),
+        (EstadoDemanda.ABERTA, EstadoDemanda.EM_ANDAMENTO),
+        (EstadoDemanda.EM_ANDAMENTO, EstadoDemanda.AGUARDANDO_TERCEIROS),
+    ]
+    assert [i.autor.email for i in itens] == ["d@exemplo.test", "a@exemplo.test", "a@exemplo.test"]
+    assert itens[1].texto == "aberta → em_andamento"
+    assert all(i.ocorrido_em is not None for i in itens)
+
+
+def test_transicao_recusada_nao_grava_historico(db, base):
+    demanda = _nova(base, base["diretora"])
+    demanda.mudar_estado(EstadoDemanda.EM_ANDAMENTO, base["responsavel"])
+    demanda.mudar_estado(EstadoDemanda.CONCLUIDA, base["responsavel"])
+    db.session.add(demanda)
+    db.session.commit()
+
+    with pytest.raises(ErroDeNegocio):
+        demanda.mudar_estado(EstadoDemanda.ABERTA, base["responsavel"])
+    db.session.commit()
+    assert len(demanda.historico) == 3
+    assert demanda.estado is EstadoDemanda.CONCLUIDA
+
+
+def test_mudanca_sem_autor_e_recusada(base):
+    demanda = _nova(base, base["diretora"])
+    with pytest.raises(ValueError, match="autor"):
+        demanda.mudar_estado(EstadoDemanda.EM_ANDAMENTO, None)
+    # Sem autor, o estado não muda: não existe mudança sem rastro.
+    assert demanda.estado is EstadoDemanda.ABERTA
+    assert len(demanda.historico) == 1
