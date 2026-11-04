@@ -7,13 +7,17 @@ entram quando A1 fechar.
 """
 
 from app.extensions import db
+from app.models.imutavel import SemExclusao
 from app.models.usuario import agora
 
 DESTINO_MAXIMO = 200
 
 
-class Encaminhamento(db.Model):
+class Encaminhamento(SemExclusao, db.Model):
+    """Não há exclusão (RNF19). O desfecho é a única escrita posterior."""
+
     __tablename__ = "encaminhamento"
+    nome_registro = "O encaminhamento"
 
     id = db.Column(db.Integer, primary_key=True)
     destino = db.Column(db.String(DESTINO_MAXIMO), nullable=False)

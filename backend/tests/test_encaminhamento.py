@@ -230,3 +230,15 @@ def test_registrar_desfecho_tira_da_lista_de_pendentes(db, base):
     encaminhamento.registrar_desfecho("Resolvido.", base["assistente"])
     db.session.commit()
     assert Encaminhamento.pendentes() == []
+
+def test_encaminhamento_nao_admite_exclusao(db, base):
+    from app.models.imutavel import RegistroImutavel
+
+    encaminhamento = novo(base)
+    db.session.add(encaminhamento)
+    db.session.commit()
+    db.session.delete(encaminhamento)
+    with pytest.raises(RegistroImutavel, match="O encaminhamento não admite exclusão"):
+        db.session.commit()
+    db.session.rollback()
+    assert db.session.query(Encaminhamento).count() == 1
