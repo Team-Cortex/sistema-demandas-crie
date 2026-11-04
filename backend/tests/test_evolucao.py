@@ -3,6 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 import pytest
 from sqlalchemy.exc import IntegrityError
 
+from app.errors import ErroDeNegocio
 from app.models import Assistido, AssistenteSocial, Direcao, EquipePedagogica, Evolucao
 
 SENHA = "senha-ficticia-1"
@@ -102,3 +103,77 @@ def test_lancar_sem_autor_e_recusado(base):
 def test_momento_nao_vem_de_fora(base):
     with pytest.raises(ValueError, match="registrado pelo servidor"):
         nova(base, ocorrido_em=datetime(2020, 1, 1, tzinfo=timezone.utc))
+
+def _gravada(db, base):
+    original = nova(base)
+    db.session.add(original)
+    db.session.commit()
+    return original
+
+
+def test_retificacao_cria_versao_nova_e_preserva_a_anterior(db, base):
+    original = _gravada(db, base)
+    texto_original = original.descricao
+
+    nova_versao = original.retificar(base["diretora"], descricao="Participou com apoio verbal.")
+    db.session.add(nova_versao)
+    db.session.commit()
+    ids = (original.id, nova_versao.id)
+    db.session.expunge_all()
+
+    antiga, atual = (db.session.get(Evolucao, i) for i in ids)
+    assert antiga.descricao == texto_original
+    assert antiga.vigente is False
+    assert atual.vigente is True
+    assert atual.descricao == "Participou com apoio verbal."
+    assert atual.retifica.id == antiga.id
+    # Autor e momento da alteração ficam na versão nova.
+    assert atual.autor.email == "d@exemplo.test"
+    assert atual.ocorrido_em >= antiga.ocorrido_em
+    # O que não mudou é copiado; o profissional responsável é o mesmo.
+    assert (atual.data, atual.area_atuacao) == (antiga.data, antiga.area_atuacao)
+    assert atual.profissional.email == antiga.profissional.email
+
+
+def test_cadeia_de_versoes_anteriores(db, base):
+    v1 = _gravada(db, base)
+    v2 = v1.retificar(base["educadora"], area_atuacao="Psicopedagógica")
+    db.session.add(v2)
+    v3 = v2.retificar(base["educadora"], data=date(2026, 10, 13))
+    db.session.add(v3)
+    db.session.commit()
+
+    assert v3.versoes_anteriores == [v2, v1]
+    assert [v.vigente for v in (v1, v2, v3)] == [False, False, True]
+
+
+def test_versao_antiga_nao_pode_ser_retificada_de_novo(db, base):
+    v1 = _gravada(db, base)
+    db.session.add(v1.retificar(base["educadora"], descricao="Nova."))
+    db.session.commit()
+    with pytest.raises(ErroDeNegocio, match="versão vigente"):
+        v1.retificar(base["educadora"], descricao="Outra.")
+
+
+def test_banco_recusa_duas_retificacoes_da_mesma_versao(db, base):
+    v1 = _gravada(db, base)
+    a = Evolucao.lancar(base["educadora"], assistido=base["assistido"], data=v1.data,
+                        area_atuacao="X", descricao="a", retifica_id=v1.id)
+    b = Evolucao.lancar(base["educadora"], assistido=base["assistido"], data=v1.data,
+                        area_atuacao="X", descricao="b", retifica_id=v1.id)
+    db.session.add_all([a, b])
+    with pytest.raises(IntegrityError):
+        db.session.commit()
+
+
+@pytest.mark.parametrize("mudancas", [{}, {"assistido_id": 99}, {"autor_id": 1}])
+def test_retificacao_so_aceita_campos_retificaveis(db, base, mudancas):
+    v1 = _gravada(db, base)
+    with pytest.raises(ValueError):
+        v1.retificar(base["educadora"], **mudancas)
+
+
+def test_retificacao_com_descricao_vazia_e_recusada(db, base):
+    v1 = _gravada(db, base)
+    with pytest.raises(ValueError, match="descrição"):
+        v1.retificar(base["educadora"], descricao="  ")

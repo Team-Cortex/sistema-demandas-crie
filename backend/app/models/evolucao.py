@@ -30,9 +30,55 @@ class Evolucao(db.Model):
     autor_id = db.Column(db.ForeignKey("usuario.id", ondelete="RESTRICT"), nullable=False)
     ocorrido_em = db.Column(db.DateTime(timezone=True), nullable=False, default=agora)
 
+    # RF24 e DER: a versão nova aponta para a que ela retifica.
+    # unique: cada versão é retificada no máximo uma vez, a cadeia é linear.
+    retifica_id = db.Column(
+        db.ForeignKey("evolucao.id", ondelete="RESTRICT"), nullable=True, unique=True
+    )
+
     assistido = db.relationship("Assistido")
     profissional = db.relationship("Usuario", foreign_keys=[profissional_id])
     autor = db.relationship("Usuario", foreign_keys=[autor_id])
+    retifica = db.relationship(
+        "Evolucao", remote_side=[id], back_populates="retificada_por"
+    )
+    retificada_por = db.relationship("Evolucao", back_populates="retifica", uselist=False)
+
+    CAMPOS_RETIFICAVEIS = frozenset({"data", "area_atuacao", "descricao"})
+
+    @property
+    def vigente(self):
+        return self.retificada_por is None
+
+    @property
+    def versoes_anteriores(self):
+        """Da mais recente para a original."""
+        versao, anteriores = self.retifica, []
+        while versao is not None:
+            anteriores.append(versao)
+            versao = versao.retifica
+        return anteriores
+
+    def retificar(self, autor, **mudancas):
+        """Cria a versão nova; esta fica como estava, apontada pela nova."""
+        from app.errors import ErroDeNegocio
+
+        if not self.vigente:
+            raise ErroDeNegocio("Só a versão vigente da evolução pode ser retificada.")
+        fora = set(mudancas) - self.CAMPOS_RETIFICAVEIS
+        if fora:
+            raise ValueError("Campo não retificável: " + ", ".join(sorted(fora)))
+        if not mudancas:
+            raise ValueError("Informe o que muda na retificação.")
+        campos = {c: getattr(self, c) for c in self.CAMPOS_RETIFICAVEIS}
+        campos.update(mudancas)
+        return Evolucao.lancar(
+            autor,
+            assistido=self.assistido,
+            profissional=self.profissional,
+            retifica=self,
+            **campos,
+        )
 
     @classmethod
     def lancar(cls, autor, **campos):
