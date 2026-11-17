@@ -239,6 +239,42 @@ def test_lista_exige_token(varias):
     assert varias.get("/api/demandas", como=None).status_code == 401
 
 
+# --- GET /painel -------------------------------------------------------------------
+
+
+def test_painel_separa_as_abertas_por_estado_e_conta_as_vencidas(varias):
+    _semear(varias, ("Outra aberta vencida", E.ABERTA, -1, "educadora", None, False, 0))
+    resposta = varias.get("/api/demandas/painel", como="educadora")
+    assert resposta.status_code == 200
+    corpo = resposta.get_json()
+    assert set(corpo["por_estado"]) == {"aberta", "em_andamento", "aguardando_terceiros"}
+    # Do prazo mais antigo para o mais novo: a vencida no topo da coluna.
+    assert [d["descricao"] for d in corpo["por_estado"]["aberta"]] == [
+        "Outra aberta vencida",
+        "Pedir transporte adaptado",
+    ]
+    assert corpo["por_estado"]["aberta"][0]["vencida"] is True
+    assert corpo["totais"] == {"aberta": 2, "em_andamento": 1, "aguardando_terceiros": 1}
+    assert corpo["total"] == 4
+    assert corpo["vencidas"] == 2
+    descricoes = {d["descricao"] for lista in corpo["por_estado"].values() for d in lista}
+    assert not descricoes & {"Vaga na escola estadual", "Cesta básica emergencial"}
+
+
+def test_painel_vazio_traz_colunas_vazias(cenario):
+    corpo = cenario.get("/api/demandas/painel").get_json()
+    assert corpo == {
+        "por_estado": {"aberta": [], "em_andamento": [], "aguardando_terceiros": []},
+        "totais": {"aberta": 0, "em_andamento": 0, "aguardando_terceiros": 0},
+        "total": 0,
+        "vencidas": 0,
+    }
+
+
+def test_painel_exige_token(cenario):
+    assert cenario.get("/api/demandas/painel", como=None).status_code == 401
+
+
 # --- PATCH /<id>/estado (card #26: transições, inclusive recusadas) ----------------
 
 ACEITAS = [

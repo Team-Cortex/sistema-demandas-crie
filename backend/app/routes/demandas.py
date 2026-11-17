@@ -44,6 +44,20 @@ def mudar_estado(demanda_id):
     return jsonify(DemandaComHistoricoSchema().dump(demanda))
 
 
+@bp.get("/demandas/painel")
+def painel():
+    por_estado, vencidas = DemandaService.painel()
+    saida = DemandaSchema(many=True)
+    return jsonify(
+        {
+            "por_estado": {estado: saida.dump(lista) for estado, lista in por_estado.items()},
+            "totais": {estado: len(lista) for estado, lista in por_estado.items()},
+            "total": sum(len(lista) for lista in por_estado.values()),
+            "vencidas": vencidas,
+        }
+    )
+
+
 @bp.post("/demandas/<int:demanda_id>/anotacoes")
 def anotar(demanda_id):
     dados = AnotacaoSchema().load(corpo_json())

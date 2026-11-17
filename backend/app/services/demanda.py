@@ -8,10 +8,12 @@ from sqlalchemy.orm import joinedload, selectinload
 
 from app.errors import DadoInvalido, NaoEncontrado
 from app.extensions import db
-from app.fuso import fim_do_dia, inicio_do_dia
+from app.fuso import fim_do_dia, hoje, inicio_do_dia
+from app.models.demanda import EstadoDemanda
 from app.schemas.demanda import ASSISTIDO_INEXISTENTE, INFORME_REUNIAO, INFORME_RESPONSAVEL
 
 INEXISTENTE = "Demanda inexistente."
+EM_ABERTO = (EstadoDemanda.ABERTA, EstadoDemanda.EM_ANDAMENTO, EstadoDemanda.AGUARDANDO_TERCEIROS)
 
 
 class DemandaService:
@@ -127,6 +129,27 @@ class DemandaService:
         demanda.reatribuir(db.session.get(Usuario, responsavel_id), autor)
         db.session.commit()
         return demanda
+
+    @staticmethod
+    def painel(dia=None):
+        """Demandas não encerradas por estado, do prazo mais antigo (RF30, RF33).
+
+        Devolve (por_estado, vencidas). Coluna vazia vem como lista vazia.
+        """
+        from app.models import Demanda
+
+        dia = dia or hoje()
+        consulta = (
+            db.select(Demanda)
+            .where(Demanda.estado.in_(EM_ABERTO))
+            .order_by(Demanda.prazo, Demanda.id)
+        )
+        demandas = db.session.scalars(DemandaService._com_vinculos(consulta)).unique().all()
+        por_estado = {estado.value: [] for estado in EM_ABERTO}
+        for demanda in demandas:
+            por_estado[demanda.estado.value].append(demanda)
+        vencidas = sum(1 for demanda in demandas if demanda.vencida_em(dia))
+        return por_estado, vencidas
 
     @staticmethod
     def obter(demanda_id):
