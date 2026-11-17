@@ -71,6 +71,10 @@ A mensagem de login é sempre **E-mail ou senha inválidos.** O servidor não re
 | GET | `/api/assistidos/<id>/evolucoes` | `pode_ver_evolucao` | vigentes em ordem cronológica; filtros `de`, `ate`, `area_atuacao`; audita `listar` |
 | GET | `/api/evolucoes/<id>` | `pode_ver_evolucao` | a evolução com `versoes_anteriores` e `retificada_por_id`; audita `consultar` |
 | PATCH | `/api/evolucoes/<id>` | `pode_ver_evolucao` | retifica: 201 a versão nova, a anterior fica intacta; 400 se não for a vigente; audita `retificar`. Sem `DELETE` |
+| POST | `/api/encaminhamentos` | sim; `pode_ver_evolucao` se tiver assistido | corpo `assistido_id` e/ou `demanda_id`, `destino`, `data`, `observacao`; responsável do token; 201; audita `criar` (spec 07) |
+| GET | `/api/encaminhamentos` | sim | por data, do mais antigo; filtros `pendentes=true`, `assistido_id`, `demanda_id`, `responsavel_id`; só o que a pessoa pode ver; audita `listar` |
+| GET | `/api/encaminhamentos/pendentes` | sim | o mesmo que `pendentes=true` |
+| GET | `/api/encaminhamentos/<id>` | sim; `pode_ver_evolucao` se tiver assistido | o encaminhamento; 404 inexistente; audita `consultar`. Sem `DELETE` |
 | GET | `/api/auditoria` | direção | `itens`, `total`, `pagina`, `por_pagina`; filtros `autor_id`, `assistido_id`, `recurso`, `acao`, `de`, `ate` (spec 05) |
 
 `/api/saude` não inclui host do banco, versão de schema, stack nem mensagem interna. Detalhe de falha fica no log do servidor, com id de correlação, status e duração. O log não leva senha, token, e-mail nem corpo da requisição.
