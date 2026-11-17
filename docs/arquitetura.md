@@ -251,11 +251,13 @@ Erros de domínio são exceções, capturadas por handlers registrados na factor
 | --- | --- | --- |
 | `ErroDeNegocio` | 400 | Regra violada: transição de estado inválida, descrição vazia |
 | `PermissaoNegada` | 403 | Perfil sem acesso ao recurso |
-| `ValidationError` | 422 | Campos ausentes ou mal formatados |
+| `ValidationError` | 422 | Campos ausentes ou mal formatados (schema) |
+| `DadoInvalido` | 422 | Campo válido no formato, recusado pelo serviço: participante inativo, texto em branco |
+| `NaoEncontrado` | 404 | Recurso inexistente, ou responsável inexistente ou inativo |
 | — | 401 | Token ausente, inválido ou expirado |
-| — | 404 | Recurso inexistente |
+| — | 404 | Rota inexistente |
 
-Toda resposta de erro tem o mesmo formato: `{"erro": "mensagem legível"}`. As mensagens são escritas para quem usa o sistema, não para quem o desenvolve — a de login não revela se o e-mail existe, o que evita descobrir usuários por tentativa.
+Toda resposta de erro tem o mesmo formato: `{"erro": "mensagem legível"}`. No `ValidationError`, a mensagem é a do primeiro campo recusado, na ordem do schema. Erro HTTP sem exceção de domínio (400, 415, 500) também sai nesse formato, em português, sem detalhe interno. As mensagens são escritas para quem usa o sistema, não para quem o desenvolve — a de login não revela se o e-mail existe, o que evita descobrir usuários por tentativa.
 
 ---
 
