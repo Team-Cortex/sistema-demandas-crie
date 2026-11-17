@@ -136,3 +136,83 @@ def test_usuario_inexistente_devolve_404(api):
 
 def test_lista_exige_token(api):
     assert api.get("/api/usuarios", como=None).status_code == 401
+
+
+# --- PATCH / PUT /api/usuarios/<id> ----------------------------------------------
+
+
+@pytest.mark.parametrize("metodo", ["patch", "put"])
+def test_direcao_edita_nome(api, metodo):
+    url = f"/api/usuarios/{api.pessoas['educadora']}"
+    resposta = getattr(api, metodo)(url, json={"nome": "Carlos Fictício Souza"})
+    assert resposta.status_code == 200
+    assert resposta.get_json()["nome"] == "Carlos Fictício Souza"
+    assert resposta.get_json()["perfil"] == "equipe_pedagogica"
+
+
+def test_troca_de_perfil_muda_a_classe_e_vale_na_proxima_requisicao(api):
+    from app.models import AssistenteSocial
+
+    educadora = api.pessoas["educadora"]
+    token = api.token("educadora")
+    resposta = api.patch(f"/api/usuarios/{educadora}", json={"perfil": "assistente_social"})
+    assert resposta.status_code == 200
+    assert resposta.get_json()["perfil"] == "assistente_social"
+    with api.banco() as db:
+        assert type(db.session.get(Usuario, educadora)) is AssistenteSocial
+    # O token antigo continua valendo, mas o perfil lido é o novo.
+    corpo = api.client.get(f"/api/usuarios/{educadora}", headers={"Authorization": f"Bearer {token}"})
+    assert corpo.get_json()["perfil"] == "assistente_social"
+
+
+def test_profissional_promovido_a_direcao_passa_a_gerir(api):
+    api.patch(f"/api/usuarios/{api.pessoas['assistente']}", json={"perfil": "direcao"})
+    assert api.post("/api/usuarios", json=NOVO, como="assistente").status_code == 201
+
+
+def test_reativar_pela_edicao(api):
+    resposta = api.patch(f"/api/usuarios/{api.pessoas['inativa']}", json={"ativo": True})
+    assert resposta.get_json()["ativo"] is True
+    login = api.client.post("/api/auth/login", json={"email": "inativa@exemplo.test", "senha": "senha-ficticia-1"})
+    assert login.status_code == 200
+
+
+@pytest.mark.parametrize("quem", ["assistente", "educadora"])
+def test_profissional_nao_edita(api, quem):
+    resposta = api.patch(f"/api/usuarios/{api.pessoas['inativa']}", json={"ativo": True}, como=quem)
+    assert resposta.status_code == 403
+    assert resposta.get_json() == {"erro": "Você não pode alterar usuários."}
+
+
+@pytest.mark.parametrize(
+    "corpo, mensagem",
+    [
+        ({}, "Informe o que muda: nome, perfil ou ativo."),
+        ({"email": "outro@exemplo.test"}, "Campo não aceito: confira o formulário."),
+        ({"senha": "outra-senha-1"}, "Campo não aceito: confira o formulário."),
+        ({"perfil": "coordenacao"}, "Escolha um perfil válido."),
+        ({"nome": ""}, "Informe o nome."),
+        ({"ativo": "talvez"}, "Use ativo true ou false."),
+    ],
+)
+def test_edicao_invalida_devolve_422(api, corpo, mensagem):
+    resposta = api.patch(f"/api/usuarios/{api.pessoas['educadora']}", json=corpo)
+    assert resposta.status_code == 422
+    assert resposta.get_json() == {"erro": mensagem}
+
+
+@pytest.mark.parametrize("corpo", [{"perfil": "assistente_social"}, {"ativo": False}])
+def test_direcao_nao_muda_o_proprio_perfil_nem_se_desativa(api, corpo):
+    resposta = api.patch(f"/api/usuarios/{api.pessoas['direcao']}", json=corpo)
+    assert resposta.status_code == 400
+    assert resposta.get_json() == {"erro": "Você não pode alterar o próprio perfil nem desativar a própria conta."}
+
+
+def test_direcao_muda_o_proprio_nome(api):
+    resposta = api.patch(f"/api/usuarios/{api.pessoas['direcao']}", json={"nome": "Direção Nova", "perfil": "direcao"})
+    assert resposta.status_code == 200
+    assert resposta.get_json()["nome"] == "Direção Nova"
+
+
+def test_editar_inexistente_devolve_404(api):
+    assert api.patch("/api/usuarios/9999", json={"nome": "X"}).status_code == 404

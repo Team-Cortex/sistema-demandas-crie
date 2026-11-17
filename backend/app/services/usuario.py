@@ -10,6 +10,7 @@ from app.extensions import db
 
 EMAIL_REPETIDO = "Já existe um usuário com este e-mail."
 INEXISTENTE = "Usuário inexistente."
+PROPRIA_CONTA = "Você não pode alterar o próprio perfil nem desativar a própria conta."
 
 
 class UsuarioService:
@@ -31,6 +32,37 @@ class UsuarioService:
         usuario = db.session.get(Usuario, usuario_id)
         if usuario is None:
             raise NaoEncontrado(INEXISTENTE)
+        return usuario
+
+    @staticmethod
+    def alterar(usuario_id, dados, autor):
+        """Muda nome, perfil e ativo. Não apaga a linha.
+
+        Quem opera não muda o próprio perfil nem se desativa: assim sempre
+        resta ao menos uma direção ativa para gerir os usuários.
+        """
+        from app.models import Usuario
+
+        usuario = UsuarioService.obter(usuario_id)
+        novo_perfil = dados.get("perfil")
+        troca_perfil = novo_perfil is not None and novo_perfil != usuario.perfil
+        if usuario.id == autor.id and (troca_perfil or dados.get("ativo") is False):
+            raise ErroDeNegocio(PROPRIA_CONTA)
+
+        if "nome" in dados:
+            usuario.nome = dados["nome"].strip()
+        if "ativo" in dados:
+            usuario.ativo = dados["ativo"]
+        if troca_perfil:
+            # `perfil` escolhe a subclasse (herança de tabela única). O objeto
+            # carregado não muda de classe; grava direto na tabela e recarrega.
+            db.session.flush()
+            tabela = Usuario.__table__
+            db.session.execute(tabela.update().where(tabela.c.id == usuario.id).values(perfil=novo_perfil))
+        db.session.commit()
+        if troca_perfil:
+            db.session.expunge(usuario)
+            usuario = db.session.get(Usuario, usuario_id)
         return usuario
 
     @staticmethod

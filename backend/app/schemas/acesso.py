@@ -1,6 +1,6 @@
 """Corpo de login e de usuário. Spec 01."""
 
-from marshmallow import EXCLUDE, Schema, fields, pre_load, validate
+from marshmallow import EXCLUDE, Schema, ValidationError, fields, pre_load, validate, validates_schema
 
 from app.models.usuario import CLASSE_POR_PERFIL, SENHA_MINIMA
 from app.schemas import Entrada, Filtro, mensagens, momento, preenchido
@@ -67,6 +67,19 @@ class NovoUsuarioSchema(Entrada):
         if isinstance(dados, dict) and isinstance(dados.get("email"), str):
             dados = {**dados, "email": dados["email"].strip()}
         return dados
+
+
+class AlterarUsuarioSchema(Entrada):
+    """PATCH/PUT /api/usuarios/<id>: nome, perfil e ativo, um ou mais."""
+
+    nome = _nome(False)
+    perfil = _perfil(False)
+    ativo = fields.Boolean(error_messages=mensagens("Use ativo true ou false."))
+
+    @validates_schema
+    def _algo_muda(self, dados, **_kwargs):
+        if not dados:
+            raise ValidationError("Informe o que muda: nome, perfil ou ativo.")
 
 
 class FiltroUsuarioSchema(Filtro):
