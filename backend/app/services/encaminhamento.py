@@ -62,8 +62,12 @@ class EncaminhamentoService:
     @staticmethod
     def listar(autor, pendentes=None, assistido_id=None, demanda_id=None, responsavel_id=None):
         """Do mais antigo para o mais novo, por data. `pendentes=True`: só sem desfecho (RF29)."""
+        from app.models import Assistido
         from app.models import Encaminhamento as E
 
+        if assistido_id is not None and db.session.get(Assistido, assistido_id) is None:
+            # Sem isso, a auditoria tentaria apontar um assistido que não existe.
+            raise NaoEncontrado(ASSISTIDO_INEXISTENTE)
         consulta = db.select(E)
         if pendentes:
             consulta = consulta.where(E.desfecho.is_(None))

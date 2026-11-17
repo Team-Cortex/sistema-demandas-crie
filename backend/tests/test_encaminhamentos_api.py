@@ -151,6 +151,14 @@ def test_filtra_por_assistido_e_audita_o_assistido(base):
     assert _auditoria(base)[-1][3] == base.ids["outro"]
 
 
+@pytest.mark.parametrize("url", ["/api/encaminhamentos", "/api/encaminhamentos/pendentes"])
+def test_filtrar_por_assistido_inexistente_devolve_404_sem_auditoria(base, url):
+    resposta = base.get(f"{url}?assistido_id=9999")
+    assert resposta.status_code == 404
+    assert resposta.get_json() == {"erro": "Assistido inexistente."}
+    assert _auditoria(base) == []
+
+
 def test_consulta_um_e_audita(base):
     encaminhamento_id = _registrar(base, assistido_id=base.ids["assistido"]).get_json()["id"]
     resposta = base.get(f"/api/encaminhamentos/{encaminhamento_id}", como="direcao")
