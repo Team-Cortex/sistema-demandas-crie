@@ -4,6 +4,8 @@ Toda emissão grava auditoria `emitir`; o momento da emissão devolvido é o
 mesmo do registro.
 """
 
+from sqlalchemy.orm import joinedload
+
 from app.extensions import db
 from app.fuso import hoje
 from app.models.demanda import EstadoDemanda
@@ -60,6 +62,7 @@ class RelatorioService:
                 Encaminhamento.data <= ate,
             )
             .order_by(Encaminhamento.data, Encaminhamento.id)
+            .options(joinedload(Encaminhamento.responsavel))
         ).all()
         registro = AuditoriaService.registrar_leitura(
             autor, "emitir", "relatorio_assistido", assistido_id=assistido.id,

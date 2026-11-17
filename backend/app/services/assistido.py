@@ -3,6 +3,8 @@
 Toda leitura e toda escrita passam pela auditoria (spec 05).
 """
 
+from sqlalchemy.orm import joinedload, selectinload
+
 from app.errors import NaoEncontrado
 from app.extensions import db
 from app.schemas import descrever_filtros
@@ -44,9 +46,31 @@ class AssistidoService:
         return assistido
 
     @staticmethod
+    def _com_a_ficha_carregada(assistido_id):
+        """O assistido com as quatro listas da ficha, sem uma consulta por linha."""
+        from app.models import Assistido, AssistidoProfissional, Demanda, Encaminhamento, Evolucao
+
+        consulta = (
+            db.select(Assistido)
+            .where(Assistido.id == assistido_id)
+            .options(
+                selectinload(Assistido.acompanhamentos).joinedload(AssistidoProfissional.profissional),
+                selectinload(Assistido.demandas).options(
+                    joinedload(Demanda.responsavel), selectinload(Demanda.historico)
+                ),
+                selectinload(Assistido.evolucoes).options(*Evolucao.carregar_junto()),
+                selectinload(Assistido.encaminhamentos).joinedload(Encaminhamento.responsavel),
+            )
+        )
+        assistido = db.session.scalars(consulta).first()
+        if assistido is None:
+            raise NaoEncontrado(INEXISTENTE)
+        return assistido
+
+    @staticmethod
     def ficha(assistido_id, autor):
         """Ficha completa (RF20). Traz evolução, então passa por pode_ver_evolucao."""
-        assistido = AssistidoService.obter(assistido_id)
+        assistido = AssistidoService._com_a_ficha_carregada(assistido_id)
         exigir_acesso_ao_assistido(autor, assistido)
         AuditoriaService.registrar_leitura(
             autor, "consultar", "assistido", assistido.id, assistido.id, detalhe="ficha"

@@ -27,8 +27,20 @@ class AuditoriaService:
 
     @staticmethod
     def registrar_leitura(autor, acao, recurso, recurso_id=None, assistido_id=None, detalhe=None):
+        """Grava antes de a resposta sair, sem descartar o que já foi lido.
+
+        O commit normal expira tudo na sessão, e montar a resposta faria uma
+        consulta por linha. Aqui o que foi lido nesta transação continua
+        carregado: é exatamente o que a auditoria registrou como consultado.
+        """
         registro = AuditoriaService.registrar(autor, acao, recurso, recurso_id, assistido_id, detalhe)
-        db.session.commit()
+        sessao = db.session()
+        expirava = sessao.expire_on_commit
+        sessao.expire_on_commit = False
+        try:
+            sessao.commit()
+        finally:
+            sessao.expire_on_commit = expirava
         return registro
 
     @staticmethod

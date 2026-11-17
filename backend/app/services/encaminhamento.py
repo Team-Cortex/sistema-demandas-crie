@@ -4,6 +4,8 @@ Encaminhamento ligado a assistido passa por pode_ver_evolucao; nas listas,
 o que a pessoa não pode ver não aparece. Toda operação grava auditoria.
 """
 
+from sqlalchemy.orm import joinedload
+
 from app.errors import DadoInvalido, NaoEncontrado
 from app.extensions import db
 from app.schemas import descrever_filtros
@@ -77,7 +79,8 @@ class EncaminhamentoService:
             consulta = consulta.where(E.demanda_id == demanda_id)
         if responsavel_id is not None:
             consulta = consulta.where(E.responsavel_id == responsavel_id)
-        itens = [e for e in db.session.scalars(consulta.order_by(E.data, E.id)) if _pode_ver(autor, e)]
+        consulta = consulta.order_by(E.data, E.id).options(joinedload(E.assistido), joinedload(E.responsavel))
+        itens = [e for e in db.session.scalars(consulta) if _pode_ver(autor, e)]
         filtros = {
             "pendentes": pendentes,
             "assistido_id": assistido_id,
