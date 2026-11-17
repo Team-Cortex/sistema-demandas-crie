@@ -1,6 +1,6 @@
 """POST /api/auth/login e POST /api/auth/logout. Spec 01."""
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 from app.routes import corpo_json
 from app.schemas.acesso import LoginSchema
@@ -12,7 +12,7 @@ bp = Blueprint("auth", __name__)
 @bp.post("/auth/login")
 def login():
     dados = LoginSchema().load(corpo_json())
-    usuario = AcessoService.autenticar(dados["email"], dados["senha"])
+    usuario = AcessoService.entrar(dados["email"], dados["senha"], request.remote_addr)
     return jsonify(
         {
             "token": emitir_token(usuario),

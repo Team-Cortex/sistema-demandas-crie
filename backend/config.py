@@ -20,6 +20,9 @@ class Config:
         minutes=int(os.environ.get("JWT_ACCESS_TOKEN_EXPIRES_MINUTES", "30"))
     )
     JSON_SORT_KEYS = False
+    # Spec 01: a sexta falha de login em 60 s, do mesmo IP e e-mail, dá 429.
+    LOGIN_MAXIMO_FALHAS = 5
+    LOGIN_JANELA_SEGUNDOS = 60
 
 
 class DevelopmentConfig(Config):

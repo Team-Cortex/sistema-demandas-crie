@@ -96,6 +96,83 @@ def test_login_e_publico_mas_get_nao_existe(api):
     assert api.client.get("/api/auth/login").status_code == 405
 
 
+# --- Limite de tentativas (spec 01 §1, passo 2) ---------------------------------
+
+
+class Relogio:
+    def __init__(self):
+        self.agora = 1000.0
+
+    def __call__(self):
+        return self.agora
+
+
+@pytest.fixture
+def relogio(api):
+    from app.services.acesso import LimiteDeTentativas
+
+    relogio = Relogio()
+    api.app.extensions["limite_login"] = LimiteDeTentativas(maximo=5, janela=60, relogio=relogio)
+    return relogio
+
+
+def _falhar(api, vezes, email="assistente@exemplo.test", ip="10.0.0.1"):
+    for _ in range(vezes):
+        resposta = entrar(api, email, "senha-errada-1", environ_base={"REMOTE_ADDR": ip})
+        assert resposta.status_code == 401
+
+
+def test_sexta_falha_em_60_segundos_devolve_429_com_a_mesma_mensagem(api, relogio):
+    _falhar(api, 5)
+    resposta = entrar(api, "assistente@exemplo.test", "senha-errada-1", environ_base={"REMOTE_ADDR": "10.0.0.1"})
+    assert resposta.status_code == 429
+    assert resposta.get_json() == RECUSADA
+
+
+def test_travado_nem_a_senha_certa_entra(api, relogio):
+    _falhar(api, 5)
+    resposta = entrar(api, "assistente@exemplo.test", environ_base={"REMOTE_ADDR": "10.0.0.1"})
+    assert resposta.status_code == 429
+
+
+def test_trava_vale_so_para_o_par_ip_e_email(api, relogio):
+    _falhar(api, 5)
+    assert entrar(api, "assistente@exemplo.test", environ_base={"REMOTE_ADDR": "10.0.0.2"}).status_code == 200
+    assert entrar(api, "direcao@exemplo.test", environ_base={"REMOTE_ADDR": "10.0.0.1"}).status_code == 200
+
+
+def test_email_inexistente_tambem_trava(api, relogio):
+    _falhar(api, 5, email="ninguem@exemplo.test")
+    resposta = entrar(api, "ninguem@exemplo.test", environ_base={"REMOTE_ADDR": "10.0.0.1"})
+    assert resposta.status_code == 429
+    assert resposta.get_json() == RECUSADA
+
+
+def test_passada_a_janela_volta_a_aceitar(api, relogio):
+    _falhar(api, 5)
+    relogio.agora += 61
+    assert entrar(api, "assistente@exemplo.test", environ_base={"REMOTE_ADDR": "10.0.0.1"}).status_code == 200
+
+
+def test_login_certo_zera_as_falhas(api, relogio):
+    _falhar(api, 4)
+    assert entrar(api, "assistente@exemplo.test", environ_base={"REMOTE_ADDR": "10.0.0.1"}).status_code == 200
+    _falhar(api, 5)  # se não tivesse zerado, a quinta já seria 429
+
+
+def test_limite_isolado_conta_e_esquece():
+    from app.services.acesso import LimiteDeTentativas
+
+    relogio = Relogio()
+    limite = LimiteDeTentativas(maximo=2, janela=10, relogio=relogio)
+    limite.registrar_falha("a")
+    assert not limite.bloqueado("a")
+    limite.registrar_falha("a")
+    assert limite.bloqueado("a")
+    relogio.agora += 10
+    assert not limite.bloqueado("a")
+
+
 def test_momento_de_emissao_e_agora(api):
     antes = int(datetime.now(timezone.utc).timestamp()) - 1
     token = entrar(api, "direcao@exemplo.test").get_json()["token"]

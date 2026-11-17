@@ -42,7 +42,7 @@ A mensagem de login é sempre **E-mail ou senha inválidos.** O servidor não re
 | --- | --- | --- | --- |
 | GET | `/api/saude` | não | `{"ok": true, "status": "ok"}` ou `"degradado"` |
 | GET | `/api/teste` | não | `Hello World` |
-| POST | `/api/auth/login` | não | 200 `token`, `perfil`, `usuario` (`id`, `nome`, `perfil`); 401 credencial recusada; 422 corpo incompleto |
+| POST | `/api/auth/login` | não | 200 `token`, `perfil`, `usuario` (`id`, `nome`, `perfil`); 401 credencial recusada; 422 corpo incompleto; 429 na sexta falha em 60 s do mesmo IP e e-mail |
 
 `/api/saude` não inclui host do banco, versão de schema, stack nem mensagem interna. Detalhe de falha fica no log do servidor, com id de correlação, status e duração. O log não leva senha, token, e-mail nem corpo da requisição.
 

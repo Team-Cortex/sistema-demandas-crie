@@ -7,6 +7,7 @@
 | NaoEncontrado     | 404  |
 | DadoInvalido      | 422  |
 | NaoAutenticado    | 401  (credencial recusada no login)
+| MuitasTentativas  | 429  (sexta falha de login em 60 s)
 | ValidationError   | 422  (marshmallow, nos schemas)
 | token ausente, inválido, expirado ou revogado | 401 (app/routes/sessao.py)
 """
@@ -44,6 +45,14 @@ class DadoInvalido(Exception):
 
 class NaoAutenticado(Exception):
     """Credencial recusada no login (401)."""
+
+    def __init__(self, mensagem):
+        self.mensagem = mensagem
+        super().__init__(mensagem)
+
+
+class MuitasTentativas(Exception):
+    """Falhas de login demais em pouco tempo (429)."""
 
     def __init__(self, mensagem):
         self.mensagem = mensagem
@@ -102,6 +111,10 @@ def registrar_erros(app):
     @app.errorhandler(NaoAutenticado)
     def nao_autenticado(erro):
         return jsonify({"erro": erro.mensagem}), 401
+
+    @app.errorhandler(MuitasTentativas)
+    def muitas_tentativas(erro):
+        return jsonify({"erro": erro.mensagem}), 429
 
     @app.errorhandler(ValidationError)
     def validacao(erro):
