@@ -53,6 +53,9 @@ A mensagem de login é sempre **E-mail ou senha inválidos.** O servidor não re
 | GET | `/api/reunioes` | sim | lista por data decrescente; filtro `setor`; cada item `id`, `data`, `setor`, `participantes`, `criado_em` |
 | GET | `/api/reunioes/<id>` | sim | a reunião mais `demandas` (`id`, `descricao`, `estado`); 404 inexistente |
 | PATCH ou PUT | `/api/reunioes/<id>` | sim | `data`, `setor` e/ou `participante_ids`, mesmas regras do POST; demandas ligadas ficam. Sem `DELETE` |
+| POST | `/api/demandas` | sim | 201 a demanda nascida `aberta`, com `historico`; 422 com a mensagem do campo (spec 02) |
+| GET | `/api/demandas/<id>` | sim | a demanda com `vencida`, `ultimo_movimento` e `historico`; 404 inexistente |
+| GET | `/api/demandas/<id>/historico` | sim | itens `tipo`, `texto`, `estado_anterior`, `estado_novo`, `autor_id`, `autor_nome`, `ocorrido_em`, em ordem cronológica |
 | GET | `/api/auditoria` | direção | `itens`, `total`, `pagina`, `por_pagina`; filtros `autor_id`, `assistido_id`, `recurso`, `acao`, `de`, `ate` (spec 05) |
 
 `/api/saude` não inclui host do banco, versão de schema, stack nem mensagem interna. Detalhe de falha fica no log do servidor, com id de correlação, status e duração. O log não leva senha, token, e-mail nem corpo da requisição.

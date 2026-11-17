@@ -14,6 +14,7 @@ from app.errors import registrar_erros
 from app.extensions import db, jwt, migrate
 from app.routes.auditoria import bp as auditoria_bp
 from app.routes.auth import bp as auth_bp
+from app.routes.demandas import bp as demandas_bp
 from app.routes.reunioes import bp as reunioes_bp
 from app.routes.saude import bp as saude_bp
 from app.routes.sessao import configurar_sessao
@@ -61,5 +62,6 @@ def create_app(config_object=None):
     app.register_blueprint(usuarios_bp, url_prefix="/api")
     app.register_blueprint(auditoria_bp, url_prefix="/api")
     app.register_blueprint(reunioes_bp, url_prefix="/api")
+    app.register_blueprint(demandas_bp, url_prefix="/api")
     registrar_erros(app)
     return app
