@@ -32,8 +32,9 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     PROPAGATE_EXCEPTIONS = False
-    SECRET_KEY = "teste"
-    JWT_SECRET_KEY = "teste"
+    # Só para a suíte. 32 bytes ou mais: o PyJWT avisa com chave HMAC curta.
+    SECRET_KEY = "teste-chave-do-flask-com-32-bytes-ou-mais"
+    JWT_SECRET_KEY = "teste-chave-do-jwt-com-32-bytes-ou-mais"
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     SQLALCHEMY_ENGINE_OPTIONS = {
         "connect_args": {"check_same_thread": False},
