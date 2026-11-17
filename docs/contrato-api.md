@@ -76,6 +76,8 @@ A mensagem de login é sempre **E-mail ou senha inválidos.** O servidor não re
 | GET | `/api/encaminhamentos/pendentes` | sim | o mesmo que `pendentes=true` |
 | GET | `/api/encaminhamentos/<id>` | sim; `pode_ver_evolucao` se tiver assistido | o encaminhamento; 404 inexistente; audita `consultar`. Sem `DELETE` |
 | PATCH | `/api/encaminhamentos/<id>/desfecho` ou `/api/encaminhamentos/<id>` | sim; `pode_ver_evolucao` se tiver assistido | corpo só `desfecho`; 200 com autor e momento do desfecho; 400 se já tinha; audita `registrar_desfecho` |
+| GET | `/api/relatorios/demandas` | direção | `de` e `ate` obrigatórios; filtros `estado`, `categoria`, `responsavel_id`; `emissao`, `periodo`, `filtros`, `totais`, `itens`; audita `emitir` (spec 08) |
+| GET | `/api/relatorios/assistidos/<id>` | direção | `de` e `ate` obrigatórios; `emissao`, `periodo`, `assistido`, `evolucoes` vigentes e `encaminhamentos` do período; audita `emitir` |
 | GET | `/api/auditoria` | direção | `itens`, `total`, `pagina`, `por_pagina`; filtros `autor_id`, `assistido_id`, `recurso`, `acao`, `de`, `ate` (spec 05) |
 
 `/api/saude` não inclui host do banco, versão de schema, stack nem mensagem interna. Detalhe de falha fica no log do servidor, com id de correlação, status e duração. O log não leva senha, token, e-mail nem corpo da requisição.
