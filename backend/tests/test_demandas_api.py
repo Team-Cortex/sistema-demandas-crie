@@ -338,6 +338,40 @@ def test_anotar_em_demanda_inexistente_devolve_404(cenario):
     assert cenario.post("/api/demandas/9999/anotacoes", json={"texto": "x"}).status_code == 404
 
 
+# --- PATCH /<id>/responsavel ------------------------------------------------------
+
+
+def test_troca_o_responsavel_e_anota_quem_trocou(cenario):
+    demanda_id = _demanda_em(cenario, E.ABERTA)
+    resposta = cenario.patch(
+        f"/api/demandas/{demanda_id}/responsavel", json={"responsavel_id": cenario.pessoas["educadora"]}
+    )
+    assert resposta.status_code == 200
+    corpo = resposta.get_json()
+    assert (corpo["responsavel_id"], corpo["responsavel_nome"]) == (cenario.pessoas["educadora"], "Carlos Fictício")
+    ultimo = corpo["historico"][-1]
+    assert ultimo["tipo"] == "anotacao"
+    assert ultimo["texto"] == "Responsável trocado: Bruna Fictícia → Carlos Fictício."
+    assert ultimo["autor_id"] == cenario.pessoas["direcao"]
+
+
+@pytest.mark.parametrize("quem", ["inativa", None])
+def test_responsavel_inativo_ou_inexistente_devolve_404(cenario, quem):
+    demanda_id = _demanda_em(cenario, E.ABERTA)
+    alvo = cenario.pessoas[quem] if quem else 9999
+    resposta = cenario.patch(f"/api/demandas/{demanda_id}/responsavel", json={"responsavel_id": alvo})
+    assert resposta.status_code == 404
+    assert resposta.get_json() == {"erro": "Responsável inexistente ou inativo."}
+    assert cenario.get(f"/api/demandas/{demanda_id}").get_json()["responsavel_nome"] == "Bruna Fictícia"
+
+
+def test_troca_sem_responsavel_devolve_422(cenario):
+    demanda_id = _demanda_em(cenario, E.ABERTA)
+    resposta = cenario.patch(f"/api/demandas/{demanda_id}/responsavel", json={})
+    assert resposta.status_code == 422
+    assert resposta.get_json() == {"erro": "Informe o novo responsável."}
+
+
 def test_historico_nao_tem_rota_de_alterar_nem_apagar(cenario):
     demanda_id = _demanda_em(cenario, E.ABERTA)
     for metodo in ("put", "patch", "delete"):

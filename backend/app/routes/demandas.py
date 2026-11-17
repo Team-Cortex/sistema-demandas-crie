@@ -12,6 +12,7 @@ from app.schemas.demanda import (
     HistoricoSchema,
     MudancaDeEstadoSchema,
     NovaDemandaSchema,
+    TrocaDeResponsavelSchema,
 )
 from app.services.demanda import DemandaService
 
@@ -48,6 +49,13 @@ def anotar(demanda_id):
     dados = AnotacaoSchema().load(corpo_json())
     item = DemandaService.anotar(demanda_id, dados["texto"], usuario_atual())
     return jsonify(HistoricoSchema().dump(item)), 201
+
+
+@bp.patch("/demandas/<int:demanda_id>/responsavel")
+def reatribuir(demanda_id):
+    dados = TrocaDeResponsavelSchema().load(corpo_json())
+    demanda = DemandaService.reatribuir(demanda_id, dados["responsavel_id"], usuario_atual())
+    return jsonify(DemandaComHistoricoSchema().dump(demanda))
 
 
 @bp.get("/demandas/<int:demanda_id>/historico")

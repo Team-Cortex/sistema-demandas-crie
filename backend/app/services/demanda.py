@@ -119,6 +119,16 @@ class DemandaService:
         return item
 
     @staticmethod
+    def reatribuir(demanda_id, responsavel_id, autor):
+        """Inexistente ou inativo → 404 pelo model; a troca vai para o histórico (RF16)."""
+        from app.models import Usuario
+
+        demanda = DemandaService.obter(demanda_id)
+        demanda.reatribuir(db.session.get(Usuario, responsavel_id), autor)
+        db.session.commit()
+        return demanda
+
+    @staticmethod
     def obter(demanda_id):
         from app.models import Demanda
 

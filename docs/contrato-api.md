@@ -58,6 +58,7 @@ A mensagem de login é sempre **E-mail ou senha inválidos.** O servidor não re
 | GET | `/api/demandas/<id>` | sim | a demanda com `vencida`, `ultimo_movimento` e `historico`; 404 inexistente |
 | PATCH | `/api/demandas/<id>/estado` | sim | corpo `estado`; 200 a demanda com o histórico novo; 400 transição recusada, sem gravar; 422 sem `estado`. Sem `DELETE` |
 | POST | `/api/demandas/<id>/anotacoes` | sim | corpo `texto`; 201 o item de histórico `anotacao`; o estado não muda; 422 texto vazio |
+| PATCH | `/api/demandas/<id>/responsavel` | sim | corpo `responsavel_id`; 200 a demanda, com a troca anotada no histórico; 404 responsável inexistente ou inativo |
 | GET | `/api/demandas/<id>/historico` | sim | itens `tipo`, `texto`, `estado_anterior`, `estado_novo`, `autor_id`, `autor_nome`, `ocorrido_em`, em ordem cronológica |
 | GET | `/api/auditoria` | direção | `itens`, `total`, `pagina`, `por_pagina`; filtros `autor_id`, `assistido_id`, `recurso`, `acao`, `de`, `ate` (spec 05) |
 

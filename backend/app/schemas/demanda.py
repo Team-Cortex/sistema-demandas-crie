@@ -61,6 +61,10 @@ class AnotacaoSchema(Entrada):
     )
 
 
+class TrocaDeResponsavelSchema(Entrada):
+    responsavel_id = inteiro("Informe o novo responsável.", required=True)
+
+
 def _estados(valor):
     """`aberta` ou `aberta,em_andamento` → lista; estado desconhecido é 422."""
     partes = [p.strip() for p in valor.split(",") if p.strip()]
