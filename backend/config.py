@@ -37,6 +37,8 @@ class Config:
     # Spec 01: a sexta falha de login em 60 s, do mesmo IP e e-mail, dá 429.
     LOGIN_MAXIMO_FALHAS = 5
     LOGIN_JANELA_SEGUNDOS = 60
+    # Spec 09 (decisão aberta A10): dias antes do prazo que contam como "perto".
+    AVISO_DIAS_ANTES_DO_PRAZO = int(os.environ.get("AVISO_DIAS_ANTES_DO_PRAZO", "3"))
 
 
 class DevelopmentConfig(Config):
