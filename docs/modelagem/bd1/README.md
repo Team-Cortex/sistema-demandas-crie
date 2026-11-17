@@ -20,10 +20,10 @@ Sistema de Gestão de Demandas de Articulação do CRIE / APAE de Extrema-MG. Pa
 | Critério (pontos) | Onde |
 |---|---|
 | Apresentação (1,0) | slides + guia; cada um explica o processamento das próprias consultas |
-| Universo de discurso, DER, notação textual (1,0) | seções 1, 2 e 3 do documento |
+| Universo de discurso, DER, notação textual (1,0) | seções 2, 3 e 4 do documento |
 | Scripts create/drop/alter e carga com diversidade (1,0) | `01` e `02`; seção 5 |
 | Mínimo de 12 consultas diferentes, com datas, matemática, junção e GROUP BY (5,0) | 17 consultas em `03`; seção 6, cada uma com resultado e explicação |
-| 4 a 6 tabelas; tipos numérico, texto e data; 1:1, 1:N e N:N | 6 tabelas; seção 2.1 e dicionário |
+| 4 a 6 tabelas; tipos numérico, texto e data; 1:1, 1:N e N:N | 6 tabelas; seção 3.1 e dicionário (seção 4.3) |
 
 ## Como executar
 
