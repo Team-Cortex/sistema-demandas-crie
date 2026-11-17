@@ -67,6 +67,10 @@ A mensagem de login é sempre **E-mail ou senha inválidos.** O servidor não re
 | GET | `/api/assistidos/<id>` | sim | o assistido com os ids de `demandas`, `evolucoes` (vigentes) e `encaminhamentos`; 404 inexistente; audita `consultar` |
 | GET | `/api/assistidos/<id>/ficha` | `pode_ver_evolucao` | `assistido`, `profissionais`, `demandas`, `evolucoes` vigentes e `encaminhamentos`, em ordem cronológica; 403 sem acesso; audita `consultar` (`ficha`) |
 | PATCH ou PUT | `/api/assistidos/<id>` | sim | só `nome_tratamento`; 200; audita `alterar`. Sem `DELETE` |
+| POST | `/api/assistidos/<id>/evolucoes` | `pode_ver_evolucao` | corpo `data`, `area_atuacao`, `descricao`; autor, profissional e momento saem do token e do servidor; 201; audita `criar` (spec 06) |
+| GET | `/api/assistidos/<id>/evolucoes` | `pode_ver_evolucao` | vigentes em ordem cronológica; filtros `de`, `ate`, `area_atuacao`; audita `listar` |
+| GET | `/api/evolucoes/<id>` | `pode_ver_evolucao` | a evolução com `versoes_anteriores` e `retificada_por_id`; audita `consultar` |
+| PATCH | `/api/evolucoes/<id>` | `pode_ver_evolucao` | retifica: 201 a versão nova, a anterior fica intacta; 400 se não for a vigente; audita `retificar`. Sem `DELETE` |
 | GET | `/api/auditoria` | direção | `itens`, `total`, `pagina`, `por_pagina`; filtros `autor_id`, `assistido_id`, `recurso`, `acao`, `de`, `ate` (spec 05) |
 
 `/api/saude` não inclui host do banco, versão de schema, stack nem mensagem interna. Detalhe de falha fica no log do servidor, com id de correlação, status e duração. O log não leva senha, token, e-mail nem corpo da requisição.
