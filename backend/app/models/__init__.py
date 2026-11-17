@@ -6,6 +6,7 @@ continuam em aberto no contrato da API.
 """
 
 from app.models.assistido import Assistido, AssistidoProfissional
+from app.models.auditoria import RegistroAuditoria
 from app.models.demanda import Demanda, EstadoDemanda, Prioridade
 from app.models.encaminhamento import Encaminhamento
 from app.models.evolucao import Evolucao
@@ -35,6 +36,7 @@ __all__ = [
     "HistoricoDemanda",
     "Prioridade",
     "Profissional",
+    "RegistroAuditoria",
     "Reuniao",
     "Setor",
     "TipoHistorico",
