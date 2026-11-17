@@ -88,3 +88,51 @@ def test_dado_invalido_devolve_422_e_nao_grava(api, mudanca, mensagem):
 
 def test_corpo_vazio_devolve_422(api):
     assert api.post("/api/usuarios", json={}).status_code == 422
+
+
+# --- GET /api/usuarios ----------------------------------------------------------
+
+
+def test_lista_por_nome_com_email_para_a_direcao(api):
+    corpo = api.get("/api/usuarios").get_json()
+    assert [u["nome"] for u in corpo] == ["Bruna Fictícia", "Carlos Fictício", "Direção Fictícia", "Dora Fictícia"]
+    assert corpo[0]["email"] == "assistente@exemplo.test"
+
+
+def test_profissional_lista_sem_ver_email(api):
+    resposta = api.get("/api/usuarios", como="educadora")
+    assert resposta.status_code == 200
+    assert all("email" not in u for u in resposta.get_json())
+    assert set(resposta.get_json()[0]) == {"id", "nome", "perfil", "ativo", "criado_em"}
+
+
+def test_filtra_por_ativo_e_perfil(api):
+    ativos = api.get("/api/usuarios?ativo=true").get_json()
+    assert "Dora Fictícia" not in [u["nome"] for u in ativos]
+    inativos = api.get("/api/usuarios?ativo=false").get_json()
+    assert [u["nome"] for u in inativos] == ["Dora Fictícia"]
+    pedagogicos = api.get("/api/usuarios?perfil=equipe_pedagogica&ativo=true").get_json()
+    assert [u["nome"] for u in pedagogicos] == ["Carlos Fictício"]
+
+
+def test_filtro_invalido_devolve_422(api):
+    resposta = api.get("/api/usuarios?perfil=coordenacao")
+    assert resposta.status_code == 422
+    assert resposta.get_json() == {"erro": "Escolha um perfil válido."}
+
+
+def test_consulta_um_usuario(api):
+    resposta = api.get(f"/api/usuarios/{api.pessoas['assistente']}", como="assistente")
+    assert resposta.status_code == 200
+    assert resposta.get_json()["nome"] == "Bruna Fictícia"
+    assert "email" not in resposta.get_json()
+
+
+def test_usuario_inexistente_devolve_404(api):
+    resposta = api.get("/api/usuarios/9999")
+    assert resposta.status_code == 404
+    assert resposta.get_json() == {"erro": "Usuário inexistente."}
+
+
+def test_lista_exige_token(api):
+    assert api.get("/api/usuarios", como=None).status_code == 401

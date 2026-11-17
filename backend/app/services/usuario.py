@@ -5,13 +5,34 @@ Não existe exclusão: sair do sistema é `ativo = False`.
 
 from sqlalchemy.exc import IntegrityError
 
-from app.errors import ErroDeNegocio
+from app.errors import ErroDeNegocio, NaoEncontrado
 from app.extensions import db
 
 EMAIL_REPETIDO = "Já existe um usuário com este e-mail."
+INEXISTENTE = "Usuário inexistente."
 
 
 class UsuarioService:
+    @staticmethod
+    def listar(ativo=None, perfil=None):
+        from app.models import Usuario
+
+        consulta = db.select(Usuario)
+        if ativo is not None:
+            consulta = consulta.where(Usuario.ativo.is_(ativo))
+        if perfil:
+            consulta = consulta.where(Usuario.perfil == perfil)
+        return db.session.scalars(consulta.order_by(Usuario.nome, Usuario.id)).all()
+
+    @staticmethod
+    def obter(usuario_id):
+        from app.models import Usuario
+
+        usuario = db.session.get(Usuario, usuario_id)
+        if usuario is None:
+            raise NaoEncontrado(INEXISTENTE)
+        return usuario
+
     @staticmethod
     def cadastrar(dados):
         from app.models import CLASSE_POR_PERFIL, Usuario

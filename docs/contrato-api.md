@@ -45,6 +45,8 @@ A mensagem de login é sempre **E-mail ou senha inválidos.** O servidor não re
 | POST | `/api/auth/login` | não | 200 `token`, `perfil`, `usuario` (`id`, `nome`, `perfil`); 401 credencial recusada; 422 corpo incompleto; 429 na sexta falha em 60 s do mesmo IP e e-mail |
 | POST | `/api/auth/logout` | sim | 200 `{"ok": true}`; o token deixa de valer (401 no uso seguinte) |
 | POST | `/api/usuarios` | direção | 201 `id`, `nome`, `email`, `perfil`, `ativo`, `criado_em`; 400 e-mail repetido; 403 outro perfil; 422 campo inválido |
+| GET | `/api/usuarios` | sim | lista por nome; filtros `ativo`, `perfil`; `email` só para a direção |
+| GET | `/api/usuarios/<id>` | sim | o usuário; 404 inexistente |
 
 `/api/saude` não inclui host do banco, versão de schema, stack nem mensagem interna. Detalhe de falha fica no log do servidor, com id de correlação, status e duração. O log não leva senha, token, e-mail nem corpo da requisição.
 

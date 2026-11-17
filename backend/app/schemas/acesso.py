@@ -3,7 +3,7 @@
 from marshmallow import EXCLUDE, Schema, fields, pre_load, validate
 
 from app.models.usuario import CLASSE_POR_PERFIL, SENHA_MINIMA
-from app.schemas import Entrada, mensagens, momento, preenchido
+from app.schemas import Entrada, Filtro, mensagens, momento, preenchido
 
 INFORME_EMAIL_E_SENHA = "Informe e-mail e senha."
 INFORME_NOME = "Informe o nome."
@@ -67,6 +67,11 @@ class NovoUsuarioSchema(Entrada):
         if isinstance(dados, dict) and isinstance(dados.get("email"), str):
             dados = {**dados, "email": dados["email"].strip()}
         return dados
+
+
+class FiltroUsuarioSchema(Filtro):
+    ativo = fields.Boolean(error_messages=mensagens("Use ativo=true ou ativo=false."))
+    perfil = _perfil(False)
 
 
 class UsuarioSchema(Schema):
