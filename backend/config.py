@@ -14,6 +14,20 @@ def origens_de(valor):
     return [parte.strip() for parte in valor.split(",") if parte.strip() and parte.strip() != "*"]
 
 
+def url_do_banco(valor):
+    """Endereço do banco para o SQLAlchemy usar o psycopg 3 (o driver instalado).
+
+    Provedores como o Neon entregam `postgres://` ou `postgresql://`, que fariam
+    o SQLAlchemy procurar o psycopg2, que não está no requirements.
+    """
+    if not valor:
+        return ""
+    for prefixo in ("postgres://", "postgresql://"):
+        if valor.startswith(prefixo):
+            return "postgresql+psycopg://" + valor[len(prefixo):]
+    return valor
+
+
 class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(
@@ -25,7 +39,7 @@ class Config:
 class DevelopmentConfig(Config):
     SECRET_KEY = os.environ.get("SECRET_KEY") or "dev-apenas-local"
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY") or "dev-apenas-local"
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "")
+    SQLALCHEMY_DATABASE_URI = url_do_banco(os.environ.get("DATABASE_URL", ""))
     CORS_ORIGINS = origens_de(os.environ.get("CORS_ORIGINS", "http://localhost:5173"))
 
 
@@ -45,7 +59,7 @@ class TestingConfig(Config):
 class ProductionConfig(Config):
     SECRET_KEY = os.environ.get("SECRET_KEY")
     JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
-    SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", "")
+    SQLALCHEMY_DATABASE_URI = url_do_banco(os.environ.get("DATABASE_URL", ""))
     CORS_ORIGINS = origens_de(os.environ.get("CORS_ORIGINS", ""))
 
 
