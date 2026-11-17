@@ -72,7 +72,7 @@ A consulta à auditoria não gera registro: ela não mostra dado de assistido, s
 | # | Decisão | Enquanto não fecha |
 | --- | --- | --- |
 | A7 | Por quanto tempo a auditoria é guardada (LGPD; RNF09 fala em política de retenção da instituição) | nada sai da tabela |
-| — | Armazenamento em tabela do próprio banco (§1) | vale o §1; a equipe confirma na revisão |
+| A8 | Armazenamento em tabela do próprio banco (§1) | vale o §1; a equipe confirma na revisão |
 
 ## 5. Testes que provam esta spec
 
