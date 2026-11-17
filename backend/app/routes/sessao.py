@@ -9,9 +9,12 @@ inexistente derruba a sessão na hora, e o perfil vale o do banco, não o
 do token.
 """
 
+from functools import wraps
+
 from flask import jsonify, request
 from flask_jwt_extended import current_user, verify_jwt_in_request
 
+from app.errors import PermissaoNegada
 from app.extensions import db
 
 ENTRE = "Entre no sistema para continuar."
@@ -85,3 +88,23 @@ def exigir_login(blueprint):
 def usuario_atual():
     """O Usuario do token, carregado do banco nesta requisição."""
     return current_user._get_current_object()
+
+
+def exige_permissao(permissao, mensagem):
+    """Autorização por rota (card #15). Sem a permissão, 403 com `mensagem`.
+
+    `permissao` é o nome de um método polimórfico de Usuario, como
+    "pode_gerir_usuarios": a rota não compara o texto do perfil.
+    """
+
+    def decorador(rota):
+        @wraps(rota)
+        def protegida(*args, **kwargs):
+            verify_jwt_in_request()
+            if not getattr(usuario_atual(), permissao)():
+                raise PermissaoNegada(mensagem)
+            return rota(*args, **kwargs)
+
+        return protegida
+
+    return decorador
