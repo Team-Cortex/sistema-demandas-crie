@@ -222,6 +222,4 @@ node_modules/
 
 # Vínculo local com a Vercel
 .vercel
-
-.vercel
-.env*
+.env*.local
