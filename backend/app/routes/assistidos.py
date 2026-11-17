@@ -1,13 +1,31 @@
 """/api/assistidos. Spec 03, cards #15, #17 e #20."""
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
 from app.routes import corpo_json
 from app.routes.sessao import exigir_login, usuario_atual
-from app.schemas.assistido import AssistidoEntradaSchema, AssistidoSchema
+from app.schemas.assistido import (
+    AssistidoEntradaSchema,
+    AssistidoResumoSchema,
+    AssistidoSchema,
+    FiltroAssistidoSchema,
+)
 from app.services.assistido import AssistidoService
 
 bp = exigir_login(Blueprint("assistidos", __name__))
+
+
+@bp.get("/assistidos")
+def listar():
+    filtros = FiltroAssistidoSchema().load(request.args)
+    assistidos = AssistidoService.listar(usuario_atual(), **filtros)
+    return jsonify(AssistidoResumoSchema(many=True).dump(assistidos))
+
+
+@bp.get("/assistidos/<int:assistido_id>")
+def consultar(assistido_id):
+    assistido = AssistidoService.consultar(assistido_id, usuario_atual())
+    return jsonify(AssistidoSchema().dump(assistido))
 
 
 @bp.post("/assistidos")

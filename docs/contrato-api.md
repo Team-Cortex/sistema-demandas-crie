@@ -63,6 +63,8 @@ A mensagem de login é sempre **E-mail ou senha inválidos.** O servidor não re
 | PATCH | `/api/demandas/<id>/responsavel` | sim | corpo `responsavel_id`; 200 a demanda, com a troca anotada no histórico; 404 responsável inexistente ou inativo |
 | GET | `/api/demandas/<id>/historico` | sim | itens `tipo`, `texto`, `estado_anterior`, `estado_novo`, `autor_id`, `autor_nome`, `ocorrido_em`, em ordem cronológica |
 | POST | `/api/assistidos` | sim | corpo só `nome_tratamento` (A3); 201 o assistido com `demandas`, `evolucoes`, `encaminhamentos` (ids); 422 dado não autorizado; audita `criar` |
+| GET | `/api/assistidos` | sim | `id`, `nome_tratamento` em ordem alfabética; filtro `busca`; audita `listar` sem guardar o texto buscado |
+| GET | `/api/assistidos/<id>` | sim | o assistido com os ids de `demandas`, `evolucoes` (vigentes) e `encaminhamentos`; 404 inexistente; audita `consultar` |
 | PATCH ou PUT | `/api/assistidos/<id>` | sim | só `nome_tratamento`; 200; audita `alterar`. Sem `DELETE` |
 | GET | `/api/auditoria` | direção | `itens`, `total`, `pagina`, `por_pagina`; filtros `autor_id`, `assistido_id`, `recurso`, `acao`, `de`, `ate` (spec 05) |
 

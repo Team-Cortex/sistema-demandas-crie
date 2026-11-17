@@ -5,6 +5,7 @@ Toda leitura e toda escrita passam pela auditoria (spec 05).
 
 from app.errors import NaoEncontrado
 from app.extensions import db
+from app.schemas import descrever_filtros
 from app.services.auditoria import AuditoriaService
 
 INEXISTENTE = "Assistido inexistente."
@@ -19,6 +20,26 @@ class AssistidoService:
         assistido = db.session.get(Assistido, assistido_id)
         if assistido is None:
             raise NaoEncontrado(INEXISTENTE)
+        return assistido
+
+    @staticmethod
+    def listar(autor, busca=None):
+        """Em ordem alfabética. A auditoria guarda que houve busca, não o texto."""
+        from app.models import Assistido
+
+        consulta = db.select(Assistido)
+        if busca and busca.strip():
+            consulta = consulta.where(Assistido.nome_tratamento.icontains(busca.strip(), autoescape=True))
+        assistidos = db.session.scalars(consulta.order_by(Assistido.nome_tratamento, Assistido.id)).all()
+        AuditoriaService.registrar_leitura(
+            autor, "listar", "assistido", detalhe=descrever_filtros({"busca": busca}, ocultar=("busca",))
+        )
+        return assistidos
+
+    @staticmethod
+    def consultar(assistido_id, autor):
+        assistido = AssistidoService.obter(assistido_id)
+        AuditoriaService.registrar_leitura(autor, "consultar", "assistido", assistido.id, assistido.id)
         return assistido
 
     @staticmethod

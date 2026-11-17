@@ -83,6 +83,54 @@ def test_sem_token_devolve_401_sem_auditoria(api):
     assert _auditoria(api) == []
 
 
+# --- GET ------------------------------------------------------------------------------
+
+
+def test_lista_em_ordem_alfabetica_e_audita_a_consulta(api):
+    for nome in ("Assistido Fictício B", "Assistido Fictício A"):
+        _cadastrar(api, nome)
+    resposta = api.get("/api/assistidos", como="educadora")
+    assert resposta.status_code == 200
+    assert [a["nome_tratamento"] for a in resposta.get_json()] == ["Assistido Fictício A", "Assistido Fictício B"]
+    assert set(resposta.get_json()[0]) == {"id", "nome_tratamento"}
+    assert _auditoria(api)[-1] == (api.pessoas["educadora"], "listar", "assistido", None, None, None)
+
+
+def test_busca_por_nome_nao_guarda_o_texto_na_auditoria(api):
+    _cadastrar(api, "Assistido Fictício A")
+    _cadastrar(api, "Outra Pessoa Fictícia")
+    corpo = api.get("/api/assistidos?busca=outra").get_json()
+    assert [a["nome_tratamento"] for a in corpo] == ["Outra Pessoa Fictícia"]
+    detalhe = _auditoria(api)[-1][-1]
+    assert detalhe == "busca=*"
+
+
+def test_consulta_traz_ids_da_ficha_e_audita(api):
+    assistido_id = _cadastrar(api).get_json()["id"]
+    resposta = api.get(f"/api/assistidos/{assistido_id}", como="educadora")
+    assert resposta.status_code == 200
+    corpo = resposta.get_json()
+    assert set(corpo) == {
+        "id", "nome_tratamento", "ativo", "criado_em", "demandas", "evolucoes", "encaminhamentos",
+    }
+    assert _auditoria(api)[-1] == (
+        api.pessoas["educadora"], "consultar", "assistido", assistido_id, assistido_id, None
+    )
+
+
+def test_leitura_sem_token_nao_grava_auditoria(api):
+    assistido_id = _cadastrar(api).get_json()["id"]
+    antes = _auditoria(api)
+    assert api.get(f"/api/assistidos/{assistido_id}", como=None).status_code == 401
+    assert api.get("/api/assistidos", como=None).status_code == 401
+    assert _auditoria(api) == antes
+
+
+def test_consultar_inexistente_devolve_404_sem_auditoria(api):
+    assert api.get("/api/assistidos/9999").status_code == 404
+    assert _auditoria(api) == []
+
+
 def test_nao_existe_exclusao_de_assistido(api):
     assistido_id = _cadastrar(api).get_json()["id"]
     assert api.delete(f"/api/assistidos/{assistido_id}").status_code == 405
