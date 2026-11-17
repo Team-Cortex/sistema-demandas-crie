@@ -4,7 +4,9 @@ Toda mensagem de erro aqui é para quem usa o sistema (RNF14): o tratador
 de ValidationError devolve a primeira delas, na ordem dos campos.
 """
 
-from marshmallow import EXCLUDE, RAISE, Schema, ValidationError
+from marshmallow import EXCLUDE, RAISE, Schema, ValidationError, fields
+
+from app.fuso import no_fuso
 
 CAMPO_NAO_ACEITO = "Campo não aceito: confira o formulário."
 ENVIE_JSON = "Envie os dados em JSON."
@@ -41,3 +43,18 @@ def preenchido(mensagem):
             raise ValidationError(mensagem)
 
     return validar
+
+
+def momento(atributo):
+    """Campo de saída: data e hora em ISO 8601 com -03:00."""
+    return fields.Function(lambda obj: no_fuso(getattr(obj, atributo)))
+
+
+def valor_do_enum(atributo):
+    """Campo de saída: o texto do enum (`aberta`, `saude`...), ou None."""
+
+    def ler(obj):
+        valor = getattr(obj, atributo)
+        return getattr(valor, "value", valor)
+
+    return fields.Function(ler)

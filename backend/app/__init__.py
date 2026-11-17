@@ -15,6 +15,7 @@ from app.extensions import db, jwt, migrate
 from app.routes.auth import bp as auth_bp
 from app.routes.saude import bp as saude_bp
 from app.routes.sessao import configurar_sessao
+from app.routes.usuarios import bp as usuarios_bp
 from config import CONFIGS, DevelopmentConfig, ProductionConfig
 
 
@@ -55,5 +56,6 @@ def create_app(config_object=None):
 
     app.register_blueprint(saude_bp, url_prefix="/api")
     app.register_blueprint(auth_bp, url_prefix="/api")
+    app.register_blueprint(usuarios_bp, url_prefix="/api")
     registrar_erros(app)
     return app
