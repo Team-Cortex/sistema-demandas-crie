@@ -1,11 +1,20 @@
 """Spec 02, cards #19 e #26: /api/demandas."""
 
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
 from app.fuso import hoje
-from app.models import Assistido, Demanda, HistoricoDemanda, Reuniao, Setor, Usuario
+from app.models import (
+    Assistido,
+    Demanda,
+    EstadoDemanda,
+    HistoricoDemanda,
+    Prioridade,
+    Reuniao,
+    Setor,
+    Usuario,
+)
 
 
 @pytest.fixture
@@ -102,3 +111,129 @@ def test_sem_token_devolve_401(cenario):
     assert _abrir(cenario, como=None).status_code == 401
     with cenario.banco() as db:
         assert db.session.query(HistoricoDemanda).count() == 0
+
+
+# --- GET /api/demandas -------------------------------------------------------------
+
+E = EstadoDemanda
+CAMINHO = {
+    E.ABERTA: [],
+    E.EM_ANDAMENTO: [E.EM_ANDAMENTO],
+    E.AGUARDANDO_TERCEIROS: [E.EM_ANDAMENTO, E.AGUARDANDO_TERCEIROS],
+    E.CONCLUIDA: [E.EM_ANDAMENTO, E.CONCLUIDA],
+    E.CANCELADA: [E.CANCELADA],
+}
+
+
+def _semear(api, *linhas):
+    """Cada linha: (descrição, estado, dias até o prazo, responsável, categoria, com assistido, dias atrás)."""
+    ids = {}
+    with api.banco() as db:
+        direcao = db.session.get(Usuario, api.pessoas["direcao"])
+        reuniao = db.session.get(Reuniao, api.reuniao_id)
+        assistido = db.session.get(Assistido, api.assistido_id)
+        for descricao, estado, dias, quem, categoria, com_assistido, atras in linhas:
+            demanda = Demanda.abrir(
+                direcao,
+                descricao=descricao,
+                categoria=categoria,
+                prioridade=Prioridade.MEDIA,
+                prazo=hoje() + timedelta(days=dias),
+                responsavel=db.session.get(Usuario, api.pessoas[quem]),
+                reuniao=reuniao,
+                assistido=assistido if com_assistido else None,
+                criado_em=datetime.now(timezone.utc) - timedelta(days=atras),
+            )
+            for passo in CAMINHO[estado]:
+                demanda.mudar_estado(passo, direcao)
+            db.session.add(demanda)
+            db.session.flush()
+            ids[descricao] = demanda.id
+        db.session.commit()
+    return ids
+
+
+@pytest.fixture
+def varias(cenario):
+    cenario.ids = _semear(
+        cenario,
+        ("Pedir transporte adaptado", E.ABERTA, 5, "assistente", "Transporte", True, 0),
+        ("Renovar BPC no INSS", E.EM_ANDAMENTO, -3, "assistente", "Benefício", True, 20),
+        ("Vaga na escola estadual", E.CONCLUIDA, -10, "educadora", "Educação", False, 40),
+        ("Cesta básica emergencial", E.CANCELADA, -2, "educadora", None, False, 5),
+        ("Aguardar CAPSi", E.AGUARDANDO_TERCEIROS, 2, "educadora", "saúde", True, 10),
+    )
+    return cenario
+
+
+def _descricoes(resposta):
+    assert resposta.status_code == 200, resposta.get_json()
+    return [d["descricao"] for d in resposta.get_json()]
+
+
+def test_sem_filtro_deixa_cancelada_de_fora_e_marca_vencida(varias):
+    corpo = varias.get("/api/demandas", como="educadora").get_json()
+    assert "Cesta básica emergencial" not in [d["descricao"] for d in corpo]
+    vencida = {d["descricao"]: d["vencida"] for d in corpo}
+    assert vencida["Renovar BPC no INSS"] is True
+    assert vencida["Vaga na escola estadual"] is False  # concluída não vence
+    assert vencida["Pedir transporte adaptado"] is False
+
+
+def test_ordem_e_do_ultimo_movimento(varias):
+    with varias.banco() as db:
+        demanda = db.session.get(Demanda, varias.ids["Vaga na escola estadual"])
+        demanda.anotar("Matrícula confirmada por telefone.", db.session.get(Usuario, varias.pessoas["direcao"]))
+        db.session.commit()
+    assert _descricoes(varias.get("/api/demandas"))[0] == "Vaga na escola estadual"
+
+
+@pytest.mark.parametrize(
+    "consulta, esperado",
+    [
+        ("estado=cancelada", {"Cesta básica emergencial"}),
+        ("estado=aberta,em_andamento", {"Pedir transporte adaptado", "Renovar BPC no INSS"}),
+        ("categoria=SAÚDE", {"Aguardar CAPSi"}),
+        ("categoria=transporte", {"Pedir transporte adaptado"}),
+        ("q=capsi", {"Aguardar CAPSi"}),
+        ("busca=INSS", {"Renovar BPC no INSS"}),
+        ("busca=cesta", {"Cesta básica emergencial"}),
+        ("q=100%", set()),
+    ],
+)
+def test_filtros_e_busca(varias, consulta, esperado):
+    assert set(_descricoes(varias.get(f"/api/demandas?{consulta}"))) == esperado
+
+
+def test_filtra_por_responsavel_e_assistido(varias):
+    da_educadora = _descricoes(varias.get(f"/api/demandas?responsavel_id={varias.pessoas['educadora']}"))
+    assert set(da_educadora) == {"Vaga na escola estadual", "Cesta básica emergencial", "Aguardar CAPSi"}
+    do_assistido = _descricoes(varias.get(f"/api/demandas?assistido_id={varias.assistido_id}"))
+    assert set(do_assistido) == {"Pedir transporte adaptado", "Renovar BPC no INSS", "Aguardar CAPSi"}
+    assert len(_descricoes(varias.get(f"/api/demandas?reuniao_id={varias.reuniao_id}"))) == 5
+
+
+def test_filtra_por_periodo_de_registro(varias):
+    inicio = (hoje() - timedelta(days=25)).isoformat()
+    fim = (hoje() - timedelta(days=8)).isoformat()
+    assert set(_descricoes(varias.get(f"/api/demandas?periodo_inicio={inicio}&periodo_fim={fim}"))) == {
+        "Renovar BPC no INSS",
+        "Aguardar CAPSi",
+    }
+    hoje_txt = hoje().isoformat()
+    assert _descricoes(varias.get(f"/api/demandas?periodo_inicio={hoje_txt}")) == ["Pedir transporte adaptado"]
+
+
+@pytest.mark.parametrize(
+    "consulta",
+    ["estado=esquecida", "estado=aberta,x", "periodo_inicio=ontem", "responsavel_id=abc",
+     "periodo_inicio=2026-11-10&periodo_fim=2026-11-01"],
+)
+def test_filtro_invalido_devolve_422(varias, consulta):
+    resposta = varias.get(f"/api/demandas?{consulta}")
+    assert resposta.status_code == 422
+    assert "erro" in resposta.get_json()
+
+
+def test_lista_exige_token(varias):
+    assert varias.get("/api/demandas", como=None).status_code == 401

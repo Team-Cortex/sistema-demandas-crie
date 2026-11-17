@@ -1,10 +1,20 @@
 """Corpo e saída de demanda, estado e anotação. Spec 02."""
 
-from marshmallow import Schema, fields, validate
+from marshmallow import Schema, ValidationError, fields, post_load, validate, validates_schema
 
 from app.fuso import hoje
-from app.models.demanda import CATEGORIA_MAXIMA, Prioridade
-from app.schemas import Entrada, data, inteiro, mensagens, momento, preenchido, valor_do_enum
+from app.models.demanda import CATEGORIA_MAXIMA, EstadoDemanda, Prioridade
+from app.schemas import (
+    PERIODO_INVERTIDO,
+    Entrada,
+    Filtro,
+    data,
+    inteiro,
+    mensagens,
+    momento,
+    preenchido,
+    valor_do_enum,
+)
 
 INFORME_DESCRICAO = "Informe a descrição da demanda."
 INFORME_PRIORIDADE = "Escolha a prioridade: baixa, media ou alta."
@@ -14,6 +24,7 @@ INFORME_REUNIAO = "Informe uma reunião existente."
 ASSISTIDO_INEXISTENTE = "Assistido inexistente."
 CATEGORIA_LONGA = f"A categoria aceita até {CATEGORIA_MAXIMA} caracteres."
 PRIORIDADES = [p.value for p in Prioridade]
+ESTADOS = [e.value for e in EstadoDemanda]
 
 
 class NovaDemandaSchema(Entrada):
@@ -34,6 +45,44 @@ class NovaDemandaSchema(Entrada):
         validate=validate.Length(max=CATEGORIA_MAXIMA, error=CATEGORIA_LONGA),
         error_messages={"invalid": "Informe a categoria em texto."},
     )
+
+
+def _estados(valor):
+    """`aberta` ou `aberta,em_andamento` → lista; estado desconhecido é 422."""
+    partes = [p.strip() for p in valor.split(",") if p.strip()]
+    if not partes or any(p not in ESTADOS for p in partes):
+        raise ValidationError("Estado desconhecido. Use: " + ", ".join(ESTADOS) + ".")
+
+
+class FiltroDemandaSchema(Filtro):
+    """GET /api/demandas. `q` e `busca` são o mesmo filtro (spec 02)."""
+
+    estado = fields.String(validate=_estados)
+    responsavel_id = inteiro("Informe o responsável pelo número.")
+    assistido_id = inteiro("Informe o assistido pelo número.")
+    reuniao_id = inteiro("Informe a reunião pelo número.")
+    categoria = fields.String()
+    periodo_inicio = data()
+    periodo_fim = data()
+    q = fields.String()
+    busca = fields.String()
+
+    @validates_schema
+    def _periodo_em_ordem(self, dados, **_kwargs):
+        inicio, fim = dados.get("periodo_inicio"), dados.get("periodo_fim")
+        if inicio and fim and inicio > fim:
+            raise ValidationError(PERIODO_INVERTIDO)
+
+    @post_load
+    def _normaliza(self, dados, **_kwargs):
+        if "estado" in dados:
+            dados["estado"] = [p.strip() for p in dados["estado"].split(",") if p.strip()]
+        busca = dados.pop("busca", None)
+        if busca is not None and dados.get("q") is None:
+            dados["q"] = busca
+        if dados.get("q") is not None and not dados["q"].strip():
+            dados.pop("q")
+        return dados
 
 
 class HistoricoSchema(Schema):
