@@ -1,0 +1,105 @@
+"""Usuario e subclasses. Spec 01.
+
+Tabela única `usuario`. A coluna `perfil` diz qual papel a linha tem.
+"""
+
+from datetime import datetime, timezone
+
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from app.extensions import db
+
+SENHA_MINIMA = 8
+
+
+def agora():
+    return datetime.now(timezone.utc)
+
+
+class Usuario(db.Model):
+    __tablename__ = "usuario"
+
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(254), nullable=False, unique=True, index=True)
+    ativo = db.Column(db.Boolean, nullable=False, default=True)
+    perfil = db.Column(db.String(30), nullable=False)
+    criado_em = db.Column(db.DateTime(timezone=True), nullable=False, default=agora)
+    # Encapsulamento: o hash só é lido e escrito por definir_senha e senha_confere.
+    _senha_hash = db.Column("senha_hash", db.String(255), nullable=False)
+
+    # Herança de tabela única: `perfil` escolhe a subclasse ao carregar a linha.
+    __mapper_args__ = {
+        "polymorphic_on": perfil,
+        "polymorphic_abstract": True,
+    }
+
+    def __init__(self, senha=None, **campos):
+        if campos.get("email") is not None:
+            campos["email"] = campos["email"].strip().lower()
+        campos.setdefault("ativo", True)
+        super().__init__(**campos)
+        if senha is not None:
+            self.definir_senha(senha)
+
+    def definir_senha(self, senha):
+        if not isinstance(senha, str) or len(senha) < SENHA_MINIMA:
+            raise ValueError(f"A senha precisa ter no mínimo {SENHA_MINIMA} caracteres.")
+        self._senha_hash = generate_password_hash(senha)
+
+    def senha_confere(self, senha):
+        if not self._senha_hash or not isinstance(senha, str):
+            return False
+        return check_password_hash(self._senha_hash, senha)
+
+    def pode_ver_evolucao(self, assistido):
+        """Polimorfismo: cada perfil responde. A rota não olha a classe."""
+        raise NotImplementedError
+
+    def __repr__(self):
+        return f"<{type(self).__name__} {self.id}>"
+
+
+class Direcao(Usuario):
+    """Direção da instituição. Cadastra usuários e emite relatórios."""
+
+    __mapper_args__ = {"polymorphic_identity": "direcao"}
+
+    def pode_ver_evolucao(self, assistido):
+        return bool(self.ativo)
+
+
+class Profissional(Usuario):
+    """O que é comum a quem atende assistidos. Não vira linha sozinha."""
+
+    __mapper_args__ = {"polymorphic_abstract": True}
+
+    # A direção do CRIE escolheu acesso aberto (relatório v2, spec 01).
+    # A regra restritiva continua aqui, desligada.
+    acesso_restrito = False
+
+    def acompanha(self, assistido):
+        return self in getattr(assistido, "profissionais", ())
+
+    def pode_ver_evolucao(self, assistido):
+        if not self.ativo:
+            return False
+        if self.acesso_restrito:
+            return self.acompanha(assistido)
+        return True
+
+
+class AssistenteSocial(Profissional):
+    __mapper_args__ = {"polymorphic_identity": "assistente_social"}
+
+
+class EquipePedagogica(Profissional):
+    __mapper_args__ = {"polymorphic_identity": "equipe_pedagogica"}
+
+
+# Perfil aceito na API → classe. Usado pelo cadastro de usuários (spec 01).
+CLASSE_POR_PERFIL = {
+    "direcao": Direcao,
+    "assistente_social": AssistenteSocial,
+    "equipe_pedagogica": EquipePedagogica,
+}

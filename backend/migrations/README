@@ -1,0 +1,10 @@
+Migrações do servidor (Flask-Migrate / Alembic). Card #56.
+
+A partir de backend/, com DATABASE_URL apontando para o banco:
+
+    flask db upgrade      # aplica tudo
+    flask db downgrade    # desfaz a última
+    flask db migrate -m "descrição"   # gera nova a partir dos models
+
+Revise toda migração gerada antes de commitar: autogenerate não
+enxerga trigger, CHECK escrito à mão nem dado.
