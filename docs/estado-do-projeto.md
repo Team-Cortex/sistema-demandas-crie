@@ -1,6 +1,6 @@
 # Estado do projeto
 
-Mapa geral do sistema, para quem abre o repositório sem a conversa anterior. Atualizado em 13/10/2026.
+Mapa geral do sistema, para quem abre o repositório sem a conversa anterior. Atualizado em 16/11/2026.
 
 Quem mantém este arquivo é a frente de back-end. A atualização acompanha os commits dessa frente quando um fato daqui muda. Não é diário de commits e não é obrigação das outras frentes manterem este texto em tempo real.
 
@@ -35,11 +35,25 @@ Contrato HTTP: [`contrato-api.md`](contrato-api.md). Comportamento do servidor: 
 
 ## 3. O que responde hoje
 
-A lista rota por rota está no §2 do [`contrato-api.md`](contrato-api.md), atualizada no mesmo commit de cada rota nova.
+A lista rota por rota está no §2 do [`contrato-api.md`](contrato-api.md), atualizada no mesmo commit de cada rota nova. Em resumo, o servidor responde:
+
+| Recurso | Spec | O que faz |
+| --- | --- | --- |
+| Sessão | 01, 09 | login com JWT de 30 minutos, limite de tentativas (429), logout que revoga o token, aviso de prazo no login sem dado de saúde |
+| Usuários | 01 | a direção cadastra, edita e desativa (nunca exclui); todos listam para escolher responsável |
+| Reuniões | 04 | registrar, listar por data, ficha com as demandas e o estado, alterar |
+| Demandas | 02 | abrir, filtrar e buscar, histórico, mudar estado, anotar, trocar responsável, painel por estado, minhas demandas |
+| Assistidos | 03 | cadastro só com nome de tratamento, lista, consulta e ficha completa |
+| Evoluções | 06 | lançar, listar com filtros, consultar versões, retificar sem apagar |
+| Encaminhamentos | 07 | registrar ligado a assistido ou demanda, pendentes, desfecho uma vez |
+| Relatórios | 08 | demandas do período e acompanhamento do assistido, só a direção |
+| Auditoria | 05 | toda operação com dado de assistido grava autor, ação e momento, inclusive leitura; a direção consulta |
+
+Toda rota de dado exige token de conta ativa. Permissão só da direção sai de métodos polimórficos (`pode_gerir_usuarios`, `pode_emitir_relatorio`, `pode_consultar_auditoria`), como `pode_ver_evolucao`. Nenhum recurso tem `DELETE`.
 
 ## 3.1 Models no servidor
 
-Entidades SQLAlchemy em `backend/app/models/`, testadas contra SQLite em memória. O schema sai de `backend/migrations/` (`flask db upgrade`); a migração inicial `b0f13416410c` cria as tabelas abaixo e, no banco, recusa UPDATE/DELETE em `historico_demanda` e `evolucao` e DELETE em `demanda` e `encaminhamento` (trigger). O script relacional do Henry continua sendo a referência do banco; se divergir, o model e a migração se ajustam.
+Entidades SQLAlchemy em `backend/app/models/`, testadas contra SQLite em memória. O schema sai de `backend/migrations/` (`flask db upgrade`); a migração inicial `b0f13416410c` cria as tabelas do domínio e, no banco, recusa UPDATE/DELETE em `historico_demanda` e `evolucao` e DELETE em `demanda` e `encaminhamento` (trigger); `3df29fd96f0b` cria `token_revogado` e `3f00c11df825` cria `auditoria`, que recusa UPDATE e DELETE. O script relacional do Henry continua sendo a referência do banco; se divergir, o model e a migração se ajustam.
 
 | Model | Tabela | Situação |
 | --- | --- | --- |
@@ -58,14 +72,19 @@ Entidades SQLAlchemy em `backend/app/models/`, testadas contra SQLite em memóri
 
 | # | Decisão | Enquanto não fecha |
 | --- | --- | --- |
-| A1 | Destino do encaminhamento | sem rota de encaminhamento |
+| A1 | Destino do encaminhamento | destino em texto livre de até 200 caracteres |
 | A2 | Categorias de demanda | campo opcional, texto de até 80 caracteres, sem catálogo |
-| A3 | Campos do assistido | o servidor só aceitará `nome_tratamento` |
+| A3 | Campos do assistido | o servidor só aceita `nome_tratamento` |
 | A4 | Perfil coordenação de setor | não há classe própria |
 | A5 | Trocar JWT em `sessionStorage` por cookie | permanece o JWT de 30 minutos |
+| A6 | Data do "período" no filtro e no relatório de demandas | data de registro da demanda |
+| A7 | Retenção da auditoria | nada sai da tabela |
+| A8 | Onde fica a auditoria | tabela `auditoria` no mesmo banco (spec 05); a equipe confirma |
+| A9 | Quem retifica evolução | quem pode ver a evolução |
+| A10 | Antecedência do aviso de prazo | 3 dias, configurável |
 
-Fora das quatro specs atuais: encaminhamento, serviço da rede, retorno de acompanhamento, evolução lançada, relatório e notificação.
+Fora das specs atuais: serviço da rede, retorno de acompanhamento, notificação por e-mail (RF41) e exportação de relatório para impressão (RF37, espera a QA04).
 
 ## 5. Como rodar
 
-Está no [`README.md`](../README.md). Servidor em `backend/` (`flask run`, porta 5000). Cliente em `frontend/` (`npm run dev`, porta 5173). Banco local com `docker compose up -d`.
+Está no [`README.md`](../README.md); a instalação do servidor do zero está em [`backend/README.md`](../backend/README.md). Servidor em `backend/` (`flask run`, porta 5000). Cliente em `frontend/` (`npm run dev`, porta 5173). Banco local com `docker compose up -d`.
