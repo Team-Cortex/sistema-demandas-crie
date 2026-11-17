@@ -62,6 +62,8 @@ A mensagem de login é sempre **E-mail ou senha inválidos.** O servidor não re
 | POST | `/api/demandas/<id>/anotacoes` | sim | corpo `texto`; 201 o item de histórico `anotacao`; o estado não muda; 422 texto vazio |
 | PATCH | `/api/demandas/<id>/responsavel` | sim | corpo `responsavel_id`; 200 a demanda, com a troca anotada no histórico; 404 responsável inexistente ou inativo |
 | GET | `/api/demandas/<id>/historico` | sim | itens `tipo`, `texto`, `estado_anterior`, `estado_novo`, `autor_id`, `autor_nome`, `ocorrido_em`, em ordem cronológica |
+| POST | `/api/assistidos` | sim | corpo só `nome_tratamento` (A3); 201 o assistido com `demandas`, `evolucoes`, `encaminhamentos` (ids); 422 dado não autorizado; audita `criar` |
+| PATCH ou PUT | `/api/assistidos/<id>` | sim | só `nome_tratamento`; 200; audita `alterar`. Sem `DELETE` |
 | GET | `/api/auditoria` | direção | `itens`, `total`, `pagina`, `por_pagina`; filtros `autor_id`, `assistido_id`, `recurso`, `acao`, `de`, `ate` (spec 05) |
 
 `/api/saude` não inclui host do banco, versão de schema, stack nem mensagem interna. Detalhe de falha fica no log do servidor, com id de correlação, status e duração. O log não leva senha, token, e-mail nem corpo da requisição.
