@@ -14,21 +14,23 @@ Todas as rotas exigem token válido.
 
 Corpo: `data`, `setor`, `participante_ids`.
 
-1. `setor` fora de `pedagogico`, `saude`, `convivencia` → 422, `{"erro": "Informe o setor da reunião."}`.
-2. `participante_ids` vazio ou com usuário inexistente ou inativo → 422, `{"erro": "Informe participantes ativos."}`.
-3. Grava a reunião e a relação de presença. Não cria demanda automaticamente.
+1. `data` ausente ou fora de `AAAA-MM-DD` → 422, `{"erro": "Informe a data da reunião."}`.
+2. `setor` fora de `pedagogico`, `saude`, `convivencia` → 422, `{"erro": "Informe o setor da reunião."}`.
+3. `participante_ids` vazio ou com usuário inexistente ou inativo → 422, `{"erro": "Informe participantes ativos."}`. Id repetido conta uma vez.
+4. Campo fora dos três → 422.
+5. Grava a reunião e a relação de presença. Não cria demanda automaticamente. Resposta 201 no formato do GET `/api/reunioes/<id>`.
 
 ### GET `/api/reunioes`
 
-Lista por `data` decrescente. Cada item: `id`, `data`, `setor`, `participantes` (`id`, `nome`).
+Lista por `data` decrescente; na mesma data, a registrada por último vem antes. Filtro opcional `setor`. Cada item: `id`, `data`, `setor`, `participantes` (`id`, `nome`).
 
 ### GET `/api/reunioes/<id>`
 
-A reunião mais `demandas`: `id`, `descricao`, `estado` de cada demanda originada nela. Sem demanda, `demandas: []`.
+A reunião mais `demandas`: `id`, `descricao`, `estado` de cada demanda originada nela, na ordem de registro. Sem demanda, `demandas: []`. Inexistente → 404, `{"erro": "Reunião inexistente."}`.
 
-### PATCH `/api/reunioes/<id>`
+### PATCH `/api/reunioes/<id>` (PUT aceito, mesmo efeito)
 
-Pode alterar `data`, `setor` e `participante_ids`, com as mesmas regras do POST. Não apaga demanda já ligada à reunião.
+Pode alterar `data`, `setor` e `participante_ids`, um ou mais, com as mesmas regras do POST. Corpo sem nenhum dos três → 422. Não apaga demanda já ligada à reunião. O card pediu `PUT`; a rota aceita os dois verbos com o comportamento de PATCH.
 
 Não há `DELETE`.
 

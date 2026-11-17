@@ -12,7 +12,17 @@ from flask_cors import CORS
 
 from app.errors import registrar_erros
 from app.extensions import db, jwt, migrate
+from app.routes.assistidos import bp as assistidos_bp
+from app.routes.auditoria import bp as auditoria_bp
+from app.routes.auth import bp as auth_bp
+from app.routes.demandas import bp as demandas_bp
+from app.routes.encaminhamentos import bp as encaminhamentos_bp
+from app.routes.evolucoes import bp as evolucoes_bp
+from app.routes.relatorios import bp as relatorios_bp
+from app.routes.reunioes import bp as reunioes_bp
 from app.routes.saude import bp as saude_bp
+from app.routes.sessao import configurar_sessao
+from app.routes.usuarios import bp as usuarios_bp
 from config import CONFIGS, DevelopmentConfig, ProductionConfig
 
 
@@ -30,9 +40,17 @@ def create_app(config_object=None):
             raise RuntimeError("Produção sem variável: " + ", ".join(faltando))
     app.config.from_object(config_object)
 
-    origens = app.config.get("CORS_ORIGENS") or []
+    # Card #27: só as origens listadas em CORS_ORIGINS (config.py lê do ambiente).
+    # Lista vazia, ou só "*", não abre origem nenhuma.
+    origens = app.config.get("CORS_ORIGINS") or []
     if origens:
-        CORS(app, resources={r"/api/*": {"origins": origens}})
+        CORS(
+            app,
+            resources={r"/api/*": {"origins": origens}},
+            allow_headers=["Authorization", "Content-Type"],
+            methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+            max_age=600,
+        )
 
     if app.config.get("SQLALCHEMY_DATABASE_URI"):
         # Registra as tabelas no metadata para o Alembic enxergar.
@@ -49,7 +67,17 @@ def create_app(config_object=None):
 
     if app.config.get("JWT_SECRET_KEY"):
         jwt.init_app(app)
+        configurar_sessao(jwt)
 
     app.register_blueprint(saude_bp, url_prefix="/api")
+    app.register_blueprint(auth_bp, url_prefix="/api")
+    app.register_blueprint(usuarios_bp, url_prefix="/api")
+    app.register_blueprint(auditoria_bp, url_prefix="/api")
+    app.register_blueprint(reunioes_bp, url_prefix="/api")
+    app.register_blueprint(demandas_bp, url_prefix="/api")
+    app.register_blueprint(assistidos_bp, url_prefix="/api")
+    app.register_blueprint(evolucoes_bp, url_prefix="/api")
+    app.register_blueprint(encaminhamentos_bp, url_prefix="/api")
+    app.register_blueprint(relatorios_bp, url_prefix="/api")
     registrar_erros(app)
     return app

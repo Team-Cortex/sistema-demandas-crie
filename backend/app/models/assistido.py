@@ -21,7 +21,9 @@ class AssistidoProfissional(db.Model):
     data_inicio = db.Column(db.Date, nullable=False, default=date.today)
 
     assistido = db.relationship("Assistido", back_populates="acompanhamentos")
-    profissional = db.relationship("Profissional")
+    # "Usuario", não "Profissional": se o perfil de quem acompanha mudar para
+    # direção (spec 01), o vínculo continua carregando em vez de virar None.
+    profissional = db.relationship("Usuario")
 
 
 class Assistido(db.Model):

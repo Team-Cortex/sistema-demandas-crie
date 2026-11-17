@@ -56,6 +56,17 @@ class Usuario(db.Model):
         """Polimorfismo: cada perfil responde. A rota não olha a classe."""
         raise NotImplementedError
 
+    # Permissões só da direção (spec 01 §2). Mesmo desenho de pode_ver_evolucao:
+    # a rota pergunta ao objeto e não compara o texto do perfil.
+    def pode_gerir_usuarios(self):
+        raise NotImplementedError
+
+    def pode_emitir_relatorio(self):
+        raise NotImplementedError
+
+    def pode_consultar_auditoria(self):
+        raise NotImplementedError
+
     def __repr__(self):
         return f"<{type(self).__name__} {self.id}>"
 
@@ -66,6 +77,15 @@ class Direcao(Usuario):
     __mapper_args__ = {"polymorphic_identity": "direcao"}
 
     def pode_ver_evolucao(self, assistido):
+        return bool(self.ativo)
+
+    def pode_gerir_usuarios(self):
+        return bool(self.ativo)
+
+    def pode_emitir_relatorio(self):
+        return bool(self.ativo)
+
+    def pode_consultar_auditoria(self):
         return bool(self.ativo)
 
 
@@ -87,6 +107,15 @@ class Profissional(Usuario):
         if self.acesso_restrito:
             return self.acompanha(assistido)
         return True
+
+    def pode_gerir_usuarios(self):
+        return False
+
+    def pode_emitir_relatorio(self):
+        return False
+
+    def pode_consultar_auditoria(self):
+        return False
 
 
 class AssistenteSocial(Profissional):

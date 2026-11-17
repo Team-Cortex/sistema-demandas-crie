@@ -34,6 +34,14 @@ class Config:
         minutes=int(os.environ.get("JWT_ACCESS_TOKEN_EXPIRES_MINUTES", "30"))
     )
     JSON_SORT_KEYS = False
+    # Erro do banco não leva os valores do SQL para a mensagem nem para o log:
+    # eles podem ser texto de evolução ou nome de assistido (RNF01).
+    SQLALCHEMY_ENGINE_OPTIONS = {"hide_parameters": True}
+    # Spec 01: a sexta falha de login em 60 s, do mesmo IP e e-mail, dá 429.
+    LOGIN_MAXIMO_FALHAS = 5
+    LOGIN_JANELA_SEGUNDOS = 60
+    # Spec 09 (decisão aberta A10): dias antes do prazo que contam como "perto".
+    AVISO_DIAS_ANTES_DO_PRAZO = int(os.environ.get("AVISO_DIAS_ANTES_DO_PRAZO", "3"))
 
 
 class DevelopmentConfig(Config):
@@ -46,12 +54,14 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     PROPAGATE_EXCEPTIONS = False
-    SECRET_KEY = "teste"
-    JWT_SECRET_KEY = "teste"
+    # Só para a suíte. 32 bytes ou mais: o PyJWT avisa com chave HMAC curta.
+    SECRET_KEY = "teste-chave-do-flask-com-32-bytes-ou-mais"
+    JWT_SECRET_KEY = "teste-chave-do-jwt-com-32-bytes-ou-mais"
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     SQLALCHEMY_ENGINE_OPTIONS = {
         "connect_args": {"check_same_thread": False},
         "poolclass": StaticPool,
+        "hide_parameters": True,
     }
     CORS_ORIGINS = []
 
