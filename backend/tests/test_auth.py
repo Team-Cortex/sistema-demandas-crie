@@ -96,6 +96,72 @@ def test_login_e_publico_mas_get_nao_existe(api):
     assert api.client.get("/api/auth/login").status_code == 405
 
 
+# --- Logout ---------------------------------------------------------------------
+
+
+@pytest.fixture
+def protegida(api):
+    from flask import Blueprint, jsonify
+
+    from app.routes.sessao import exigir_login
+
+    bp = exigir_login(Blueprint("_prova_logout", __name__))
+    bp.get("/_prova_logout")(lambda: jsonify({"ok": True}))
+    api.app.register_blueprint(bp, url_prefix="/api")
+    return api
+
+
+def _bearer(token):
+    return {"Authorization": f"Bearer {token}"}
+
+
+def test_logout_impede_reutilizar_o_token(protegida):
+    token = protegida.token("assistente")
+    assert protegida.client.get("/api/_prova_logout", headers=_bearer(token)).status_code == 200
+
+    resposta = protegida.client.post("/api/auth/logout", headers=_bearer(token))
+    assert resposta.status_code == 200
+    assert resposta.get_json() == {"ok": True}
+
+    depois = protegida.client.get("/api/_prova_logout", headers=_bearer(token))
+    assert depois.status_code == 401
+    assert depois.get_json() == {"erro": "Sessão encerrada. Entre de novo."}
+    assert protegida.client.post("/api/auth/logout", headers=_bearer(token)).status_code == 401
+
+
+def test_logout_nao_derruba_outra_sessao_da_mesma_pessoa(protegida):
+    primeira, segunda = protegida.token("assistente"), protegida.token("assistente")
+    protegida.client.post("/api/auth/logout", headers=_bearer(primeira))
+    assert protegida.client.get("/api/_prova_logout", headers=_bearer(segunda)).status_code == 200
+
+
+def test_logout_sem_token_devolve_401(api):
+    resposta = api.client.post("/api/auth/logout")
+    assert resposta.status_code == 401
+    assert resposta.get_json() == {"erro": "Entre no sistema para continuar."}
+
+
+def test_logout_guarda_o_jti_ate_a_expiracao_e_limpa_os_vencidos(api):
+    from datetime import timedelta
+
+    from app.extensions import db
+    from app.models import TokenRevogado
+
+    with api.banco():
+        db.session.add(TokenRevogado(jti="vencido", expira_em=datetime.now(timezone.utc) - timedelta(minutes=1)))
+        db.session.commit()
+
+    token = api.token("direcao")
+    api.client.post("/api/auth/logout", headers=_bearer(token))
+
+    with api.banco():
+        dados = decode_token(token, allow_expired=True)
+        linhas = db.session.scalars(db.select(TokenRevogado)).all()
+        assert [t.jti for t in linhas] == [dados["jti"]]
+        expira = linhas[0].expira_em.replace(tzinfo=timezone.utc)
+        assert int(expira.timestamp()) == dados["exp"]
+
+
 # --- Limite de tentativas (spec 01 §1, passo 2) ---------------------------------
 
 

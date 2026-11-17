@@ -20,6 +20,7 @@ TABELAS = {
     "historico_demanda",
     "evolucao",
     "encaminhamento",
+    "token_revogado",
 }
 
 

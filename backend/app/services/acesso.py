@@ -3,6 +3,7 @@
 import threading
 import time
 from collections import deque
+from datetime import datetime, timezone
 from functools import lru_cache
 
 from flask import current_app
@@ -82,6 +83,17 @@ def emitir_token(usuario):
 
 
 class AcessoService:
+    @staticmethod
+    def sair(dados_do_token):
+        """Grava o jti até a expiração original; aproveita e limpa os vencidos."""
+        from app.models import TokenRevogado
+
+        TokenRevogado.esquecer_expirados()
+        expira_em = datetime.fromtimestamp(dados_do_token["exp"], timezone.utc)
+        if not TokenRevogado.revogado(dados_do_token["jti"]):
+            db.session.add(TokenRevogado(jti=dados_do_token["jti"], expira_em=expira_em))
+        db.session.commit()
+
     @staticmethod
     def entrar(email, senha, origem):
         """Login com limite: a sexta falha em 60 s do par origem + e-mail dá 429.

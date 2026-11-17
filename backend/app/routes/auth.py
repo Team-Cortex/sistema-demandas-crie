@@ -1,6 +1,7 @@
 """POST /api/auth/login e POST /api/auth/logout. Spec 01."""
 
 from flask import Blueprint, jsonify, request
+from flask_jwt_extended import get_jwt, verify_jwt_in_request
 
 from app.routes import corpo_json
 from app.schemas.acesso import LoginSchema
@@ -20,3 +21,11 @@ def login():
             "usuario": {"id": usuario.id, "nome": usuario.nome, "perfil": usuario.perfil},
         }
     )
+
+
+@bp.post("/auth/logout")
+def logout():
+    # O login é público; o logout não: verifica aqui, não no blueprint.
+    verify_jwt_in_request()
+    AcessoService.sair(get_jwt())
+    return jsonify({"ok": True})

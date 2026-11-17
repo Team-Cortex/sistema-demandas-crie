@@ -11,6 +11,7 @@ from app.models.encaminhamento import Encaminhamento
 from app.models.evolucao import Evolucao
 from app.models.historico import HistoricoDemanda, TipoHistorico
 from app.models.reuniao import Reuniao, Setor
+from app.models.sessao import TokenRevogado
 from app.models.usuario import (
     CLASSE_POR_PERFIL,
     AssistenteSocial,
@@ -37,5 +38,6 @@ __all__ = [
     "Reuniao",
     "Setor",
     "TipoHistorico",
+    "TokenRevogado",
     "Usuario",
 ]

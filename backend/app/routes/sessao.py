@@ -26,7 +26,11 @@ def _nao_autorizado(mensagem):
 
 def configurar_sessao(jwt):
     """Liga o JWTManager ao banco e às mensagens da spec 01."""
-    from app.models import Usuario
+    from app.models import TokenRevogado, Usuario
+
+    @jwt.token_in_blocklist_loader
+    def _encerrado_por_logout(_cabecalho, dados):
+        return TokenRevogado.revogado(dados["jti"])
 
     @jwt.user_lookup_loader
     def _carregar_usuario(_cabecalho, dados):
