@@ -20,6 +20,8 @@ TABELAS = {
     "historico_demanda",
     "evolucao",
     "encaminhamento",
+    "token_revogado",
+    "auditoria",
 }
 
 
@@ -72,6 +74,8 @@ def test_upgrade_cria_todas_as_tabelas_e_guardas(migravel):
         "evolucao_sem_delete",
         "demanda_sem_delete",
         "encaminhamento_sem_delete",
+        "auditoria_sem_update",
+        "auditoria_sem_delete",
     }
 
 
@@ -122,3 +126,21 @@ def test_trigger_recusa_apagar_historico_mesmo_por_sql(migravel):
                 c.execute(sql)
         # Mudar o estado da demanda continua permitido.
         c.execute("UPDATE demanda SET estado = 'em_andamento'")
+
+
+def test_trigger_recusa_alterar_ou_apagar_auditoria_por_sql(migravel):
+    app, caminho = migravel
+    with app.app_context():
+        upgrade()
+    with sqlite3.connect(caminho) as c:
+        c.executescript(
+            """
+            INSERT INTO usuario (id, nome, email, ativo, perfil, criado_em, senha_hash)
+                VALUES (1, 'U', 'u@exemplo.test', 1, 'direcao', '2026-10-01', 'x');
+            INSERT INTO auditoria (id, autor_id, acao, recurso, ocorrido_em)
+                VALUES (1, 1, 'listar', 'assistido', '2026-10-01');
+            """
+        )
+        for sql in ("DELETE FROM auditoria", "UPDATE auditoria SET acao = 'criar'"):
+            with pytest.raises(sqlite3.IntegrityError, match="não admite"):
+                c.execute(sql)

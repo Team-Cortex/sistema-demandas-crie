@@ -218,7 +218,8 @@ O fluxo usa **JWT** (JSON Web Token):
 1. O usuário envia e-mail e senha em `POST /api/auth/login`
 2. A API valida e devolve um token assinado, com validade de 30 minutos
 3. O front guarda o token em `sessionStorage` e o envia no cabeçalho `Authorization` de cada requisição
-4. Rotas protegidas com `@jwt_required()` recusam requisições sem token válido
+4. Cada blueprint de dado chama `exigir_login(bp)` (`routes/sessao.py`): antes de qualquer rota dele, o token é verificado e o usuário é carregado do banco, então conta desativada ou token de logout recebem 401 na hora; rota nova já nasce protegida
+5. Permissão de perfil fica no decorador `exige_permissao("pode_gerir_usuarios", "mensagem")`, que pergunta ao objeto `Usuario` e responde 403
 
 **Por que `sessionStorage` e não `localStorage`:** o token é descartado quando a aba fecha. Como o sistema roda em computadores compartilhados dentro da instituição, isso reduz o risco de a sessão de um profissional continuar aberta para o próximo que sentar na máquina. Combina com o RNF05, que exige encerramento de sessões inativas.
 
@@ -251,11 +252,13 @@ Erros de domínio são exceções, capturadas por handlers registrados na factor
 | --- | --- | --- |
 | `ErroDeNegocio` | 400 | Regra violada: transição de estado inválida, descrição vazia |
 | `PermissaoNegada` | 403 | Perfil sem acesso ao recurso |
-| `ValidationError` | 422 | Campos ausentes ou mal formatados |
+| `ValidationError` | 422 | Campos ausentes ou mal formatados (schema) |
+| `DadoInvalido` | 422 | Campo válido no formato, recusado pelo serviço: participante inativo, texto em branco |
+| `NaoEncontrado` | 404 | Recurso inexistente, ou responsável inexistente ou inativo |
 | — | 401 | Token ausente, inválido ou expirado |
-| — | 404 | Recurso inexistente |
+| — | 404 | Rota inexistente |
 
-Toda resposta de erro tem o mesmo formato: `{"erro": "mensagem legível"}`. As mensagens são escritas para quem usa o sistema, não para quem o desenvolve — a de login não revela se o e-mail existe, o que evita descobrir usuários por tentativa.
+Toda resposta de erro tem o mesmo formato: `{"erro": "mensagem legível"}`. No `ValidationError`, a mensagem é a do primeiro campo recusado, na ordem do schema. Erro HTTP sem exceção de domínio (400, 415, 500) também sai nesse formato, em português, sem detalhe interno. As mensagens são escritas para quem usa o sistema, não para quem o desenvolve — a de login não revela se o e-mail existe, o que evita descobrir usuários por tentativa.
 
 ---
 
@@ -293,7 +296,7 @@ A arquitetura acompanha as questões em aberto com a instituição:
 
 | Questão | Impacto na arquitetura |
 | --- | --- |
-| QA01 — quem enxerga o quê | Altera `Profissional.pode_ver_evolucao`. Hoje está na alternativa mais restritiva. |
+| QA01 — quem enxerga o quê | Altera `Profissional.pode_ver_evolucao`. A direção do CRIE escolheu acesso aberto (relatório v2), com a auditoria como controle; a regra restritiva continua no código, desligada em `Profissional.acesso_restrito`. |
 | QA02 — o que é "evolução" | Se for o andamento da demanda, o modelo `Evolucao` deixa de existir e o `HistoricoDemanda` absorve a função. |
 | QA04 — formato dos relatórios | Pode exigir uma camada de geração de documento. |
 | QA07 — campos do assistido | Altera o modelo `Assistido`. |

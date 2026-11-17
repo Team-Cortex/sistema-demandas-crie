@@ -4,6 +4,8 @@ Dado sensível de acompanhamento da pessoa atendida, distinto do
 histórico da demanda. Contrato: /api/assistidos/<id>/evolucoes.
 """
 
+from sqlalchemy.orm import joinedload, selectinload
+
 from app.extensions import db
 from app.models.imutavel import SomenteInsercao
 from app.models.usuario import agora
@@ -71,8 +73,17 @@ class Evolucao(SomenteInsercao, db.Model):
         if not incluir_retificadas:
             retificadas = db.select(cls.retifica_id).where(cls.retifica_id.is_not(None))
             consulta = consulta.where(cls.id.not_in(retificadas))
-        consulta = consulta.order_by(cls.data, cls.ocorrido_em, cls.id)
+        consulta = consulta.order_by(cls.data, cls.ocorrido_em, cls.id).options(*cls.carregar_junto())
         return db.session.scalars(consulta).all()
+
+    @classmethod
+    def carregar_junto(cls):
+        """O que a resposta usa de cada evolução, numa consulta só (sem uma por linha)."""
+        return (
+            selectinload(cls.retificada_por),
+            joinedload(cls.profissional),
+            joinedload(cls.autor),
+        )
 
     @property
     def versoes_anteriores(self):

@@ -199,5 +199,14 @@ class Demanda(SemExclusao, db.Model):
     def encerrada(self):
         return self.estado in (EstadoDemanda.CONCLUIDA, EstadoDemanda.CANCELADA)
 
+    def vencida_em(self, dia):
+        """Prazo anterior a `dia` e ainda em aberto. Encerrada não vence (spec 02)."""
+        return not self.encerrada and self.prazo is not None and self.prazo < dia
+
+    @property
+    def ultimo_movimento(self):
+        """Momento do item de histórico mais recente; sem histórico, o registro."""
+        return self.historico[-1].ocorrido_em if self.historico else self.criado_em
+
     def __repr__(self):
         return f"<Demanda {self.id}>"
