@@ -9,6 +9,7 @@ from app.schemas.demanda import (
     DemandaComHistoricoSchema,
     DemandaSchema,
     FiltroDemandaSchema,
+    FiltroMinhasSchema,
     HistoricoSchema,
     MudancaDeEstadoSchema,
     NovaDemandaSchema,
@@ -56,6 +57,13 @@ def painel():
             "vencidas": vencidas,
         }
     )
+
+
+@bp.get("/demandas/minhas")
+def minhas():
+    filtros = FiltroMinhasSchema().load(request.args)
+    demandas = DemandaService.do_responsavel(usuario_atual(), **filtros)
+    return jsonify(DemandaSchema(many=True).dump(demandas))
 
 
 @bp.post("/demandas/<int:demanda_id>/anotacoes")

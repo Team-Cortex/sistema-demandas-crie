@@ -56,6 +56,7 @@ A mensagem de login é sempre **E-mail ou senha inválidos.** O servidor não re
 | POST | `/api/demandas` | sim | 201 a demanda nascida `aberta`, com `historico`; 422 com a mensagem do campo (spec 02) |
 | GET | `/api/demandas` | sim | lista por último movimento; filtros `estado` (vírgula para vários), `responsavel_id`, `categoria`, `periodo_inicio`, `periodo_fim`, `assistido_id`, `reuniao_id`, `q` ou `busca`; sem filtro, sem as canceladas |
 | GET | `/api/demandas/painel` | sim | `por_estado` (`aberta`, `em_andamento`, `aguardando_terceiros`, cada uma do prazo mais antigo), `totais`, `total`, `vencidas` |
+| GET | `/api/demandas/minhas` | sim | as do usuário do token, não encerradas, do prazo mais antigo, com `vencida`; filtro `estado` |
 | GET | `/api/demandas/<id>` | sim | a demanda com `vencida`, `ultimo_movimento` e `historico`; 404 inexistente |
 | PATCH | `/api/demandas/<id>/estado` | sim | corpo `estado`; 200 a demanda com o histórico novo; 400 transição recusada, sem gravar; 422 sem `estado`. Sem `DELETE` |
 | POST | `/api/demandas/<id>/anotacoes` | sim | corpo `texto`; 201 o item de histórico `anotacao`; o estado não muda; 422 texto vazio |

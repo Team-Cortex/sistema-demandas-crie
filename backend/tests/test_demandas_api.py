@@ -275,6 +275,33 @@ def test_painel_exige_token(cenario):
     assert cenario.get("/api/demandas/painel", como=None).status_code == 401
 
 
+# --- GET /minhas ---------------------------------------------------------------------
+
+
+def test_minhas_traz_so_as_do_usuario_em_aberto_por_prazo(varias):
+    corpo = varias.get("/api/demandas/minhas", como="educadora").get_json()
+    assert [d["descricao"] for d in corpo] == ["Aguardar CAPSi"]
+    corpo = varias.get("/api/demandas/minhas", como="assistente").get_json()
+    assert [(d["descricao"], d["vencida"]) for d in corpo] == [
+        ("Renovar BPC no INSS", True),
+        ("Pedir transporte adaptado", False),
+    ]
+
+
+def test_minhas_com_estado_mostra_as_encerradas(varias):
+    corpo = varias.get("/api/demandas/minhas?estado=concluida,cancelada", como="educadora").get_json()
+    assert {d["descricao"] for d in corpo} == {"Vaga na escola estadual", "Cesta básica emergencial"}
+
+
+def test_minhas_da_direcao_sem_demanda_vem_vazia(varias):
+    assert varias.get("/api/demandas/minhas").get_json() == []
+
+
+def test_minhas_exige_token_e_filtro_valido(varias):
+    assert varias.get("/api/demandas/minhas", como=None).status_code == 401
+    assert varias.get("/api/demandas/minhas?estado=x").status_code == 422
+
+
 # --- PATCH /<id>/estado (card #26: transições, inclusive recusadas) ----------------
 
 ACEITAS = [

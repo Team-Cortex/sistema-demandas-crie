@@ -103,6 +103,16 @@ class FiltroDemandaSchema(Filtro):
         return dados
 
 
+class FiltroMinhasSchema(Filtro):
+    estado = fields.String(validate=_estados)
+
+    @post_load
+    def _normaliza(self, dados, **_kwargs):
+        if "estado" in dados:
+            dados["estado"] = [p.strip() for p in dados["estado"].split(",") if p.strip()]
+        return dados
+
+
 class HistoricoSchema(Schema):
     id = fields.Integer()
     tipo = valor_do_enum("tipo")

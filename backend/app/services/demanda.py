@@ -152,6 +152,22 @@ class DemandaService:
         return por_estado, vencidas
 
     @staticmethod
+    def do_responsavel(usuario, estado=None):
+        """As demandas sob a responsabilidade do usuário (RF34).
+
+        Sem filtro, só as não encerradas; do prazo mais antigo para o mais novo.
+        """
+        from app.models import Demanda
+
+        estados = [EstadoDemanda(e) for e in estado] if estado else list(EM_ABERTO)
+        consulta = (
+            db.select(Demanda)
+            .where(Demanda.responsavel_id == usuario.id, Demanda.estado.in_(estados))
+            .order_by(Demanda.prazo, Demanda.id)
+        )
+        return db.session.scalars(DemandaService._com_vinculos(consulta)).unique().all()
+
+    @staticmethod
     def obter(demanda_id):
         from app.models import Demanda
 
