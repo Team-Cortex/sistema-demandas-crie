@@ -10,6 +10,7 @@ import os
 from flask import Flask
 from flask_cors import CORS
 
+from app.cli import criar_primeira_direcao
 from app.errors import registrar_erros
 from app.extensions import db, jwt, migrate
 from app.routes.assistidos import bp as assistidos_bp
@@ -80,4 +81,5 @@ def create_app(config_object=None):
     app.register_blueprint(encaminhamentos_bp, url_prefix="/api")
     app.register_blueprint(relatorios_bp, url_prefix="/api")
     registrar_erros(app)
+    app.cli.add_command(criar_primeira_direcao)
     return app
