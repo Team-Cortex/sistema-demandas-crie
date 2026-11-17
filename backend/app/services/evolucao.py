@@ -4,7 +4,9 @@ Toda operação passa por pode_ver_evolucao e grava auditoria. Não há
 exclusão: corrigir é retificar, que cria versão nova.
 """
 
-from app.errors import DadoInvalido, NaoEncontrado
+from sqlalchemy.exc import IntegrityError
+
+from app.errors import DadoInvalido, ErroDeNegocio, NaoEncontrado
 from app.extensions import db
 from app.schemas import descrever_filtros
 from app.services.acesso import exigir_acesso_ao_assistido
@@ -12,6 +14,7 @@ from app.services.assistido import AssistidoService
 from app.services.auditoria import AuditoriaService
 
 INEXISTENTE = "Evolução inexistente."
+SO_A_VIGENTE = "Só a versão vigente da evolução pode ser retificada."
 
 
 class EvolucaoService:
@@ -46,10 +49,10 @@ class EvolucaoService:
         return evolucoes
 
     @staticmethod
-    def obter(evolucao_id):
+    def obter(evolucao_id, para_alterar=False):
         from app.models import Evolucao
 
-        evolucao = db.session.get(Evolucao, evolucao_id)
+        evolucao = db.session.get(Evolucao, evolucao_id, with_for_update=para_alterar or None)
         if evolucao is None:
             raise NaoEncontrado(INEXISTENTE)
         return evolucao
@@ -64,14 +67,19 @@ class EvolucaoService:
     @staticmethod
     def retificar(evolucao_id, dados, autor):
         """Versão nova com autor e momento; a anterior fica intacta (RF24)."""
-        evolucao = EvolucaoService.obter(evolucao_id)
+        evolucao = EvolucaoService.obter(evolucao_id, para_alterar=True)
         exigir_acesso_ao_assistido(autor, evolucao.assistido)
         try:
             nova = evolucao.retificar(autor, **dados)
         except ValueError as erro:
             raise DadoInvalido(str(erro)) from None
         db.session.add(nova)
-        db.session.flush()
+        try:
+            db.session.flush()
+        except IntegrityError:
+            # retifica_id é único: outra retificação da mesma versão chegou antes.
+            db.session.rollback()
+            raise ErroDeNegocio(SO_A_VIGENTE) from None
         AuditoriaService.registrar(
             autor, "retificar", "evolucao", nova.id, nova.assistido_id, detalhe=f"retifica {evolucao.id}"
         )

@@ -153,6 +153,18 @@ def test_retificar_versao_antiga_devolve_400(assistido):
     assert _quantas(assistido) == 2
 
 
+def test_corrida_na_retificacao_vira_400_e_nao_500(assistido, monkeypatch):
+    """Simula a segunda retificação simultânea: passou pela checagem de vigente, mas o
+    banco recusa (retifica_id é único). A resposta é 400, sem texto da evolução."""
+    v1 = _lancar(assistido, descricao="texto sigiloso fictício").get_json()["id"]
+    assistido.patch(f"/api/evolucoes/{v1}", json={"descricao": "primeira correção"})
+    monkeypatch.setattr(Evolucao, "vigente", property(lambda self: True))
+    resposta = assistido.patch(f"/api/evolucoes/{v1}", json={"descricao": "segunda correção"})
+    assert resposta.status_code == 400
+    assert resposta.get_json() == {"erro": "Só a versão vigente da evolução pode ser retificada."}
+    assert _quantas(assistido) == 2
+
+
 @pytest.mark.parametrize(
     "corpo, mensagem",
     [

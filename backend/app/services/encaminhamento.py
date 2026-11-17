@@ -90,17 +90,19 @@ class EncaminhamentoService:
         return itens
 
     @staticmethod
-    def obter(encaminhamento_id):
+    def obter(encaminhamento_id, para_alterar=False):
         from app.models import Encaminhamento
 
-        encaminhamento = db.session.get(Encaminhamento, encaminhamento_id)
+        encaminhamento = db.session.get(
+            Encaminhamento, encaminhamento_id, with_for_update=para_alterar or None
+        )
         if encaminhamento is None:
             raise NaoEncontrado(INEXISTENTE)
         return encaminhamento
 
     @staticmethod
-    def _acessivel(encaminhamento_id, autor):
-        encaminhamento = EncaminhamentoService.obter(encaminhamento_id)
+    def _acessivel(encaminhamento_id, autor, para_alterar=False):
+        encaminhamento = EncaminhamentoService.obter(encaminhamento_id, para_alterar)
         if encaminhamento.assistido is not None:
             exigir_acesso_ao_assistido(autor, encaminhamento.assistido, SEM_ACESSO)
         return encaminhamento
@@ -108,7 +110,8 @@ class EncaminhamentoService:
     @staticmethod
     def registrar_desfecho(encaminhamento_id, texto, autor):
         """Uma vez só, com autor e momento (RF28). Segundo desfecho → 400 pelo model."""
-        encaminhamento = EncaminhamentoService._acessivel(encaminhamento_id, autor)
+        # Trava a linha: o segundo pedido simultâneo espera e vê o desfecho já gravado.
+        encaminhamento = EncaminhamentoService._acessivel(encaminhamento_id, autor, para_alterar=True)
         try:
             encaminhamento.registrar_desfecho(texto, autor)
         except ValueError as erro:

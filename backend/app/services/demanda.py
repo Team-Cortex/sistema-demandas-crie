@@ -104,7 +104,7 @@ class DemandaService:
     @staticmethod
     def mudar_estado(demanda_id, estado, autor):
         """Transição recusada → 400 pelo model, sem gravar histórico."""
-        demanda = DemandaService.obter(demanda_id)
+        demanda = DemandaService.obter(demanda_id, para_alterar=True)
         demanda.mudar_estado(estado, autor)
         db.session.commit()
         return demanda
@@ -112,7 +112,7 @@ class DemandaService:
     @staticmethod
     def anotar(demanda_id, texto, autor):
         """Anotação vira item de histórico; o estado não muda (RF15)."""
-        demanda = DemandaService.obter(demanda_id)
+        demanda = DemandaService.obter(demanda_id, para_alterar=True)
         try:
             item = demanda.anotar(texto, autor)
         except ValueError as erro:
@@ -125,7 +125,7 @@ class DemandaService:
         """Inexistente ou inativo → 404 pelo model; a troca vai para o histórico (RF16)."""
         from app.models import Usuario
 
-        demanda = DemandaService.obter(demanda_id)
+        demanda = DemandaService.obter(demanda_id, para_alterar=True)
         demanda.reatribuir(db.session.get(Usuario, responsavel_id), autor)
         db.session.commit()
         return demanda
@@ -168,10 +168,12 @@ class DemandaService:
         return db.session.scalars(DemandaService._com_vinculos(consulta)).unique().all()
 
     @staticmethod
-    def obter(demanda_id):
+    def obter(demanda_id, para_alterar=False):
+        """`para_alterar` trava a linha (SELECT ... FOR UPDATE no PostgreSQL) até o commit:
+        duas mudanças de estado ao mesmo tempo não passam as duas pela validação."""
         from app.models import Demanda
 
-        demanda = db.session.get(Demanda, demanda_id)
+        demanda = db.session.get(Demanda, demanda_id, with_for_update=para_alterar or None)
         if demanda is None:
             raise NaoEncontrado(INEXISTENTE)
         return demanda
