@@ -51,10 +51,30 @@ class LimiteDeTentativas:
 
     def registrar_falha(self, chave):
         with self._trava:
-            agora = self._relogio()
-            self._falhas.setdefault(chave, deque(maxlen=self.maximo)).append(agora)
-            if len(self._falhas) > 10_000:
-                self._esquecer_antigas(agora)
+            self._anotar(chave)
+
+    def reservar(self, chave):
+        """Conta a tentativa antes de comparar a senha, numa operação só.
+
+        Devolve False se o par já estava travado. Assim, pedidos em paralelo
+        não passam todos pela checagem antes de alguma falha ser contada.
+        A tentativa que der certo apaga a contagem com `limpar`.
+        """
+        with self._trava:
+            falhas = self._falhas.get(chave)
+            travado = (
+                falhas is not None
+                and len(falhas) >= self.maximo
+                and self._relogio() - falhas[0] < self.janela
+            )
+            self._anotar(chave)
+            return not travado
+
+    def _anotar(self, chave):
+        agora = self._relogio()
+        self._falhas.setdefault(chave, deque(maxlen=self.maximo)).append(agora)
+        if len(self._falhas) > 10_000:
+            self._esquecer_antigas(agora)
 
     def limpar(self, chave):
         with self._trava:
@@ -108,19 +128,15 @@ class AcessoService:
     def entrar(email, senha, origem):
         """Login com limite: a sexta falha em 60 s do par origem + e-mail dá 429.
 
-        A tentativa travada também conta como falha e não chega a comparar
-        a senha, nem a certa.
+        A tentativa é contada antes da comparação de senha (pedidos em paralelo
+        não escapam da conta); a travada não chega a comparar a senha, nem a
+        certa; a que dá certo zera a contagem.
         """
         limite = limite_de_login()
         chave = (origem or "", email.strip().lower())
-        if limite.bloqueado(chave):
-            limite.registrar_falha(chave)
+        if not limite.reservar(chave):
             raise MuitasTentativas(CREDENCIAL_RECUSADA)
-        try:
-            usuario = AcessoService.autenticar(email, senha)
-        except NaoAutenticado:
-            limite.registrar_falha(chave)
-            raise
+        usuario = AcessoService.autenticar(email, senha)
         limite.limpar(chave)
         return usuario
 

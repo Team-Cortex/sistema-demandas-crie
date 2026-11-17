@@ -226,6 +226,20 @@ def test_login_certo_zera_as_falhas(api, relogio):
     _falhar(api, 5)  # se não tivesse zerado, a quinta já seria 429
 
 
+def test_reserva_conta_antes_da_senha_e_nao_deixa_passar_em_paralelo():
+    """Dez pedidos ao mesmo tempo: só os cinco primeiros chegam a comparar a senha."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    from app.services.acesso import LimiteDeTentativas
+
+    limite = LimiteDeTentativas(maximo=5, janela=60, relogio=Relogio())
+    with ThreadPoolExecutor(max_workers=10) as grupo:
+        liberadas = list(grupo.map(lambda _: limite.reservar(("ip", "a@exemplo.test")), range(10)))
+    assert liberadas.count(True) == 5
+    limite.limpar(("ip", "a@exemplo.test"))
+    assert limite.reservar(("ip", "a@exemplo.test")) is True
+
+
 def test_limite_isolado_conta_e_esquece():
     from app.services.acesso import LimiteDeTentativas
 
