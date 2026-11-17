@@ -216,3 +216,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Dependências do front-end
+node_modules/
+
+# Vínculo local com a Vercel
+.vercel
+.env*.local
