@@ -19,7 +19,7 @@ Ordem das regras:
 2. Conta as falhas recentes daquele par IP + e-mail. Na sexta falha em 60 segundos → 429, `{"erro": "E-mail ou senha inválidos."}`.
 3. Busca o usuário pelo e-mail. Se não existir, compara a senha com um hash fixo de mentira, no mesmo custo do hash real.
 4. Se a conta não existir, estiver inativa ou a senha não conferir → 401, `{"erro": "E-mail ou senha inválidos."}`. A conta inativa também passa pela comparação de senha, para responder no mesmo tempo.
-5. Emite JWT com `sub` = id (em texto, exigência do PyJWT), `perfil` e expiração em 30 minutos. Resposta 200: `{"token": "...", "perfil": "direcao", "usuario": {"id": 1, "nome": "...", "perfil": "direcao"}}`. O e-mail que deu certo zera a contagem de falhas do par IP + e-mail.
+5. Emite JWT com `sub` = id (em texto, exigência do PyJWT), `perfil` e expiração em 30 minutos. Resposta 200: `{"token": "...", "perfil": "direcao", "usuario": {"id": 1, "nome": "...", "perfil": "direcao"}, "avisos": {...}}`. O formato de `avisos` (demandas vencidas ou perto do prazo, sem dado de saúde) está na [spec 09](09-aviso-de-prazo.md). O e-mail que deu certo zera a contagem de falhas do par IP + e-mail.
 
 A contagem de falhas fica na memória do processo do servidor: reiniciar zera, e com mais de um processo cada um conta o seu. Basta para um processo só; mais que isso depende do deploy.
 
