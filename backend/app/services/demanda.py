@@ -108,6 +108,17 @@ class DemandaService:
         return demanda
 
     @staticmethod
+    def anotar(demanda_id, texto, autor):
+        """Anotação vira item de histórico; o estado não muda (RF15)."""
+        demanda = DemandaService.obter(demanda_id)
+        try:
+            item = demanda.anotar(texto, autor)
+        except ValueError as erro:
+            raise DadoInvalido(str(erro)) from None
+        db.session.commit()
+        return item
+
+    @staticmethod
     def obter(demanda_id):
         from app.models import Demanda
 

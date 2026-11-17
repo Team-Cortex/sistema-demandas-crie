@@ -53,6 +53,14 @@ class MudancaDeEstadoSchema(Entrada):
     estado = fields.String(required=True, error_messages=mensagens("Informe o novo estado."))
 
 
+class AnotacaoSchema(Entrada):
+    texto = fields.String(
+        required=True,
+        validate=preenchido("Escreva o texto da anotação."),
+        error_messages=mensagens("Escreva o texto da anotação."),
+    )
+
+
 def _estados(valor):
     """`aberta` ou `aberta,em_andamento` → lista; estado desconhecido é 422."""
     partes = [p.strip() for p in valor.split(",") if p.strip()]

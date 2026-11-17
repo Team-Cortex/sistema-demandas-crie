@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request
 from app.routes import corpo_json
 from app.routes.sessao import exigir_login, usuario_atual
 from app.schemas.demanda import (
+    AnotacaoSchema,
     DemandaComHistoricoSchema,
     DemandaSchema,
     FiltroDemandaSchema,
@@ -40,6 +41,13 @@ def mudar_estado(demanda_id):
     dados = MudancaDeEstadoSchema().load(corpo_json())
     demanda = DemandaService.mudar_estado(demanda_id, dados["estado"], usuario_atual())
     return jsonify(DemandaComHistoricoSchema().dump(demanda))
+
+
+@bp.post("/demandas/<int:demanda_id>/anotacoes")
+def anotar(demanda_id):
+    dados = AnotacaoSchema().load(corpo_json())
+    item = DemandaService.anotar(demanda_id, dados["texto"], usuario_atual())
+    return jsonify(HistoricoSchema().dump(item)), 201
 
 
 @bp.get("/demandas/<int:demanda_id>/historico")

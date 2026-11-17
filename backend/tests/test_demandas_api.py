@@ -306,6 +306,45 @@ def test_mudar_estado_exige_token_e_demanda_existente(cenario):
     assert cenario.patch("/api/demandas/9999/estado", json={"estado": "em_andamento"}).status_code == 404
 
 
+# --- POST /<id>/anotacoes --------------------------------------------------------
+
+
+def test_anotacao_vira_historico_sem_mudar_estado(cenario):
+    demanda_id = _demanda_em(cenario, E.EM_ANDAMENTO)
+    resposta = cenario.post(
+        f"/api/demandas/{demanda_id}/anotacoes", json={"texto": "  Liguei para o CRAS.  "}, como="assistente"
+    )
+    assert resposta.status_code == 201
+    item = resposta.get_json()
+    assert (item["tipo"], item["texto"], item["estado_novo"]) == ("anotacao", "Liguei para o CRAS.", None)
+    assert item["autor_nome"] == "Bruna Fictícia"
+    detalhe = cenario.get(f"/api/demandas/{demanda_id}").get_json()
+    assert detalhe["estado"] == "em_andamento"
+    assert detalhe["historico"][-1]["id"] == item["id"]
+    assert detalhe["ultimo_movimento"] == item["ocorrido_em"]
+
+
+@pytest.mark.parametrize("corpo", [{"texto": ""}, {"texto": "   "}, {}, {"texto": None}])
+def test_anotacao_vazia_devolve_422_sem_gravar(cenario, corpo):
+    demanda_id = _demanda_em(cenario, E.ABERTA)
+    antes = _historico(cenario, demanda_id)
+    resposta = cenario.post(f"/api/demandas/{demanda_id}/anotacoes", json=corpo)
+    assert resposta.status_code == 422
+    assert resposta.get_json() == {"erro": "Escreva o texto da anotação."}
+    assert _historico(cenario, demanda_id) == antes
+
+
+def test_anotar_em_demanda_inexistente_devolve_404(cenario):
+    assert cenario.post("/api/demandas/9999/anotacoes", json={"texto": "x"}).status_code == 404
+
+
+def test_historico_nao_tem_rota_de_alterar_nem_apagar(cenario):
+    demanda_id = _demanda_em(cenario, E.ABERTA)
+    for metodo in ("put", "patch", "delete"):
+        assert getattr(cenario, metodo)(f"/api/demandas/{demanda_id}/historico").status_code == 405
+        assert getattr(cenario, metodo)(f"/api/demandas/{demanda_id}/anotacoes").status_code == 405
+
+
 def test_nao_existe_exclusao_de_demanda(cenario):
     demanda_id = _demanda_em(cenario, E.ABERTA)
     assert cenario.delete(f"/api/demandas/{demanda_id}").status_code == 405
