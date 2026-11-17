@@ -49,6 +49,9 @@ A mensagem de login é sempre **E-mail ou senha inválidos.** O servidor não re
 | GET | `/api/usuarios/<id>` | sim | o usuário; 404 inexistente |
 | PATCH ou PUT | `/api/usuarios/<id>` | direção | corpo com `nome`, `perfil` e/ou `ativo`; 200 o usuário; 400 se a direção mexe no próprio perfil ou se desativa |
 | PATCH | `/api/usuarios/<id>/desativar` | direção | 200 o usuário com `ativo: false`; a sessão aberta dele cai; 400 na própria conta. Sem `DELETE` |
+| POST | `/api/reunioes` | sim | corpo `data`, `setor`, `participante_ids`; 201 a reunião com `participantes` e `demandas: []`; 422 setor, data ou participante inválido |
+| GET | `/api/reunioes` | sim | lista por data decrescente; filtro `setor`; cada item `id`, `data`, `setor`, `participantes`, `criado_em` |
+| GET | `/api/reunioes/<id>` | sim | a reunião mais `demandas` (`id`, `descricao`, `estado`); 404 inexistente |
 | GET | `/api/auditoria` | direção | `itens`, `total`, `pagina`, `por_pagina`; filtros `autor_id`, `assistido_id`, `recurso`, `acao`, `de`, `ate` (spec 05) |
 
 `/api/saude` não inclui host do banco, versão de schema, stack nem mensagem interna. Detalhe de falha fica no log do servidor, com id de correlação, status e duração. O log não leva senha, token, e-mail nem corpo da requisição.
