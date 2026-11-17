@@ -46,3 +46,10 @@ def alterar(usuario_id):
     dados = AlterarUsuarioSchema().load(corpo_json())
     usuario = UsuarioService.alterar(usuario_id, dados, usuario_atual())
     return jsonify(UsuarioSchema().dump(usuario))
+
+
+@bp.patch("/usuarios/<int:usuario_id>/desativar")
+@exige_permissao("pode_gerir_usuarios", NAO_ALTERA)
+def desativar(usuario_id):
+    usuario = UsuarioService.desativar(usuario_id, usuario_atual())
+    return jsonify(UsuarioSchema().dump(usuario))

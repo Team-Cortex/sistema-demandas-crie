@@ -66,6 +66,11 @@ class UsuarioService:
         return usuario
 
     @staticmethod
+    def desativar(usuario_id, autor):
+        """Nunca exclui (RF04). Já inativo continua inativo, sem erro."""
+        return UsuarioService.alterar(usuario_id, {"ativo": False}, autor)
+
+    @staticmethod
     def cadastrar(dados):
         from app.models import CLASSE_POR_PERFIL, Usuario
 

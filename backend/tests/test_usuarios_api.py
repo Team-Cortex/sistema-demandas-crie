@@ -216,3 +216,52 @@ def test_direcao_muda_o_proprio_nome(api):
 
 def test_editar_inexistente_devolve_404(api):
     assert api.patch("/api/usuarios/9999", json={"nome": "X"}).status_code == 404
+
+
+# --- PATCH /api/usuarios/<id>/desativar -------------------------------------------
+
+
+def test_desativar_nao_apaga_e_derruba_a_sessao(api):
+    assistente = api.pessoas["assistente"]
+    token = api.token("assistente")
+
+    resposta = api.patch(f"/api/usuarios/{assistente}/desativar")
+    assert resposta.status_code == 200
+    assert resposta.get_json()["ativo"] is False
+
+    with api.banco() as db:
+        assert db.session.get(Usuario, assistente) is not None
+    sessao = api.client.get("/api/usuarios", headers={"Authorization": f"Bearer {token}"})
+    assert sessao.status_code == 401
+    login = api.client.post("/api/auth/login", json={"email": "assistente@exemplo.test", "senha": "senha-ficticia-1"})
+    assert login.status_code == 401
+
+
+def test_desativar_quem_ja_esta_inativo_devolve_200(api):
+    resposta = api.patch(f"/api/usuarios/{api.pessoas['inativa']}/desativar")
+    assert resposta.status_code == 200
+    assert resposta.get_json()["ativo"] is False
+
+
+def test_direcao_nao_desativa_a_propria_conta(api):
+    resposta = api.patch(f"/api/usuarios/{api.pessoas['direcao']}/desativar")
+    assert resposta.status_code == 400
+    with api.banco() as db:
+        assert db.session.get(Usuario, api.pessoas["direcao"]).ativo is True
+
+
+@pytest.mark.parametrize("quem", ["assistente", "educadora"])
+def test_profissional_nao_desativa(api, quem):
+    resposta = api.patch(f"/api/usuarios/{api.pessoas['educadora']}/desativar", como=quem)
+    assert resposta.status_code == 403
+
+
+def test_desativar_inexistente_devolve_404(api):
+    assert api.patch("/api/usuarios/9999/desativar").status_code == 404
+
+
+def test_nao_existe_exclusao_de_usuario(api):
+    resposta = api.delete(f"/api/usuarios/{api.pessoas['educadora']}")
+    assert resposta.status_code == 405
+    with api.banco() as db:
+        assert db.session.get(Usuario, api.pessoas["educadora"]) is not None
