@@ -165,6 +165,54 @@ def test_inexistente_devolve_404(base):
     assert resposta.get_json() == {"erro": "Encaminhamento inexistente."}
 
 
+# --- PATCH desfecho --------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("sufixo", ["/desfecho", ""])
+def test_registra_o_desfecho_com_autor_e_momento_uma_vez(base, sufixo):
+    encaminhamento_id = _registrar(base, assistido_id=base.ids["assistido"]).get_json()["id"]
+    url = f"/api/encaminhamentos/{encaminhamento_id}{sufixo}"
+    resposta = base.patch(url, json={"desfecho": " Consulta marcada para dezembro. "}, como="assistente")
+    assert resposta.status_code == 200
+    corpo = resposta.get_json()
+    assert corpo["desfecho"] == "Consulta marcada para dezembro."
+    assert corpo["desfecho_autor_id"] == base.pessoas["assistente"]
+    assert corpo["desfecho_em"].endswith("-03:00")
+    assert corpo["pendente"] is False
+    assert _auditoria(base)[-1] == (
+        "registrar_desfecho", "encaminhamento", encaminhamento_id, base.ids["assistido"], None
+    )
+
+    segundo = base.patch(url, json={"desfecho": "Outro desfecho."})
+    assert segundo.status_code == 400
+    assert segundo.get_json() == {"erro": "Este encaminhamento já tem desfecho registrado."}
+    assert base.get(url.replace("/desfecho", "")).get_json()["desfecho"] == "Consulta marcada para dezembro."
+
+
+@pytest.mark.parametrize("corpo", [{}, {"desfecho": "   "}, {"desfecho": None}])
+def test_desfecho_vazio_devolve_422(base, corpo):
+    encaminhamento_id = _registrar(base, assistido_id=base.ids["assistido"]).get_json()["id"]
+    resposta = base.patch(f"/api/encaminhamentos/{encaminhamento_id}/desfecho", json=corpo)
+    assert resposta.status_code == 422
+    assert resposta.get_json() == {"erro": "Escreva o desfecho do encaminhamento."}
+
+
+def test_patch_nao_muda_outros_campos(base):
+    encaminhamento_id = _registrar(base, assistido_id=base.ids["assistido"]).get_json()["id"]
+    resposta = base.patch(f"/api/encaminhamentos/{encaminhamento_id}", json={"destino": "Outro lugar"})
+    assert resposta.status_code == 422
+
+
+def test_desfecho_some_da_lista_de_pendentes(base):
+    encaminhamento_id = _registrar(base, assistido_id=base.ids["assistido"]).get_json()["id"]
+    base.patch(f"/api/encaminhamentos/{encaminhamento_id}/desfecho", json={"desfecho": "Resolvido."})
+    assert base.get("/api/encaminhamentos/pendentes").get_json() == []
+
+
+def test_desfecho_em_inexistente_devolve_404(base):
+    assert base.patch("/api/encaminhamentos/9999/desfecho", json={"desfecho": "x"}).status_code == 404
+
+
 def test_nao_existe_exclusao_de_encaminhamento(base):
     encaminhamento_id = _registrar(base, assistido_id=base.ids["assistido"]).get_json()["id"]
     assert base.delete(f"/api/encaminhamentos/{encaminhamento_id}").status_code == 405

@@ -5,6 +5,7 @@ from flask import Blueprint, jsonify, request
 from app.routes import corpo_json
 from app.routes.sessao import exigir_login, usuario_atual
 from app.schemas.encaminhamento import (
+    DesfechoSchema,
     EncaminhamentoSchema,
     FiltroEncaminhamentoSchema,
     NovoEncaminhamentoSchema,
@@ -40,4 +41,15 @@ def pendentes():
 @bp.get("/encaminhamentos/<int:encaminhamento_id>")
 def consultar(encaminhamento_id):
     encaminhamento = EncaminhamentoService.consultar(encaminhamento_id, usuario_atual())
+    return jsonify(EncaminhamentoSchema().dump(encaminhamento))
+
+
+# O card pediu /<id>/desfecho; o contrato, PATCH /<id>. Os dois só aceitam o desfecho.
+@bp.patch("/encaminhamentos/<int:encaminhamento_id>/desfecho")
+@bp.patch("/encaminhamentos/<int:encaminhamento_id>")
+def registrar_desfecho(encaminhamento_id):
+    dados = DesfechoSchema().load(corpo_json())
+    encaminhamento = EncaminhamentoService.registrar_desfecho(
+        encaminhamento_id, dados["desfecho"], usuario_atual()
+    )
     return jsonify(EncaminhamentoSchema().dump(encaminhamento))

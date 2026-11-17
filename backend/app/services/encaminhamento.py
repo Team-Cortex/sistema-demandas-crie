@@ -102,6 +102,20 @@ class EncaminhamentoService:
         return encaminhamento
 
     @staticmethod
+    def registrar_desfecho(encaminhamento_id, texto, autor):
+        """Uma vez só, com autor e momento (RF28). Segundo desfecho → 400 pelo model."""
+        encaminhamento = EncaminhamentoService._acessivel(encaminhamento_id, autor)
+        try:
+            encaminhamento.registrar_desfecho(texto, autor)
+        except ValueError as erro:
+            raise DadoInvalido(str(erro)) from None
+        AuditoriaService.registrar(
+            autor, "registrar_desfecho", "encaminhamento", encaminhamento.id, encaminhamento.assistido_id
+        )
+        db.session.commit()
+        return encaminhamento
+
+    @staticmethod
     def consultar(encaminhamento_id, autor):
         encaminhamento = EncaminhamentoService._acessivel(encaminhamento_id, autor)
         AuditoriaService.registrar_leitura(
