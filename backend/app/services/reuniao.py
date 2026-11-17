@@ -51,3 +51,18 @@ class ReuniaoService:
         if reuniao is None:
             raise NaoEncontrado(INEXISTENTE)
         return reuniao
+
+    @staticmethod
+    def alterar(reuniao_id, dados):
+        """Muda data, setor e participantes. As demandas da reunião ficam."""
+        from app.models import Setor
+
+        reuniao = ReuniaoService.obter(reuniao_id)
+        if "participante_ids" in dados:
+            reuniao.participantes = ReuniaoService._participantes(dados["participante_ids"])
+        if "data" in dados:
+            reuniao.data = dados["data"]
+        if "setor" in dados:
+            reuniao.setor = Setor(dados["setor"])
+        db.session.commit()
+        return reuniao

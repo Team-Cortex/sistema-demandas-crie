@@ -118,3 +118,71 @@ def test_reuniao_inexistente_devolve_404(api):
     resposta = api.get("/api/reunioes/9999")
     assert resposta.status_code == 404
     assert resposta.get_json() == {"erro": "Reunião inexistente."}
+
+
+# --- PATCH / PUT ---------------------------------------------------------------
+
+
+@pytest.mark.parametrize("metodo", ["patch", "put"])
+def test_altera_data_setor_e_participantes(api, metodo):
+    reuniao_id = _nova(api).get_json()["id"]
+    resposta = getattr(api, metodo)(
+        f"/api/reunioes/{reuniao_id}",
+        json={"data": "2026-11-12", "setor": "convivencia", "participante_ids": [api.pessoas["educadora"]]},
+        como="assistente",
+    )
+    assert resposta.status_code == 200
+    corpo = resposta.get_json()
+    assert (corpo["data"], corpo["setor"]) == ("2026-11-12", "convivencia")
+    assert [p["nome"] for p in corpo["participantes"]] == ["Carlos Fictício"]
+
+
+def test_altera_so_o_que_veio(api):
+    reuniao_id = _nova(api).get_json()["id"]
+    corpo = api.patch(f"/api/reunioes/{reuniao_id}", json={"setor": "pedagogico"}).get_json()
+    assert corpo["data"] == "2026-11-10"
+    assert len(corpo["participantes"]) == 2
+
+
+def test_alterar_nao_apaga_demanda_ligada(api):
+    reuniao_id = _nova(api).get_json()["id"]
+    with api.banco() as db:
+        autor = db.session.get(Usuario, api.pessoas["direcao"])
+        db.session.add(Demanda.abrir(autor, descricao="ligada", prioridade=Prioridade.BAIXA,
+                                     prazo=date(2026, 12, 1), responsavel=autor,
+                                     reuniao=db.session.get(Reuniao, reuniao_id)))
+        db.session.commit()
+    corpo = api.patch(f"/api/reunioes/{reuniao_id}", json={"participante_ids": [api.pessoas["educadora"]]}).get_json()
+    assert [d["descricao"] for d in corpo["demandas"]] == ["ligada"]
+
+
+@pytest.mark.parametrize(
+    "corpo, mensagem",
+    [
+        ({}, "Informe o que muda: data, setor ou participantes."),
+        ({"setor": "financeiro"}, "Informe o setor da reunião."),
+        ({"participante_ids": [-1]}, "Informe participantes ativos."),
+        ({"participante_ids": []}, "Informe participantes ativos."),
+    ],
+)
+def test_alteracao_invalida_devolve_422_e_nao_muda(api, corpo, mensagem):
+    reuniao_id = _nova(api).get_json()["id"]
+    resposta = api.patch(f"/api/reunioes/{reuniao_id}", json=corpo)
+    assert resposta.status_code == 422
+    assert resposta.get_json() == {"erro": mensagem}
+    assert api.get(f"/api/reunioes/{reuniao_id}").get_json()["setor"] == "saude"
+
+
+def test_alterar_com_participante_inativo_devolve_422(api):
+    reuniao_id = _nova(api).get_json()["id"]
+    resposta = api.patch(f"/api/reunioes/{reuniao_id}", json={"participante_ids": [api.pessoas["inativa"]]})
+    assert resposta.status_code == 422
+
+
+def test_alterar_inexistente_devolve_404(api):
+    assert api.patch("/api/reunioes/9999", json={"setor": "saude"}).status_code == 404
+
+
+def test_nao_existe_exclusao_de_reuniao(api):
+    reuniao_id = _nova(api).get_json()["id"]
+    assert api.delete(f"/api/reunioes/{reuniao_id}").status_code == 405

@@ -1,6 +1,6 @@
 """Corpo e saída de reunião. Spec 04."""
 
-from marshmallow import Schema, fields, validate
+from marshmallow import Schema, ValidationError, fields, validate, validates_schema
 
 from app.models.reuniao import Setor
 from app.schemas import Entrada, Filtro, data, mensagens, momento, valor_do_enum
@@ -32,6 +32,17 @@ class NovaReuniaoSchema(Entrada):
     data = data(INFORME_DATA, required=True)
     setor = _setor(True)
     participante_ids = _participantes(True)
+
+
+class AlterarReuniaoSchema(Entrada):
+    data = data(INFORME_DATA)
+    setor = _setor(False)
+    participante_ids = _participantes(False)
+
+    @validates_schema
+    def _algo_muda(self, dados, **_kwargs):
+        if not dados:
+            raise ValidationError("Informe o que muda: data, setor ou participantes.")
 
 
 class FiltroReuniaoSchema(Filtro):
