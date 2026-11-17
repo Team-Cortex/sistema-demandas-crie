@@ -39,9 +39,17 @@ def create_app(config_object=None):
             raise RuntimeError("Produção sem variável: " + ", ".join(faltando))
     app.config.from_object(config_object)
 
-    origens = app.config.get("CORS_ORIGENS") or []
+    # Card #27: só as origens listadas em CORS_ORIGINS (config.py lê do ambiente).
+    # Lista vazia, ou só "*", não abre origem nenhuma.
+    origens = app.config.get("CORS_ORIGINS") or []
     if origens:
-        CORS(app, resources={r"/api/*": {"origins": origens}})
+        CORS(
+            app,
+            resources={r"/api/*": {"origins": origens}},
+            allow_headers=["Authorization", "Content-Type"],
+            methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+            max_age=600,
+        )
 
     if app.config.get("SQLALCHEMY_DATABASE_URI"):
         # Registra as tabelas no metadata para o Alembic enxergar.
