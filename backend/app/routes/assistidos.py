@@ -10,6 +10,9 @@ from app.schemas.assistido import (
     AssistidoSchema,
     FiltroAssistidoSchema,
 )
+from app.schemas.demanda import DemandaSchema
+from app.schemas.encaminhamento import EncaminhamentoSchema
+from app.schemas.evolucao import EvolucaoSchema
 from app.services.assistido import AssistidoService
 
 bp = exigir_login(Blueprint("assistidos", __name__))
@@ -26,6 +29,24 @@ def listar():
 def consultar(assistido_id):
     assistido = AssistidoService.consultar(assistido_id, usuario_atual())
     return jsonify(AssistidoSchema().dump(assistido))
+
+
+@bp.get("/assistidos/<int:assistido_id>/ficha")
+def ficha(assistido_id):
+    assistido = AssistidoService.ficha(assistido_id, usuario_atual())
+    return jsonify(
+        {
+            "assistido": {
+                "id": assistido.id,
+                "nome_tratamento": assistido.nome_tratamento,
+                "ativo": assistido.ativo,
+            },
+            "profissionais": [{"id": p.id, "nome": p.nome} for p in assistido.profissionais],
+            "demandas": DemandaSchema(many=True).dump(assistido.demandas),
+            "evolucoes": EvolucaoSchema(many=True).dump(assistido.evolucoes_vigentes),
+            "encaminhamentos": EncaminhamentoSchema(many=True).dump(assistido.encaminhamentos),
+        }
+    )
 
 
 @bp.post("/assistidos")

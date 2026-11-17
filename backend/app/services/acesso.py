@@ -10,10 +10,20 @@ from flask import current_app
 from flask_jwt_extended import create_access_token
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from app.errors import MuitasTentativas, NaoAutenticado
+from app.errors import MuitasTentativas, NaoAutenticado, PermissaoNegada
 from app.extensions import db
 
 CREDENCIAL_RECUSADA = "E-mail ou senha inválidos."
+SEM_ACESSO_A_EVOLUCAO = "Você não tem acesso às evoluções deste assistido."
+
+
+def exigir_acesso_ao_assistido(usuario, assistido, mensagem=SEM_ACESSO_A_EVOLUCAO):
+    """Card #15: dado sensível do assistido passa por pode_ver_evolucao.
+
+    Polimorfismo: cada perfil responde; aqui não se olha a classe.
+    """
+    if not usuario.pode_ver_evolucao(assistido):
+        raise PermissaoNegada(mensagem)
 
 
 class LimiteDeTentativas:

@@ -131,6 +131,80 @@ def test_consultar_inexistente_devolve_404_sem_auditoria(api):
     assert _auditoria(api) == []
 
 
+# --- GET /<id>/ficha --------------------------------------------------------------------
+
+
+@pytest.fixture
+def com_ficha(api):
+    """Um assistido com demanda, evolução retificada e encaminhamento, todos fictícios."""
+    from datetime import date
+
+    from app.models import Demanda, Encaminhamento, Evolucao, Prioridade, Reuniao, Setor, Usuario
+
+    with api.banco() as db:
+        educadora = db.session.get(Usuario, api.pessoas["educadora"])
+        assistido = Assistido(nome_tratamento="Assistido Fictício F")
+        assistido.vincular_profissional(educadora)
+        reuniao = Reuniao(data=date(2026, 11, 3), setor=Setor.PEDAGOGICO, participantes=[educadora])
+        demanda = Demanda.abrir(educadora, descricao="Pedir material adaptado (fictício).",
+                                prioridade=Prioridade.BAIXA, prazo=date(2026, 12, 1),
+                                responsavel=educadora, reuniao=reuniao, assistido=assistido)
+        original = Evolucao.lancar(educadora, assistido=assistido, data=date(2026, 11, 4),
+                                   area_atuacao="Pedagógica", descricao="Registro fictício original.")
+        db.session.add_all([assistido, reuniao, demanda, original])
+        db.session.flush()
+        db.session.add(original.retificar(educadora, descricao="Registro fictício corrigido."))
+        db.session.add(Encaminhamento(assistido=assistido, destino="CAPSi (fictício)",
+                                      data=date(2026, 11, 5), responsavel=educadora))
+        db.session.commit()
+        api.assistido_id = assistido.id
+    return api
+
+
+def test_ficha_reune_demandas_evolucoes_vigentes_e_encaminhamentos(com_ficha):
+    resposta = com_ficha.get(f"/api/assistidos/{com_ficha.assistido_id}/ficha", como="assistente")
+    assert resposta.status_code == 200
+    corpo = resposta.get_json()
+    assert corpo["assistido"]["nome_tratamento"] == "Assistido Fictício F"
+    assert [p["nome"] for p in corpo["profissionais"]] == ["Carlos Fictício"]
+    assert [d["descricao"] for d in corpo["demandas"]] == ["Pedir material adaptado (fictício)."]
+    assert [e["descricao"] for e in corpo["evolucoes"]] == ["Registro fictício corrigido."]
+    assert corpo["evolucoes"][0]["retifica_id"] is not None
+    assert [e["destino"] for e in corpo["encaminhamentos"]] == ["CAPSi (fictício)"]
+    assert _auditoria(com_ficha)[-1] == (
+        com_ficha.pessoas["assistente"], "consultar", "assistido",
+        com_ficha.assistido_id, com_ficha.assistido_id, "ficha",
+    )
+
+
+def test_ficha_vazia_traz_listas_vazias(api):
+    assistido_id = _cadastrar(api).get_json()["id"]
+    corpo = api.get(f"/api/assistidos/{assistido_id}/ficha").get_json()
+    assert (corpo["profissionais"], corpo["demandas"], corpo["evolucoes"], corpo["encaminhamentos"]) == (
+        [], [], [], [],
+    )
+
+
+def test_com_regra_restritiva_so_quem_acompanha_ve_a_ficha(com_ficha, monkeypatch):
+    from app.models import Profissional
+
+    monkeypatch.setattr(Profissional, "acesso_restrito", True)
+    antes = _auditoria(com_ficha)
+    url = f"/api/assistidos/{com_ficha.assistido_id}/ficha"
+
+    negada = com_ficha.get(url, como="assistente")
+    assert negada.status_code == 403
+    assert negada.get_json() == {"erro": "Você não tem acesso às evoluções deste assistido."}
+    assert _auditoria(com_ficha) == antes
+
+    assert com_ficha.get(url, como="educadora").status_code == 200  # acompanha
+    assert com_ficha.get(url, como="direcao").status_code == 200
+
+
+def test_ficha_de_inexistente_devolve_404(api):
+    assert api.get("/api/assistidos/9999/ficha").status_code == 404
+
+
 def test_nao_existe_exclusao_de_assistido(api):
     assistido_id = _cadastrar(api).get_json()["id"]
     assert api.delete(f"/api/assistidos/{assistido_id}").status_code == 405

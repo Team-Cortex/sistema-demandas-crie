@@ -65,6 +65,7 @@ A mensagem de login é sempre **E-mail ou senha inválidos.** O servidor não re
 | POST | `/api/assistidos` | sim | corpo só `nome_tratamento` (A3); 201 o assistido com `demandas`, `evolucoes`, `encaminhamentos` (ids); 422 dado não autorizado; audita `criar` |
 | GET | `/api/assistidos` | sim | `id`, `nome_tratamento` em ordem alfabética; filtro `busca`; audita `listar` sem guardar o texto buscado |
 | GET | `/api/assistidos/<id>` | sim | o assistido com os ids de `demandas`, `evolucoes` (vigentes) e `encaminhamentos`; 404 inexistente; audita `consultar` |
+| GET | `/api/assistidos/<id>/ficha` | `pode_ver_evolucao` | `assistido`, `profissionais`, `demandas`, `evolucoes` vigentes e `encaminhamentos`, em ordem cronológica; 403 sem acesso; audita `consultar` (`ficha`) |
 | PATCH ou PUT | `/api/assistidos/<id>` | sim | só `nome_tratamento`; 200; audita `alterar`. Sem `DELETE` |
 | GET | `/api/auditoria` | direção | `itens`, `total`, `pagina`, `por_pagina`; filtros `autor_id`, `assistido_id`, `recurso`, `acao`, `de`, `ate` (spec 05) |
 

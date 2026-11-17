@@ -6,6 +6,7 @@ Toda leitura e toda escrita passam pela auditoria (spec 05).
 from app.errors import NaoEncontrado
 from app.extensions import db
 from app.schemas import descrever_filtros
+from app.services.acesso import exigir_acesso_ao_assistido
 from app.services.auditoria import AuditoriaService
 
 INEXISTENTE = "Assistido inexistente."
@@ -40,6 +41,16 @@ class AssistidoService:
     def consultar(assistido_id, autor):
         assistido = AssistidoService.obter(assistido_id)
         AuditoriaService.registrar_leitura(autor, "consultar", "assistido", assistido.id, assistido.id)
+        return assistido
+
+    @staticmethod
+    def ficha(assistido_id, autor):
+        """Ficha completa (RF20). Traz evolução, então passa por pode_ver_evolucao."""
+        assistido = AssistidoService.obter(assistido_id)
+        exigir_acesso_ao_assistido(autor, assistido)
+        AuditoriaService.registrar_leitura(
+            autor, "consultar", "assistido", assistido.id, assistido.id, detalhe="ficha"
+        )
         return assistido
 
     @staticmethod
