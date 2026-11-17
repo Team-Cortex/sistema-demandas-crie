@@ -34,6 +34,9 @@ class Config:
         minutes=int(os.environ.get("JWT_ACCESS_TOKEN_EXPIRES_MINUTES", "30"))
     )
     JSON_SORT_KEYS = False
+    # Erro do banco não leva os valores do SQL para a mensagem nem para o log:
+    # eles podem ser texto de evolução ou nome de assistido (RNF01).
+    SQLALCHEMY_ENGINE_OPTIONS = {"hide_parameters": True}
     # Spec 01: a sexta falha de login em 60 s, do mesmo IP e e-mail, dá 429.
     LOGIN_MAXIMO_FALHAS = 5
     LOGIN_JANELA_SEGUNDOS = 60
@@ -58,6 +61,7 @@ class TestingConfig(Config):
     SQLALCHEMY_ENGINE_OPTIONS = {
         "connect_args": {"check_same_thread": False},
         "poolclass": StaticPool,
+        "hide_parameters": True,
     }
     CORS_ORIGINS = []
 

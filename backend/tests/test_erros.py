@@ -76,6 +76,22 @@ def test_primeira_mensagem_percorre_dict_e_lista():
     assert primeira_mensagem([]) is None
 
 
+def test_erro_do_banco_nao_carrega_os_valores_do_sql(db):
+    """O log de um erro de banco não pode levar texto de evolução nem nome de assistido."""
+    from sqlalchemy import text
+    from sqlalchemy.exc import IntegrityError
+
+    db.session.execute(text("INSERT INTO assistido (id, nome_tratamento, ativo, criado_em) "
+                            "VALUES (1, 'x', 1, '2026-11-01')"))
+    with pytest.raises(IntegrityError) as erro:
+        db.session.execute(
+            text("INSERT INTO assistido (id, nome_tratamento, ativo, criado_em) VALUES (:id, :nome, 1, '2026-11-01')"),
+            {"id": 1, "nome": "Nome Sigiloso Fictício"},
+        )
+    assert "Nome Sigiloso Fictício" not in str(erro.value)
+    db.session.rollback()
+
+
 def test_validation_error_sem_mensagem_usa_texto_padrao(app, client):
     _rota(app, "/api/_prova_vazio", ValidationError({}))
     resposta = client.get("/api/_prova_vazio")
