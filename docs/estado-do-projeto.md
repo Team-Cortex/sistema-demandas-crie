@@ -26,7 +26,7 @@ Cliente-servidor. O navegador não fala com o PostgreSQL.
 | --- | --- | --- |
 | Cliente React | `frontend/` | os arquivos do Gabriel, apenas movidos da raiz para esta pasta |
 | Servidor Flask | `backend/` | Miguel Vaz |
-| Camadas do servidor | `schemas/`, `routes/`, `services/`, `models/` | back-end; os arquivos das specs 01 a 04 estão reservados e sem rota |
+| Camadas do servidor | `schemas/`, `routes/`, `services/`, `models/` | back-end; um arquivo por recurso das specs |
 | Banco | PostgreSQL via `docker-compose.yml`; scripts em `docs/modelagem/sql/` | Henry Claro |
 | Requisitos e plano | `docs/requisitos.md`, `docs/plano-de-projeto.md` | Vinícius Marrocos |
 | Interface | Figma, fora deste repositório | Inácio Fontes |
@@ -35,12 +35,7 @@ Contrato HTTP: [`contrato-api.md`](contrato-api.md). Comportamento do servidor: 
 
 ## 3. O que responde hoje
 
-| Método | Caminho | Resposta |
-| --- | --- | --- |
-| GET | `/api/saude` | `{"ok": true, "status": "ok"}` |
-| GET | `/api/teste` | `Hello World` |
-
-Login, usuários, demandas, assistidos e reuniões estão especificados e ainda não têm rota.
+A lista rota por rota está no §2 do [`contrato-api.md`](contrato-api.md), atualizada no mesmo commit de cada rota nova.
 
 ## 3.1 Models no servidor
 

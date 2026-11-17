@@ -6,6 +6,7 @@
 | PermissaoNegada   | 403  |
 | NaoEncontrado     | 404  |
 | DadoInvalido      | 422  |
+| NaoAutenticado    | 401  (credencial recusada no login)
 | ValidationError   | 422  (marshmallow, nos schemas)
 | token ausente, inválido, expirado ou revogado | 401 (app/routes/sessao.py)
 """
@@ -35,6 +36,14 @@ class NaoEncontrado(Exception):
 
 class DadoInvalido(Exception):
     """Corpo ausente ou campo inválido que o schema não pega sozinho (422)."""
+
+    def __init__(self, mensagem):
+        self.mensagem = mensagem
+        super().__init__(mensagem)
+
+
+class NaoAutenticado(Exception):
+    """Credencial recusada no login (401)."""
 
     def __init__(self, mensagem):
         self.mensagem = mensagem
@@ -89,6 +98,10 @@ def registrar_erros(app):
     @app.errorhandler(DadoInvalido)
     def dado_invalido(erro):
         return jsonify({"erro": erro.mensagem}), 422
+
+    @app.errorhandler(NaoAutenticado)
+    def nao_autenticado(erro):
+        return jsonify({"erro": erro.mensagem}), 401
 
     @app.errorhandler(ValidationError)
     def validacao(erro):

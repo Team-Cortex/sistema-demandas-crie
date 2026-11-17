@@ -12,6 +12,7 @@ from flask_cors import CORS
 
 from app.errors import registrar_erros
 from app.extensions import db, jwt, migrate
+from app.routes.auth import bp as auth_bp
 from app.routes.saude import bp as saude_bp
 from app.routes.sessao import configurar_sessao
 from config import CONFIGS, DevelopmentConfig, ProductionConfig
@@ -53,5 +54,6 @@ def create_app(config_object=None):
         configurar_sessao(jwt)
 
     app.register_blueprint(saude_bp, url_prefix="/api")
+    app.register_blueprint(auth_bp, url_prefix="/api")
     registrar_erros(app)
     return app

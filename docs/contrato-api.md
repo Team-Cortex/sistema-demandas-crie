@@ -42,6 +42,7 @@ A mensagem de login é sempre **E-mail ou senha inválidos.** O servidor não re
 | --- | --- | --- | --- |
 | GET | `/api/saude` | não | `{"ok": true, "status": "ok"}` ou `"degradado"` |
 | GET | `/api/teste` | não | `Hello World` |
+| POST | `/api/auth/login` | não | 200 `token`, `perfil`, `usuario` (`id`, `nome`, `perfil`); 401 credencial recusada; 422 corpo incompleto |
 
 `/api/saude` não inclui host do banco, versão de schema, stack nem mensagem interna. Detalhe de falha fica no log do servidor, com id de correlação, status e duração. O log não leva senha, token, e-mail nem corpo da requisição.
 
@@ -53,7 +54,7 @@ O comportamento está nas specs. Este quadro é o índice.
 
 | Spec | Recurso | Situação |
 | --- | --- | --- |
-| [`01-acesso-e-papeis.md`](specs/01-acesso-e-papeis.md) | `/api/auth`, `/api/usuarios` | especificado; código depois do esqueleto |
+| [`01-acesso-e-papeis.md`](specs/01-acesso-e-papeis.md) | `/api/auth`, `/api/usuarios` | em implementação; o que já responde está no §2 |
 | [`02-demanda-e-estados.md`](specs/02-demanda-e-estados.md) | `/api/demandas` | especificado; espera o modelo relacional para persistir |
 | [`03-assistido.md`](specs/03-assistido.md) | `/api/assistidos` | especificado; campos de identificação em aberto |
 | [`04-reuniao.md`](specs/04-reuniao.md) | `/api/reunioes` | especificado |

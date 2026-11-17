@@ -2,7 +2,7 @@
 
 Este diretório é o **servidor**. O **cliente** é o React em `frontend/`. Os dois processos se falam por HTTP em `/api`. O cliente não importa este pacote e não conecta no PostgreSQL.
 
-As pastas `routes/`, `schemas/` e `services/` já têm um arquivo por recurso das specs 01 a 04. Cada arquivo marca o lugar; as rotas ainda não estão registradas. Os models de domínio já existem em `app/models/` (mapa em [`docs/estado-do-projeto.md`](../docs/estado-do-projeto.md)).
+As pastas `routes/`, `schemas/` e `services/` têm um arquivo por recurso das specs. Os models de domínio estão em `app/models/` (mapa em [`docs/estado-do-projeto.md`](../docs/estado-do-projeto.md)).
 
 Dentro do servidor a requisição atravessa quatro camadas, nesta ordem:
 
@@ -13,7 +13,7 @@ Dentro do servidor a requisição atravessa quatro camadas, nesta ordem:
 
 O contrato está em [`docs/contrato-api.md`](../docs/contrato-api.md). As specs em `docs/specs/` vencem o código quando divergirem.
 
-Nesta etapa o processo sobe e responde `GET /api/saude` e `GET /api/teste` (`Hello World`). Login, demanda, assistido e reunião estão especificados e ainda não têm rota.
+O que já responde, rota por rota, está no §2 do [`docs/contrato-api.md`](../docs/contrato-api.md).
 
 ## Subir localmente
 
