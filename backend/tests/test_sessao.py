@@ -79,6 +79,16 @@ def test_token_de_usuario_inexistente_devolve_401(protegida, usuario_autenticado
     assert resposta.get_json() == {"erro": "Sessão encerrada. Entre de novo."}
 
 
+def test_token_de_id_que_nao_existe_mais_devolve_401(protegida):
+    from flask_jwt_extended import create_access_token
+
+    with protegida.banco():
+        token = create_access_token(identity="9999", additional_claims={"perfil": "direcao"})
+    resposta = protegida.get("/api/_prova_sessao", como=None, headers={"Authorization": f"Bearer {token}"})
+    assert resposta.status_code == 401
+    assert resposta.get_json() == {"erro": "Sessão encerrada. Entre de novo."}
+
+
 def test_perfil_vem_do_banco_e_nao_do_token(protegida):
     from app.extensions import db as _db
     from app.models import Usuario
