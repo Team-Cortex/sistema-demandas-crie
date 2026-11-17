@@ -9,6 +9,7 @@ from app.schemas.demanda import (
     DemandaSchema,
     FiltroDemandaSchema,
     HistoricoSchema,
+    MudancaDeEstadoSchema,
     NovaDemandaSchema,
 )
 from app.services.demanda import DemandaService
@@ -32,6 +33,13 @@ def abrir():
 @bp.get("/demandas/<int:demanda_id>")
 def obter(demanda_id):
     return jsonify(DemandaComHistoricoSchema().dump(DemandaService.obter(demanda_id)))
+
+
+@bp.patch("/demandas/<int:demanda_id>/estado")
+def mudar_estado(demanda_id):
+    dados = MudancaDeEstadoSchema().load(corpo_json())
+    demanda = DemandaService.mudar_estado(demanda_id, dados["estado"], usuario_atual())
+    return jsonify(DemandaComHistoricoSchema().dump(demanda))
 
 
 @bp.get("/demandas/<int:demanda_id>/historico")

@@ -100,6 +100,14 @@ class DemandaService:
         return db.session.scalars(DemandaService._com_vinculos(consulta)).unique().all()
 
     @staticmethod
+    def mudar_estado(demanda_id, estado, autor):
+        """Transição recusada → 400 pelo model, sem gravar histórico."""
+        demanda = DemandaService.obter(demanda_id)
+        demanda.mudar_estado(estado, autor)
+        db.session.commit()
+        return demanda
+
+    @staticmethod
     def obter(demanda_id):
         from app.models import Demanda
 

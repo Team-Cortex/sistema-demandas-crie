@@ -237,3 +237,76 @@ def test_filtro_invalido_devolve_422(varias, consulta):
 
 def test_lista_exige_token(varias):
     assert varias.get("/api/demandas", como=None).status_code == 401
+
+
+# --- PATCH /<id>/estado (card #26: transições, inclusive recusadas) ----------------
+
+ACEITAS = [
+    (E.ABERTA, E.EM_ANDAMENTO),
+    (E.ABERTA, E.CANCELADA),
+    (E.EM_ANDAMENTO, E.AGUARDANDO_TERCEIROS),
+    (E.EM_ANDAMENTO, E.CONCLUIDA),
+    (E.EM_ANDAMENTO, E.CANCELADA),
+    (E.AGUARDANDO_TERCEIROS, E.EM_ANDAMENTO),
+    (E.AGUARDANDO_TERCEIROS, E.CANCELADA),
+]
+RECUSADAS = [(de, para) for de in E for para in E if (de, para) not in ACEITAS]
+
+
+def _demanda_em(api, estado):
+    return _semear(api, ("Demanda de prova", estado, 5, "assistente", None, False, 0))["Demanda de prova"]
+
+
+def _historico(api, demanda_id):
+    with api.banco() as db:
+        return db.session.query(HistoricoDemanda).filter_by(demanda_id=demanda_id).count()
+
+
+@pytest.mark.parametrize("de, para", ACEITAS)
+def test_transicao_aceita_grava_historico_com_autor(cenario, de, para):
+    demanda_id = _demanda_em(cenario, de)
+    antes = _historico(cenario, demanda_id)
+    resposta = cenario.patch(f"/api/demandas/{demanda_id}/estado", json={"estado": para.value}, como="educadora")
+    assert resposta.status_code == 200
+    corpo = resposta.get_json()
+    assert corpo["estado"] == para.value
+    ultimo = corpo["historico"][-1]
+    assert (ultimo["estado_anterior"], ultimo["estado_novo"]) == (de.value, para.value)
+    assert ultimo["autor_id"] == cenario.pessoas["educadora"]
+    assert _historico(cenario, demanda_id) == antes + 1
+
+
+@pytest.mark.parametrize("de, para", RECUSADAS)
+def test_transicao_recusada_devolve_400_sem_gravar(cenario, de, para):
+    demanda_id = _demanda_em(cenario, de)
+    antes = _historico(cenario, demanda_id)
+    resposta = cenario.patch(f"/api/demandas/{demanda_id}/estado", json={"estado": para.value})
+    assert resposta.status_code == 400
+    assert resposta.get_json() == {"erro": "Esta demanda não pode mudar para esse estado."}
+    assert _historico(cenario, demanda_id) == antes
+    assert cenario.get(f"/api/demandas/{demanda_id}").get_json()["estado"] == de.value
+
+
+def test_estado_fora_da_lista_devolve_400(cenario):
+    demanda_id = _demanda_em(cenario, E.ABERTA)
+    resposta = cenario.patch(f"/api/demandas/{demanda_id}/estado", json={"estado": "esquecida"})
+    assert resposta.status_code == 400
+
+
+def test_sem_estado_devolve_422(cenario):
+    demanda_id = _demanda_em(cenario, E.ABERTA)
+    resposta = cenario.patch(f"/api/demandas/{demanda_id}/estado", json={})
+    assert resposta.status_code == 422
+    assert resposta.get_json() == {"erro": "Informe o novo estado."}
+
+
+def test_mudar_estado_exige_token_e_demanda_existente(cenario):
+    demanda_id = _demanda_em(cenario, E.ABERTA)
+    assert cenario.patch(f"/api/demandas/{demanda_id}/estado", json={"estado": "em_andamento"}, como=None).status_code == 401
+    assert cenario.patch("/api/demandas/9999/estado", json={"estado": "em_andamento"}).status_code == 404
+
+
+def test_nao_existe_exclusao_de_demanda(cenario):
+    demanda_id = _demanda_em(cenario, E.ABERTA)
+    assert cenario.delete(f"/api/demandas/{demanda_id}").status_code == 405
+    assert cenario.get(f"/api/demandas/{demanda_id}").status_code == 200

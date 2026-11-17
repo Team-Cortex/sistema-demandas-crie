@@ -47,6 +47,12 @@ class NovaDemandaSchema(Entrada):
     )
 
 
+class MudancaDeEstadoSchema(Entrada):
+    """Estado fora da lista passa daqui e o model recusa com 400 (spec 02)."""
+
+    estado = fields.String(required=True, error_messages=mensagens("Informe o novo estado."))
+
+
 def _estados(valor):
     """`aberta` ou `aberta,em_andamento` → lista; estado desconhecido é 422."""
     partes = [p.strip() for p in valor.split(",") if p.strip()]
