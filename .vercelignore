@@ -1,0 +1,9 @@
+# Não envia para a Vercel o que não é usado na publicação.
+backend/tests
+backend/.venv
+backend/migrations/README
+frontend/node_modules
+docs
+**/__pycache__
+.env
+.env.*
