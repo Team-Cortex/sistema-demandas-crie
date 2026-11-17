@@ -201,6 +201,14 @@ def test_com_regra_restritiva_so_quem_acompanha_ve_a_ficha(com_ficha, monkeypatc
     assert com_ficha.get(url, como="direcao").status_code == 200
 
 
+def test_ficha_continua_depois_que_quem_acompanha_muda_de_perfil(com_ficha):
+    educadora = com_ficha.pessoas["educadora"]
+    assert com_ficha.patch(f"/api/usuarios/{educadora}", json={"perfil": "direcao"}).status_code == 200
+    resposta = com_ficha.get(f"/api/assistidos/{com_ficha.assistido_id}/ficha")
+    assert resposta.status_code == 200
+    assert resposta.get_json()["profissionais"] == [{"id": educadora, "nome": "Carlos Fictício"}]
+
+
 def test_ficha_de_inexistente_devolve_404(api):
     assert api.get("/api/assistidos/9999/ficha").status_code == 404
 
