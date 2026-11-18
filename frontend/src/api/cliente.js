@@ -70,7 +70,12 @@ export function apagarRascunho(chave) {
 }
 
 export function mensagemDeErro(erro) {
-  if (!erro.response) return 'Não foi possível falar com o servidor. Seus dados continuam no formulário. Tente de novo.'
+  if (!erro.response) {
+    // Só envio (POST, PATCH) vem de formulário; numa consulta (GET) não há dado digitado a preservar.
+    return erro.config?.method === 'get'
+      ? 'Não foi possível falar com o servidor. Confira a internet e tente de novo.'
+      : 'Não foi possível falar com o servidor. Seus dados continuam no formulário. Tente de novo.'
+  }
   if (erro.response.status === 401 && erro.config?.url !== '/api/auth/login') return 'Sua sessão terminou. Entre de novo.'
   return erro.response.data?.erro || (erro.response.status === 403
     ? 'Seu perfil não tem acesso a esta operação.'
