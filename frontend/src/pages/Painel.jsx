@@ -59,7 +59,7 @@ export default function Painel() {
           <ul>
             {avisos.demandas.map(demanda => (
               <li key={demanda.id}>
-                <Link to={`/demandas/${demanda.id}`}>Demanda #{demanda.id} · {dataCurta(demanda.prazo)} · {demanda.vencida ? 'Vencida' : 'Perto do prazo'}</Link>
+                <Link to={`/demandas/${demanda.id}`}>Demanda nº {demanda.id} · {dataCurta(demanda.prazo)} · {demanda.vencida ? 'Vencida' : 'Perto do prazo'}</Link>
               </li>
             ))}
           </ul>

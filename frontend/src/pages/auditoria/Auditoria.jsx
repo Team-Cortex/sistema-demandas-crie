@@ -142,8 +142,8 @@ export default function Auditoria() {
                 <td data-rotulo="Quando"><time dateTime={item.ocorrido_em}>{dataHora(item.ocorrido_em)}</time></td>
                 <td data-rotulo="Quem">{item.autor_nome}</td>
                 <td data-rotulo="Ação">{acoes[item.acao] || item.acao}</td>
-                <td data-rotulo="Recurso">{recursos[item.recurso] || item.recurso}{item.recurso_id && ' #' + item.recurso_id}</td>
-                <td data-rotulo="Assistido">{item.assistido_id ? '#' + item.assistido_id : 'Sem vínculo'}</td>
+                <td data-rotulo="Recurso">{recursos[item.recurso] || item.recurso}{item.recurso_id && ' nº ' + item.recurso_id}</td>
+                <td data-rotulo="Assistido">{item.assistido_id ? 'Assistido nº ' + item.assistido_id : 'Sem vínculo'}</td>
               </tr>
             ))}</tbody>
           </table>

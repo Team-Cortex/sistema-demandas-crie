@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { ArrowLeft, AlertCircle, CheckCircle2 } from 'lucide-react'
 import cliente, { guardarRascunho, lerRascunho, mensagemDeErro } from '../api/cliente'
-import { estados, prioridades, dataCurta, dataHora } from '../dominio'
+import { estados, prioridades, setores, dataCurta, dataHora } from '../dominio'
 import Confirmacao from '../components/Confirmacao'
 import HistoricoDemanda from '../components/HistoricoDemanda'
 import CampoDemanda from '../components/CampoDemanda'
@@ -19,6 +19,8 @@ export default function DetalheDemanda() {
   const caminho = '/api/demandas/' + id
   const [rascunho, definirRascunho] = useState(() => ({ ...inicial, ...lerRascunho(chave) }))
   const [demanda, definirDemanda] = useState(null)
+  const [reuniao, definirReuniao] = useState(null)
+  const [assistido, definirAssistido] = useState(null)
   const [erroFicha, definirErroFicha] = useState('')
   const [usuarios, definirUsuarios] = useState(null)
   const [erroUsuarios, definirErroUsuarios] = useState('')
@@ -38,6 +40,19 @@ export default function DetalheDemanda() {
     })
     return () => { ativo = false }
   }, [caminho, tentativa])
+
+  // A demanda só traz os ids; data, setor e nome vêm das fichas. Se a consulta falhar, fica o número.
+  const reuniaoId = demanda?.reuniao_id
+  const assistidoId = demanda?.assistido_id
+  useEffect(() => {
+    if (!reuniaoId) return
+    cliente.get('/api/reunioes/' + reuniaoId).then(({ data }) => definirReuniao(data)).catch(() => definirReuniao(null))
+  }, [reuniaoId])
+
+  useEffect(() => {
+    if (!assistidoId) return
+    cliente.get('/api/assistidos/' + assistidoId).then(({ data }) => definirAssistido(data)).catch(() => definirAssistido(null))
+  }, [assistidoId])
 
   useEffect(() => {
     let ativo = true
@@ -133,7 +148,7 @@ export default function DetalheDemanda() {
   return (
     <div className={styles.pagina}>
       <Link className={styles.voltar} to="/demandas"><ArrowLeft size={17} aria-hidden="true" />Demandas</Link>
-      <h1>Demanda #{id}</h1>
+      <h1>Demanda nº {id}</h1>
       {sucesso && <p className={styles.sucesso} role="status"><CheckCircle2 size={19} aria-hidden="true" />{sucesso}</p>}
       {erroFicha ? <div className="aviso-erro" role="alert">{erroFicha} <button className="botao botao-secundario" onClick={tentarNovamente}>Tentar de novo</button></div> :
         !demanda && <p role="status">Carregando demanda…</p>}
@@ -147,8 +162,18 @@ export default function DetalheDemanda() {
             <div><dt>Responsável</dt><dd>{demanda.responsavel_nome}</dd></div>
             <div><dt>Prazo</dt><dd>{dataCurta(demanda.prazo)}</dd></div>
             <div><dt>Prioridade</dt><dd>{prioridades[demanda.prioridade]}</dd></div>
-            <div><dt>Reunião de origem</dt><dd><Link className="botao-secundario" to={'/reunioes/' + demanda.reuniao_id}>Reunião #{demanda.reuniao_id}</Link></dd></div>
-            <div><dt>Assistido</dt><dd>{demanda.assistido_id ? <Link className="botao-secundario" to={'/assistidos/' + demanda.assistido_id}>Assistido #{demanda.assistido_id}</Link> : 'Sem vínculo'}</dd></div>
+            <div><dt>Reunião de origem</dt><dd>
+              <Link className="botao-secundario" to={'/reunioes/' + reuniaoId}>
+                {reuniao ? `Reunião de ${dataCurta(reuniao.data)} — ${setores[reuniao.setor]}` : `Reunião nº ${reuniaoId}`}
+              </Link>
+            </dd></div>
+            <div><dt>Assistido</dt><dd>
+              {assistidoId ? (
+                <Link className="botao-secundario" to={'/assistidos/' + assistidoId}>
+                  {assistido ? assistido.nome_tratamento : `Assistido nº ${assistidoId}`}
+                </Link>
+              ) : 'Sem vínculo'}
+            </dd></div>
             <div><dt>Categoria</dt><dd>{demanda.categoria || 'Sem categoria'}</dd></div>
             <div><dt>Registro</dt><dd>{dataHora(demanda.criado_em)}</dd></div>
             <div><dt>Último movimento</dt><dd>{dataHora(demanda.ultimo_movimento)}</dd></div>
@@ -187,7 +212,7 @@ export default function DetalheDemanda() {
         </section>
         <HistoricoDemanda historico={demanda.historico} />
         {confirmando && <Confirmacao titulo="Confirmar mudança de estado?" acao="Confirmar mudança" aoVoltar={voltarAoFormulario} aoConfirmar={salvarAlteracao}>
-          <p>A demanda #{id} passará de <strong>{estados[demanda.estado]}</strong> para <strong>{estados[rascunho.estado]}</strong>.</p>
+          <p>A demanda nº {id} passará de <strong>{estados[demanda.estado]}</strong> para <strong>{estados[rascunho.estado]}</strong>.</p>
           {['concluida', 'cancelada'].includes(rascunho.estado) && <p>Esse estado encerra a demanda.</p>}
         </Confirmacao>}
       </>}

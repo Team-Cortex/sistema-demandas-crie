@@ -7,7 +7,7 @@ export default function CartaoDemanda({ demanda, mostrarEstado = false }) {
   return (
     <Link to={`/demandas/${demanda.id}`} className={styles.cartao}>
       <span className={styles.linha}>
-        <span className={styles.numero}>Demanda #{demanda.id}</span>
+        <span className={styles.numero}>Demanda nº {demanda.id}</span>
         <ChevronRight aria-hidden="true" size={16} />
       </span>
       <strong className={styles.descricao}>{demanda.descricao}</strong>

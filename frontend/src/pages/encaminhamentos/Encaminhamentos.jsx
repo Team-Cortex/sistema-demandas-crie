@@ -43,8 +43,8 @@ export default function Encaminhamentos() {
             <div className={styles.topo}><h2>{item.destino}</h2><span className={styles.situacao}>{item.pendente ? 'Pendente' : 'Com desfecho'}</span></div>
             <p>{dataCurta(item.data)} · {item.responsavel_nome}</p>
             <div className={styles.vinculos}>
-              {item.demanda_id && <Link to={'/demandas/' + item.demanda_id}>Demanda #{item.demanda_id}</Link>}
-              {item.assistido_id && <Link to={'/assistidos/' + item.assistido_id}>Assistido #{item.assistido_id}</Link>}
+              {item.demanda_id && <Link to={'/demandas/' + item.demanda_id}>Demanda nº {item.demanda_id}</Link>}
+              {item.assistido_id && <Link to={'/assistidos/' + item.assistido_id}>Assistido nº {item.assistido_id}</Link>}
             </div>
             {item.observacao && <p className={styles.texto}><strong>Observação</strong>{item.observacao}</p>}
             {item.pendente
