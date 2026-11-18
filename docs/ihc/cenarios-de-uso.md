@@ -34,7 +34,7 @@ Todos os nomes de pessoas atendidas e de profissionais são **fictícios** e igu
 **Passo a passo:**
 1. Abre o sistema e entra com e-mail e senha.
 2. Cai direto no **Painel**. No topo, vê o total de demandas em aberto e quantas estão **vencidas**.
-3. Nas colunas Aberta, Em andamento e Aguardando terceiros, as vencidas aparecem primeiro, com o selo "Vencida".
+3. Nas colunas Aberta, Em andamento e Aguardando terceiros, as vencidas aparecem primeiro, com "(vencida)" ao lado do prazo.
 4. Vê que "Agendar avaliação fonoaudiológica na rede municipal" está vencida e com Bruna Fictícia, que está de férias.
 5. Abre a demanda, escolhe **Trocar responsável**, seleciona outro profissional e confirma.
 6. O histórico mostra a troca, com o nome dela e o horário.
