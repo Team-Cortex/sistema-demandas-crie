@@ -147,8 +147,8 @@ export default function DetalheDemanda() {
             <div><dt>Responsável</dt><dd>{demanda.responsavel_nome}</dd></div>
             <div><dt>Prazo</dt><dd>{dataCurta(demanda.prazo)}</dd></div>
             <div><dt>Prioridade</dt><dd>{prioridades[demanda.prioridade]}</dd></div>
-            <div><dt>Reunião de origem</dt><dd><Link to={'/reunioes/' + demanda.reuniao_id}>Reunião #{demanda.reuniao_id}</Link></dd></div>
-            <div><dt>Assistido</dt><dd>{demanda.assistido_id ? <Link to={'/assistidos/' + demanda.assistido_id}>Assistido #{demanda.assistido_id}</Link> : 'Sem vínculo'}</dd></div>
+            <div><dt>Reunião de origem</dt><dd><Link className="botao-secundario" to={'/reunioes/' + demanda.reuniao_id}>Reunião #{demanda.reuniao_id}</Link></dd></div>
+            <div><dt>Assistido</dt><dd>{demanda.assistido_id ? <Link className="botao-secundario" to={'/assistidos/' + demanda.assistido_id}>Assistido #{demanda.assistido_id}</Link> : 'Sem vínculo'}</dd></div>
             <div><dt>Categoria</dt><dd>{demanda.categoria || 'Sem categoria'}</dd></div>
             <div><dt>Registro</dt><dd>{dataHora(demanda.criado_em)}</dd></div>
             <div><dt>Último movimento</dt><dd>{dataHora(demanda.ultimo_movimento)}</dd></div>
