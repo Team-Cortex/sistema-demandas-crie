@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ClipboardList } from 'lucide-react'
 import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../api/cliente'
 import CampoDemanda from '../components/CampoDemanda'
@@ -8,7 +8,6 @@ import { prioridades, setores, dataCurta } from '../dominio'
 import { validarDemanda } from './regrasDemanda'
 import styles from './NovaDemanda.module.css'
 
-const chave = 'nova-demanda'
 const vazio = {
   descricao: '', prioridade: '', responsavel_id: '', prazo: '',
   reuniao_id: null, assistido_id: '', categoria: '',
@@ -16,6 +15,9 @@ const vazio = {
 
 export default function NovaDemanda() {
   const navegar = useNavigate()
+  const [parametros] = useSearchParams()
+  const reuniaoDeOrigem = parametros.get('reuniao_id')
+  const chave = reuniaoDeOrigem ? 'nova-demanda-reuniao-' + reuniaoDeOrigem : 'nova-demanda'
   const [rascunho, definirRascunho] = useState(() => ({ ...vazio, ...lerRascunho(chave) }))
   const [opcoes, definirOpcoes] = useState(null)
   const [erroListas, definirErroListas] = useState('')
@@ -44,7 +46,7 @@ export default function NovaDemanda() {
 
   const campos = {
     ...rascunho,
-    reuniao_id: rascunho.reuniao_id ?? String(opcoes?.reunioes[0]?.id ?? ''),
+    reuniao_id: rascunho.reuniao_id ?? reuniaoDeOrigem ?? String(opcoes?.reunioes[0]?.id ?? ''),
   }
 
   function tentarNovamente() {
@@ -157,7 +159,8 @@ export default function NovaDemanda() {
             <input {...atributos('categoria', false)} type="text" maxLength={80} />
           </CampoDemanda>
         </fieldset>
-        {(semResponsavel || semReuniao) && <p role="status">Para registrar a demanda, é preciso ter uma reunião cadastrada e um responsável ativo. Consulte a direção.</p>}
+        {semResponsavel && <p role="status">Para registrar uma demanda, é preciso ter um responsável ativo. Consulte a direção.</p>}
+        {semReuniao && <p role="status">Antes, registre a reunião em que a demanda surgiu. <Link className="botao-secundario" to="/reunioes/nova">Registrar reunião</Link></p>}
         {erroServidor && <p role="alert" className="aviso-erro">{erroServidor}</p>}
         <footer className={styles.acoes}>
           <button type="submit" className="botao botao-primario" disabled={enviando || !opcoes || semReuniao || semResponsavel}>{enviando ? 'Registrando…' : 'Registrar demanda'}</button>

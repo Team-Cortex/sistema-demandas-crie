@@ -4,12 +4,14 @@ import { CalendarDays, ClipboardList, FolderOpen, LayoutDashboard, LogOut, Menu,
 import cliente, { apagarSessao, expiraEm, expirarSessao, lerSessao } from '../../api/cliente'
 import { perfis } from '../../dominio'
 import { FileText } from 'lucide-react'
+import { CalendarRange } from 'lucide-react'
 import classes from './RootLayout.module.css'
 
 const navegacao = [
   { rota: '/', texto: 'Painel', icone: LayoutDashboard },
   { rota: '/minhas', texto: 'Minhas demandas', icone: ClipboardList },
   { rota: '/demandas', texto: 'Demandas', icone: FolderOpen },
+  { rota: '/reunioes', texto: 'Reuniões', icone: CalendarRange },
   { rota: '/relatorios', texto: 'Relatórios', icone: FileText, direcao: true },
 ]
 

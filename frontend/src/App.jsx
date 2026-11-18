@@ -9,6 +9,9 @@ import NovaDemanda from './pages/NovaDemanda'
 import DetalheDemanda from './pages/DetalheDemanda'
 import SomenteDirecao from './components/layouts/SomenteDirecao'
 import Relatorios from './pages/relatorios/Relatorios'
+import Reunioes from './pages/reunioes/Reunioes'
+import FormularioReuniao from './pages/reunioes/FormularioReuniao'
+import FichaReuniao from './pages/reunioes/FichaReuniao'
 
 const rotas = createBrowserRouter([
   {
@@ -24,6 +27,10 @@ const rotas = createBrowserRouter([
           { path: 'demandas', element: <Demandas /> },
           { path: 'demandas/nova', element: <NovaDemanda /> },
           { path: 'demandas/:id', element: <DetalheDemanda /> },
+          { path: 'reunioes', element: <Reunioes /> },
+          { path: 'reunioes/nova', element: <FormularioReuniao /> },
+          { path: 'reunioes/:id', element: <FichaReuniao /> },
+          { path: 'reunioes/:id/editar', element: <FormularioReuniao /> },
           {
             element: <SomenteDirecao />,
             children: [
