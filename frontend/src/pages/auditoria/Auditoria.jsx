@@ -86,8 +86,8 @@ export default function Auditoria() {
     definirErroUsuarios('')
     definirTentativa(tentativa + 1)
   }
-  function paginaAnterior() { consultar({ ...consulta, pagina: dados.pagina - 1 }) }
-  function proximaPagina() { consultar({ ...consulta, pagina: dados.pagina + 1 }) }
+  function paginaAnterior() { consultar({ ...consulta, pagina: consulta.pagina - 1 }) }
+  function proximaPagina() { consultar({ ...consulta, pagina: consulta.pagina + 1 }) }
   const totalPaginas = dados ? Math.ceil(dados.total / dados.por_pagina) : 0
 
   return (
