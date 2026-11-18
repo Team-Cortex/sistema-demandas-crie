@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { CalendarDays, ChevronRight, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import cliente, { mensagemDeErro, lerRascunho, guardarRascunho } from '../../api/cliente'
 import Carregando from '../../components/Carregando'
@@ -42,7 +41,7 @@ export default function Reunioes() {
     <div className={styles.pagina}>
       <header className={styles.cabecalho}>
         <h1>Reuniões</h1>
-        <Link to="/reunioes/nova" className="botao-primario"><Plus aria-hidden="true" size={18} />Registrar reunião</Link>
+        <Link to="/reunioes/nova" className="botao-primario">Registrar reunião</Link>
       </header>
       <section className={styles.painel} aria-label="Lista de reuniões">
         <div className={styles.filtro}>
@@ -59,9 +58,8 @@ export default function Reunioes() {
             {reunioes.map(reuniao => (
               <li key={reuniao.id}>
                 <Link to={'/reunioes/' + reuniao.id} className={styles.linha}>
-                  <span className={styles.icone}><CalendarDays size={20} aria-hidden="true" /></span>
-                  <span><strong>{dataCurta(reuniao.data)} · {setores[reuniao.setor]}</strong><small>Participantes: {reuniao.participantes.map(pessoa => pessoa.nome).join(', ')}</small></span>
-                  <ChevronRight size={18} aria-hidden="true" />
+                  <strong>{dataCurta(reuniao.data)}, {setores[reuniao.setor]}</strong>
+                  <small>Participantes: {reuniao.participantes.map(pessoa => pessoa.nome).join(', ')}</small>
                 </Link>
               </li>
             ))}

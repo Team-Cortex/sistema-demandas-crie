@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, ChevronRight, Pencil, Plus } from 'lucide-react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import cliente, { mensagemDeErro } from '../../api/cliente'
 import AvisoSucesso from '../../components/AvisoSucesso'
@@ -34,10 +33,10 @@ export default function FichaReuniao() {
 
   return (
     <div className={styles.pagina}>
-      <Link to="/reunioes" className={styles.voltar}><ArrowLeft size={17} aria-hidden="true" />Reuniões</Link>
+      <Link to="/reunioes" className="voltar">Voltar para reuniões</Link>
       <header className={styles.cabecalho}>
         <h1>{reuniao ? 'Reunião de ' + dataCurta(reuniao.data) : 'Reunião'}</h1>
-        {reuniao && <Link to={'/reunioes/' + id + '/editar'} className="botao-secundario"><Pencil size={16} aria-hidden="true" />Editar reunião</Link>}
+        {reuniao && <Link to={'/reunioes/' + id + '/editar'} className="botao-secundario">Editar reunião</Link>}
       </header>
       <AvisoSucesso>{state?.mensagem}</AvisoSucesso>
       {erro ? <ErroConsulta mensagem={erro} tentarNovamente={tentarNovamente} /> :
@@ -50,12 +49,11 @@ export default function FichaReuniao() {
           <section className={styles.painel}>
             <div className={styles.cabecalho}>
               <h2>Demandas da reunião</h2>
-              <Link className="botao-primario" to={'/demandas/nova?reuniao_id=' + id}><Plus size={18} aria-hidden="true" />Registrar demanda desta reunião</Link>
+              <Link className="botao-primario" to={'/demandas/nova?reuniao_id=' + id}>Registrar demanda desta reunião</Link>
             </div>
             {reuniao.demandas.length ? <ul className={styles.lista}>{reuniao.demandas.map(demanda =>
               <li key={demanda.id}><Link className={styles.linha} to={'/demandas/' + demanda.id}>
-                <span><strong>{demanda.descricao}</strong><span className={styles.estado} data-estado={demanda.estado}>{estados[demanda.estado]}</span></span>
-                <ChevronRight size={18} aria-hidden="true" />
+                <strong>{demanda.descricao}</strong><small>Estado: {estados[demanda.estado]}</small>
               </Link></li>)}</ul> : <p>Nenhuma demanda registrada nesta reunião.</p>}
           </section>
         </>}

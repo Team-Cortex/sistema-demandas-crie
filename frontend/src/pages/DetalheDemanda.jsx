@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { ArrowLeft, AlertCircle, CheckCircle2 } from 'lucide-react'
 import cliente, { guardarRascunho, lerRascunho, mensagemDeErro } from '../api/cliente'
 import { estados, prioridades, setores, dataCurta, dataHora } from '../dominio'
+import AvisoSucesso from '../components/AvisoSucesso'
 import Confirmacao from '../components/Confirmacao'
 import HistoricoDemanda from '../components/HistoricoDemanda'
 import CampoDemanda from '../components/CampoDemanda'
@@ -166,29 +166,29 @@ export default function DetalheDemanda() {
 
   return (
     <div className={styles.pagina}>
-      <Link className={styles.voltar} to="/demandas"><ArrowLeft size={17} aria-hidden="true" />Demandas</Link>
+      <Link className="voltar" to="/demandas">Voltar para demandas</Link>
       <h1>Demanda nº {id}</h1>
-      {sucesso && <p className={styles.sucesso} role="status"><CheckCircle2 size={19} aria-hidden="true" />{sucesso}</p>}
+      <AvisoSucesso>{sucesso}</AvisoSucesso>
       {erroFicha ? <div className="aviso-erro" role="alert">{erroFicha} <button className="botao botao-secundario" onClick={tentarNovamente}>Tentar de novo</button></div> :
         !demanda && <p role="status">Carregando demanda…</p>}
       {demanda && <>
         <section className={styles.ficha} aria-label="Dados da demanda">
-          <div className={styles.estados}><span>{estados[demanda.estado]}</span>
-            {demanda.vencida && <strong><AlertCircle size={16} aria-hidden="true" />Vencida</strong>}
-          </div>
           <p className={styles.descricao}>{demanda.descricao}</p>
           <dl className={styles.dados}>
+            <div><dt>Estado</dt><dd>{estados[demanda.estado]}</dd></div>
             <div><dt>Responsável</dt><dd>{demanda.responsavel_nome}</dd></div>
-            <div><dt>Prazo</dt><dd>{dataCurta(demanda.prazo)}</dd></div>
+            <div><dt>Prazo</dt><dd>
+              {dataCurta(demanda.prazo)}{demanda.vencida && <strong className={styles.vencida}> (vencida)</strong>}
+            </dd></div>
             <div><dt>Prioridade</dt><dd>{prioridades[demanda.prioridade]}</dd></div>
             <div><dt>Reunião de origem</dt><dd>
-              <Link className="botao-secundario" to={'/reunioes/' + reuniaoId}>
-                {reuniao ? `Reunião de ${dataCurta(reuniao.data)} — ${setores[reuniao.setor]}` : `Reunião nº ${reuniaoId}`}
+              <Link to={'/reunioes/' + reuniaoId}>
+                {reuniao ? `${dataCurta(reuniao.data)}, ${setores[reuniao.setor]}` : `Reunião nº ${reuniaoId}`}
               </Link>
             </dd></div>
             <div><dt>Assistido</dt><dd>
               {assistidoId ? (
-                <Link className="botao-secundario" to={'/assistidos/' + assistidoId}>
+                <Link to={'/assistidos/' + assistidoId}>
                   {assistido ? assistido.nome_tratamento : `Assistido nº ${assistidoId}`}
                 </Link>
               ) : 'Sem vínculo'}

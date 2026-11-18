@@ -12,9 +12,8 @@
 .filtros label { display: grid; min-width: 0; gap: 5px; font-size: .9rem; font-weight: 600; }
 .filtros input, .filtros select { min-width: 0; width: 100%; font-weight: normal; }
 .acoes { display: flex; flex-wrap: wrap; gap: 10px; }
-.limpar { min-height: 44px; color: var(--destaque); border: 0; cursor: pointer; background: transparent; font-weight: 600; text-decoration: underline; }
-.tituloResultados { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-size: 1.2rem; }
-.tituloResultados span { border-radius: 12px; padding: 2px 9px; background: #e9eaf0; color: var(--texto-secundario); font-size: .8rem; }
+.limpar { min-height: 44px; color: var(--destaque-escuro); border: 0; background: transparent; text-decoration: underline; }
+.tituloResultados { margin: 0 0 12px; }
 @media (max-width: 800px) {
   .linhaBusca { grid-template-columns: 1fr; }
   .linhaBusca > button { justify-self: start; }

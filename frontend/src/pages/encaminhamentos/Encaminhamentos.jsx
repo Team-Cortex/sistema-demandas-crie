@@ -45,8 +45,8 @@ export default function Encaminhamentos() {
         : !itens.length ? <p className={styles.ficha}>{todos ? 'Nenhum encaminhamento registrado. Abra a demanda ou a ficha do assistido para encaminhar.' : 'Nenhum encaminhamento pendente. Consulte Todos para ver os desfechos registrados.'}</p>
         : <ul className={styles.lista}>{itens.map(item =>
           <li key={item.id} className={styles.ficha}>
-            <div className={styles.topo}><h2>{item.destino}</h2><span className={styles.situacao}>{item.pendente ? 'Pendente' : 'Com desfecho'}</span></div>
-            <p>{dataCurta(item.data)} · {item.responsavel_nome}</p>
+            <div className={styles.topo}><h2>{item.destino}</h2><span>{item.pendente ? 'Pendente' : 'Com desfecho'}</span></div>
+            <p>Em {dataCurta(item.data)}, por {item.responsavel_nome}</p>
             <div className={styles.vinculos}>
               {item.demanda_id && <Link to={'/demandas/' + item.demanda_id}>Demanda nº {item.demanda_id}</Link>}
               {item.assistido_id && <Link to={'/assistidos/' + item.assistido_id}>Assistido nº {item.assistido_id}</Link>}
@@ -54,7 +54,7 @@ export default function Encaminhamentos() {
             {item.observacao && <p className={styles.texto}><strong>Observação</strong>{item.observacao}</p>}
             {item.pendente
               ? <Link className="botao-secundario" to={'/encaminhamentos/' + item.id + '/desfecho'}>Registrar desfecho</Link>
-              : <p className={styles.texto}><strong>Desfecho · {dataHora(item.desfecho_em)}</strong>{item.desfecho}</p>}
+              : <p className={styles.texto}><strong>Desfecho em {dataHora(item.desfecho_em)}</strong>{item.desfecho}</p>}
           </li>)}</ul>}
     </div>
   )

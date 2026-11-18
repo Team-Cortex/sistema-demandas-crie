@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { UserPlus } from 'lucide-react'
 import cliente, { lerSessao, mensagemDeErro } from '../../api/cliente'
 import { perfis } from '../../dominio'
 import Carregando from '../../components/Carregando'
@@ -65,7 +64,7 @@ export default function Usuarios() {
     <div className={styles.pagina}>
       <header className={styles.cabecalho}>
         <h1>Usuários</h1>
-        <Link to="/usuarios/novo" className="botao-primario"><UserPlus size={18} aria-hidden="true" />Cadastrar usuário</Link>
+        <Link to="/usuarios/novo" className="botao-primario">Cadastrar usuário</Link>
       </header>
       <AvisoSucesso>{sucesso}</AvisoSucesso>
       {erro && <p className="aviso-erro" role="alert">{erro}</p>}
@@ -75,7 +74,7 @@ export default function Usuarios() {
             <li key={item.id}>
               <div className={styles.pessoa}><h2>{item.nome}</h2><p>{item.email}</p></div>
               <p>{perfis[item.perfil]}</p>
-              <span className={item.ativo ? styles.ativo : styles.inativo}>{item.ativo ? 'Ativo' : 'Desativado'}</span>
+              <p className={item.ativo ? undefined : styles.inativo}>{item.ativo ? 'Ativo' : 'Desativado'}</p>
               <div className={styles.acoes}>
                 <Link className="botao-secundario" to={'/usuarios/' + item.id + '/editar'} aria-label={'Editar ' + item.nome}>Editar</Link>
                 {item.id !== meuId && item.ativo && <button className="botao-secundario" type="button" value={item.id} onClick={revisarDesativacao} disabled={enviando} aria-label={'Desativar ' + item.nome}>Desativar</button>}

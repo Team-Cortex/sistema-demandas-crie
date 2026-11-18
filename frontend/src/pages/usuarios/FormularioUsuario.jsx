@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
 import cliente, { apagarRascunho, guardarRascunho, guardarSessao, lerRascunho, lerSessao, mensagemDeErro } from '../../api/cliente'
 import { perfis } from '../../dominio'
 import Carregando from '../../components/Carregando'
@@ -79,7 +78,7 @@ export default function FormularioUsuario() {
       if (!minhaConta) dados.perfil = campos.perfil
       if (id) {
         const resposta = await cliente.patch('/api/usuarios/' + id, dados)
-        // A saudação "Olá, nome" lê o nome da sessão; sem isso, ela ficaria com o nome antigo.
+        // O topo da tela lê o nome da sessão; sem isso, ele ficaria com o nome antigo.
         if (minhaConta) {
           const sessao = lerSessao()
           guardarSessao({ ...sessao, usuario: { ...sessao.usuario, nome: resposta.data.nome } })
@@ -98,7 +97,7 @@ export default function FormularioUsuario() {
 
   return (
     <div className={styles.formulario}>
-      <Link className={styles.voltar} to="/usuarios"><ArrowLeft size={17} aria-hidden="true" />Usuários</Link>
+      <Link className="voltar" to="/usuarios">Voltar para usuários</Link>
       <h1>{id ? 'Editar usuário' : 'Cadastrar usuário'}</h1>
       {erroCarga ? <ErroConsulta mensagem={erroCarga} tentarNovamente={tentarNovamente} /> : id && !original ? <Carregando /> :
         <form onSubmit={salvarUsuario} noValidate>

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
 import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
 import { hojeCrie } from '../../dominio'
 import CampoDemanda from '../../components/CampoDemanda'
@@ -60,7 +59,7 @@ export default function RegistrarEncaminhamento() {
   }
   return (
     <form className={styles.formulario} onSubmit={registrar} noValidate>
-      <Link className={styles.voltar} to={origem}><ArrowLeft size={17} aria-hidden="true" />{demanda ? 'Demanda nº ' + demanda : 'Assistido nº ' + assistido}</Link>
+      <Link className="voltar" to={origem}>{demanda ? 'Voltar para a demanda nº ' + demanda : 'Voltar para o assistido nº ' + assistido}</Link>
       <h1>Registrar encaminhamento</h1>
       <fieldset disabled={enviando}>
         <CampoDemanda nome="destino" rotulo="Destino" erro={erros.destino}>

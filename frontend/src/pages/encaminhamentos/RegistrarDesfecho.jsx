@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
 import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
 import { dataCurta } from '../../dominio'
 import CampoDemanda from '../../components/CampoDemanda'
@@ -81,13 +80,13 @@ export default function RegistrarDesfecho() {
 
   return (
     <div className={styles.formulario}>
-      <Link className={styles.voltar} to="/encaminhamentos"><ArrowLeft size={17} aria-hidden="true" />Encaminhamentos</Link>
+      <Link className="voltar" to="/encaminhamentos">Voltar para encaminhamentos</Link>
       <h1>Registrar desfecho</h1>
       {erro && <p className="aviso-erro" role="alert">{erro}</p>}
       {erroCarga ? <ErroConsulta mensagem={erroCarga} tentarNovamente={tentarNovamente} /> : !item ? <Carregando /> :
         <form onSubmit={revisarDesfecho} noValidate>
           <fieldset disabled={enviando}>
-            <h2>{item.destino}</h2><p>{dataCurta(item.data)} · {item.responsavel_nome}</p>
+            <h2>{item.destino}</h2><p>Em {dataCurta(item.data)}, por {item.responsavel_nome}</p>
             {item.pendente ? <>
               <CampoDemanda nome="desfecho" rotulo="Desfecho" erro={erroCampo}>
                 <textarea id="desfecho" name="desfecho" required rows={4} value={texto} onChange={alterarTexto} aria-invalid={Boolean(erroCampo)} aria-describedby={erroCampo ? 'desfecho-erro aviso-desfecho' : 'aviso-desfecho'} />

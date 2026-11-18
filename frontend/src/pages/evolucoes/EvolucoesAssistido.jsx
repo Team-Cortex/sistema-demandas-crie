@@ -86,9 +86,9 @@ export default function EvolucoesAssistido({ assistidoId, iniciais }) {
       </form>
       {erro ? <ErroConsulta mensagem={erro} tentarNovamente={tentarNovamente} /> : !evolucoes ? <Carregando /> :
         evolucoes.length ? <ul className={styles.lista}>{evolucoes.map(item => <li key={item.id}>
-          <Link className={styles.link} to={'/evolucoes/' + item.id}>{dataCurta(item.data)} — {item.area_atuacao}</Link>
+          <Link className={styles.link} to={'/evolucoes/' + item.id}>{dataCurta(item.data)}, {item.area_atuacao}</Link>
           <p className={styles.texto}>{item.descricao}</p>
-          <p className={styles.secundario}>{item.autor_nome} · {dataHora(item.ocorrido_em)}</p>
+          <p className={styles.secundario}>Registrada por {item.autor_nome} em {dataHora(item.ocorrido_em)}</p>
         </li>)}</ul> : <p>{consulta ? 'Nenhuma evolução encontrada com esses filtros. Tente ampliar o período ou limpar os filtros.' : 'Nenhuma evolução lançada para este assistido.'}</p>}
     </section>
   )

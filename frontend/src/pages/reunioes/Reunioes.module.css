@@ -1,25 +1,17 @@
 .pagina { display: grid; gap: 20px; align-content: start; }
 .cabecalho, .acoes { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
-.voltar { display: inline-flex; justify-self: start; align-items: center; min-height: 44px; gap: 8px; font-weight: 600; }
 .painel, .dados, .formulario { padding: clamp(16px, 2vw, 24px); background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio); margin: 0; }
 .painel, .formulario { display: grid; gap: 18px; }
 .filtro { display: grid; gap: 5px; max-width: 300px; font-weight: 600; }
 .lista { padding: 0; margin: 0; list-style: none; }
 .lista li { border-top: 1px solid var(--borda); }
-.linha { display: flex; align-items: center; gap: 12px; min-height: 62px; padding: 12px 2px; text-decoration: none; color: var(--texto); overflow-wrap: anywhere; }
-.linha:hover strong { text-decoration: underline; color: var(--destaque); }
-.linha > svg:last-child { margin-left: auto; flex-shrink: 0; color: var(--texto-secundario); }
+.linha { display: block; padding: 12px 2px; overflow-wrap: anywhere; text-decoration: none; }
+.linha strong { text-decoration: underline; }
 .linha strong, .linha small { display: block; }
 .linha small { color: var(--texto-secundario); font-size: .9rem; margin-top: 2px; }
-.icone { display: grid; place-items: center; background: var(--destaque-suave); color: var(--destaque-escuro); height: 40px; width: 40px; flex-shrink: 0; border-radius: 9px; }
 .dados, .campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 18px; }
 .dados dt { color: var(--texto-secundario); font-size: .9rem; }
-.dados dd { margin: 2px 0; font-weight: 550; overflow-wrap: anywhere; }
-.estado { display: inline-block; font-size: .83rem; font-weight: 600; background: #e9ebef; color: #454c56; margin-top: 6px; border-radius: 5px; padding: 2px 8px; }
-.estado[data-estado='aberta'] { color: #2a527a; background: #eaf2fa; }
-.estado[data-estado='em_andamento'] { color: var(--destaque-escuro); background: var(--destaque-suave); }
-.estado[data-estado='aguardando_terceiros'] { color: #78510e; background: #fff3d6; }
-.estado[data-estado='concluida'] { color: var(--sucesso); background: #e5f4ed; }
+.dados dd { margin: 2px 0; font-weight: 600; overflow-wrap: anywhere; }
 .formulario { max-width: 780px; }
 .campos, .presencas { border: 0; padding: 0; margin: 0; min-width: 0; }
 .presencas { grid-column: 1 / -1; border-top: 1px solid var(--borda); }
