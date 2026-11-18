@@ -2,7 +2,7 @@
 
 ## Identidade do CRIE
 
-O CRIE forneceu a marca usada no login e no menu. O arquivo disponibilizado para este projeto veio de `public/brand/crie-logo-oficial.png` do site do CRIE. A interface conserva as cores e as proporções da imagem em `frontend/public/crie-logo-oficial.png`. A licença de redistribuição da marca não foi informada no briefing. [Repositório de origem](https://github.com/miguelvzs/site-crie)
+O logo do CRIE usado no login e no menu foi copiado de `public/brand/crie-logo-oficial.png` do repositório `site-crie`, projeto do Miguel Vaz para o CRIE (não é manual de marca oficial da instituição). A interface usa a imagem sem alteração, em `frontend/public/crie-logo-oficial.png`. A marca pertence ao CRIE; a autorização de uso neste sistema não está registrada por escrito. [Repositório de origem](https://github.com/miguelvzs/site-crie)
 
 ## Archivo
 
