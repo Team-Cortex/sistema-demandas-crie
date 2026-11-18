@@ -7,6 +7,8 @@ import MinhasDemandas from './pages/MinhasDemandas'
 import Demandas from './pages/Demandas'
 import NovaDemanda from './pages/NovaDemanda'
 import DetalheDemanda from './pages/DetalheDemanda'
+import SomenteDirecao from './components/layouts/SomenteDirecao'
+import Relatorios from './pages/relatorios/Relatorios'
 
 const rotas = createBrowserRouter([
   {
@@ -22,6 +24,12 @@ const rotas = createBrowserRouter([
           { path: 'demandas', element: <Demandas /> },
           { path: 'demandas/nova', element: <NovaDemanda /> },
           { path: 'demandas/:id', element: <DetalheDemanda /> },
+          {
+            element: <SomenteDirecao />,
+            children: [
+              { path: 'relatorios', element: <Relatorios /> },
+            ],
+          },
         ],
       },
     ],

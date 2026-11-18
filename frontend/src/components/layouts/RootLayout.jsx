@@ -3,12 +3,14 @@ import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react
 import { CalendarDays, ClipboardList, FolderOpen, LayoutDashboard, LogOut, Menu, UserRound, X } from 'lucide-react'
 import cliente, { apagarSessao, expiraEm, expirarSessao, lerSessao } from '../../api/cliente'
 import { perfis } from '../../dominio'
+import { FileText } from 'lucide-react'
 import classes from './RootLayout.module.css'
 
 const navegacao = [
   { rota: '/', texto: 'Painel', icone: LayoutDashboard },
   { rota: '/minhas', texto: 'Minhas demandas', icone: ClipboardList },
   { rota: '/demandas', texto: 'Demandas', icone: FolderOpen },
+  { rota: '/relatorios', texto: 'Relatórios', icone: FileText, direcao: true },
 ]
 
 const formatoData = new Intl.DateTimeFormat('pt-BR', {
@@ -94,7 +96,7 @@ export default function RootLayout() {
         </div>
         <div id="navegacao" className={menuAberto ? classes.navegacaoAberta : classes.navegacao}>
           <nav aria-label="Navegação principal">
-            {navegacao.map(({ rota, texto, icone: Icone }) => (
+            {navegacao.filter(item => !item.direcao || usuario.perfil === 'direcao').map(({ rota, texto, icone: Icone }) => (
               <NavLink key={rota} to={rota} end={rota === '/'} className={classeDoLink} onClick={fecharMenu}>
                 <Icone size={20} strokeWidth={1.8} aria-hidden="true" /> {texto}
               </NavLink>
