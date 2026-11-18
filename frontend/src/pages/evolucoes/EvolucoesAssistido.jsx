@@ -8,28 +8,39 @@ import styles from '../assistidos/Assistidos.module.css'
 
 const vazio = { de: '', ate: '', area_atuacao: '' }
 
+// Só os filtros preenchidos vão para a API; sem nenhum, vale a lista que veio com a ficha.
+function preenchidos(campos) {
+  const parametros = {}
+  for (const nome in campos) {
+    if (campos[nome].trim()) parametros[nome] = campos[nome].trim()
+  }
+  return Object.keys(parametros).length ? parametros : null
+}
+
 export default function EvolucoesAssistido({ assistidoId, iniciais }) {
-  const chave = 'filtros-evolucoes-' + assistidoId
-  const [campos, setCampos] = useState(() => lerRascunho(chave)?.campos || vazio)
-  const [consulta, setConsulta] = useState(() => lerRascunho(chave)?.consulta || null)
+  // Os filtros aplicados ficam no rascunho para voltarem depois que a sessão é renovada.
+  const chave = 'evolucoes-' + assistidoId
+  const [campos, setCampos] = useState(lerRascunho(chave) || vazio)
+  const [consulta, setConsulta] = useState(preenchidos(campos))
   const [resultados, setResultados] = useState(null)
   const [erro, setErro] = useState('')
   const [erroPeriodo, setErroPeriodo] = useState('')
   const evolucoes = consulta ? resultados : iniciais
 
   useEffect(() => {
-    if (!consulta) return
-    const controlador = new AbortController()
-    cliente.get('/api/assistidos/' + assistidoId + '/evolucoes', { params: consulta, signal: controlador.signal })
-      .then(({ data }) => setResultados(data))
-      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
-    return () => controlador.abort()
+    async function buscarEvolucoes() {
+      try {
+        const resposta = await cliente.get('/api/assistidos/' + assistidoId + '/evolucoes', { params: consulta })
+        setResultados(resposta.data)
+      } catch (falha) {
+        setErro(mensagemDeErro(falha))
+      }
+    }
+    if (consulta) buscarEvolucoes()
   }, [consulta, assistidoId])
 
   function preencher(evento) {
-    const atual = { ...campos, [evento.target.name]: evento.target.value }
-    setCampos(atual)
-    guardarRascunho(chave, { campos: atual, consulta })
+    setCampos({ ...campos, [evento.target.name]: evento.target.value })
     setErroPeriodo('')
   }
 
@@ -40,13 +51,10 @@ export default function EvolucoesAssistido({ assistidoId, iniciais }) {
       evento.currentTarget.elements.ate.focus()
       return
     }
-    const params = Object.fromEntries(Object.entries(campos).filter(([, valor]) => valor.trim()))
-    if (params.area_atuacao) params.area_atuacao = params.area_atuacao.trim()
-    const aplicados = Object.keys(params).length ? params : null
     setErro('')
     setResultados(null)
-    setConsulta(aplicados)
-    guardarRascunho(chave, { campos, consulta: aplicados })
+    setConsulta(preenchidos(campos))
+    guardarRascunho(chave, campos)
   }
 
   function limpar() {
@@ -57,7 +65,11 @@ export default function EvolucoesAssistido({ assistidoId, iniciais }) {
     setErro('')
   }
 
-  function tentarNovamente() { setErro(''); setConsulta({ ...consulta }) }
+  // Um objeto novo, mesmo igual, faz o useEffect buscar de novo.
+  function tentarNovamente() {
+    setErro('')
+    setConsulta({ ...consulta })
+  }
 
   return (
     <section className={styles.painel}>

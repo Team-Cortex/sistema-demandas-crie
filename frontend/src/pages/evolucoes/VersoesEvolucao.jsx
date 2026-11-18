@@ -14,13 +14,23 @@ export default function VersoesEvolucao() {
   const [evolucao, setEvolucao] = useState(null)
   const [erro, setErro] = useState('')
   const [tentativa, setTentativa] = useState(0)
+
   useEffect(() => {
-    const controlador = new AbortController()
-    cliente.get('/api/evolucoes/' + id, { signal: controlador.signal }).then(({ data }) => setEvolucao(data))
-      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
-    return () => controlador.abort()
+    async function buscarEvolucao() {
+      try {
+        const resposta = await cliente.get('/api/evolucoes/' + id)
+        setEvolucao(resposta.data)
+      } catch (falha) {
+        setErro(mensagemDeErro(falha))
+      }
+    }
+    buscarEvolucao()
   }, [id, tentativa])
-  function tentarNovamente() { setErro(''); setTentativa(tentativa + 1) }
+
+  function tentarNovamente() {
+    setErro('')
+    setTentativa(tentativa + 1)
+  }
 
   return (
     <div className={styles.pagina}>

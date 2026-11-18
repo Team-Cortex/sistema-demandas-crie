@@ -15,7 +15,7 @@ export default function RegistrarDesfecho() {
   const caminho = '/api/encaminhamentos/' + id
   const chave = 'desfecho:' + id
   const [item, setItem] = useState(null)
-  const [texto, setTexto] = useState(() => lerRascunho(chave)?.texto || '')
+  const [texto, setTexto] = useState(lerRascunho(chave)?.texto || '')
   const [erroCarga, setErroCarga] = useState('')
   const [erroCampo, setErroCampo] = useState('')
   const [erro, setErro] = useState('')
@@ -24,10 +24,15 @@ export default function RegistrarDesfecho() {
   const [enviando, setEnviando] = useState(false)
 
   useEffect(() => {
-    const controle = new AbortController()
-    cliente.get(caminho, { signal: controle.signal }).then(({ data }) => setItem(data))
-      .catch(falha => { if (!controle.signal.aborted) setErroCarga(mensagemDeErro(falha)) })
-    return () => controle.abort()
+    async function buscarEncaminhamento() {
+      try {
+        const resposta = await cliente.get(caminho)
+        setItem(resposta.data)
+      } catch (falha) {
+        setErroCarga(mensagemDeErro(falha))
+      }
+    }
+    buscarEncaminhamento()
   }, [caminho, tentativa])
 
   function tentarNovamente() {
@@ -48,10 +53,14 @@ export default function RegistrarDesfecho() {
     if (!texto.trim()) {
       setErroCampo('Escreva o desfecho do encaminhamento.')
       evento.currentTarget.elements.desfecho.focus()
-    } else setConfirmando(true)
+    } else {
+      setConfirmando(true)
+    }
   }
 
-  function voltar() { setConfirmando(false) }
+  function voltar() {
+    setConfirmando(false)
+  }
 
   async function registrar() {
     setConfirmando(false)
@@ -63,6 +72,7 @@ export default function RegistrarDesfecho() {
       navegar('/encaminhamentos?lista=todos', { replace: true, state: { mensagem: 'Desfecho registrado.' } })
     } catch (falha) {
       setErro(mensagemDeErro(falha))
+      // 400: o desfecho já foi registrado; recarrega para mostrar o que ficou gravado.
       if (falha.response?.status === 400) tentarNovamente()
     } finally {
       setEnviando(false)
@@ -80,7 +90,7 @@ export default function RegistrarDesfecho() {
             <h2>{item.destino}</h2><p>{dataCurta(item.data)} · {item.responsavel_nome}</p>
             {item.pendente ? <>
               <CampoDemanda nome="desfecho" rotulo="Desfecho" erro={erroCampo}>
-                <textarea id="desfecho" name="desfecho" required rows={4} value={texto} onChange={alterarTexto} aria-invalid={!!erroCampo} aria-describedby={erroCampo ? 'desfecho-erro aviso-desfecho' : 'aviso-desfecho'} />
+                <textarea id="desfecho" name="desfecho" required rows={4} value={texto} onChange={alterarTexto} aria-invalid={Boolean(erroCampo)} aria-describedby={erroCampo ? 'desfecho-erro aviso-desfecho' : 'aviso-desfecho'} />
               </CampoDemanda>
               <p className={styles.aviso} id="aviso-desfecho">O desfecho só pode ser registrado uma vez.</p>
               <div className={styles.acoes}><button type="submit" className="botao-primario">{enviando ? 'Registrando…' : 'Registrar desfecho'}</button></div>

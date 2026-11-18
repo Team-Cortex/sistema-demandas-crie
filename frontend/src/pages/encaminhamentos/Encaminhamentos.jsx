@@ -9,22 +9,27 @@ import styles from './Encaminhamentos.module.css'
 
 export default function Encaminhamentos() {
   const { state } = useLocation()
+  // As abas Pendentes / Todos são links; "?lista=todos" no endereço escolhe a lista.
   const [parametros] = useSearchParams()
   const todos = parametros.get('lista') === 'todos'
-  const [resultado, setResultado] = useState(null)
+  const [itens, setItens] = useState(null)
+  const [erro, setErro] = useState('')
   const [tentativa, setTentativa] = useState(0)
-  const dados = resultado?.todos === todos ? resultado : null
 
   useEffect(() => {
-    const controle = new AbortController()
-    cliente.get('/api/encaminhamentos' + (todos ? '' : '/pendentes'), { signal: controle.signal })
-      .then(({ data }) => setResultado({ todos, itens: data }))
-      .catch(erro => { if (!controle.signal.aborted) setResultado({ todos, erro: mensagemDeErro(erro) }) })
-    return () => controle.abort()
+    async function buscarEncaminhamentos() {
+      try {
+        const resposta = await cliente.get(todos ? '/api/encaminhamentos' : '/api/encaminhamentos/pendentes')
+        setItens(resposta.data)
+      } catch (falha) {
+        setErro(mensagemDeErro(falha))
+      }
+    }
+    buscarEncaminhamentos()
   }, [todos, tentativa])
 
   function tentarNovamente() {
-    setResultado(null)
+    setErro('')
     setTentativa(tentativa + 1)
   }
 
@@ -36,9 +41,9 @@ export default function Encaminhamentos() {
         <Link to="/encaminhamentos" aria-current={!todos ? 'page' : undefined}>Pendentes</Link>
         <Link to="?lista=todos" aria-current={todos ? 'page' : undefined}>Todos</Link>
       </nav>
-      {!dados ? <Carregando /> : dados.erro ? <ErroConsulta mensagem={dados.erro} tentarNovamente={tentarNovamente} />
-        : !dados.itens.length ? <p className={styles.ficha}>{todos ? 'Nenhum encaminhamento registrado. Abra a demanda ou a ficha do assistido para encaminhar.' : 'Nenhum encaminhamento pendente. Consulte Todos para ver os desfechos registrados.'}</p>
-        : <ul className={styles.lista}>{dados.itens.map(item =>
+      {erro ? <ErroConsulta mensagem={erro} tentarNovamente={tentarNovamente} /> : !itens ? <Carregando />
+        : !itens.length ? <p className={styles.ficha}>{todos ? 'Nenhum encaminhamento registrado. Abra a demanda ou a ficha do assistido para encaminhar.' : 'Nenhum encaminhamento pendente. Consulte Todos para ver os desfechos registrados.'}</p>
+        : <ul className={styles.lista}>{itens.map(item =>
           <li key={item.id} className={styles.ficha}>
             <div className={styles.topo}><h2>{item.destino}</h2><span className={styles.situacao}>{item.pendente ? 'Pendente' : 'Com desfecho'}</span></div>
             <p>{dataCurta(item.data)} · {item.responsavel_nome}</p>
