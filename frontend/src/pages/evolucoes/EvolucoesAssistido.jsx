@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import cliente, { mensagemDeErro } from '../../api/cliente'
+import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
 import Carregando from '../../components/Carregando'
 import ErroConsulta from '../../components/ErroConsulta'
 import { dataCurta, dataHora } from '../../dominio'
@@ -9,8 +9,9 @@ import styles from '../assistidos/Assistidos.module.css'
 const vazio = { de: '', ate: '', area_atuacao: '' }
 
 export default function EvolucoesAssistido({ assistidoId, iniciais }) {
-  const [campos, definirCampos] = useState(vazio)
-  const [consulta, definirConsulta] = useState(null)
+  const chave = 'filtros-evolucoes-' + assistidoId
+  const [campos, definirCampos] = useState(() => lerRascunho(chave)?.campos || vazio)
+  const [consulta, definirConsulta] = useState(() => lerRascunho(chave)?.consulta || null)
   const [resultados, definirResultados] = useState(null)
   const [erro, definirErro] = useState('')
   const [erroPeriodo, definirErroPeriodo] = useState('')
@@ -26,7 +27,9 @@ export default function EvolucoesAssistido({ assistidoId, iniciais }) {
   }, [consulta, assistidoId])
 
   function preencher(evento) {
-    definirCampos({ ...campos, [evento.target.name]: evento.target.value })
+    const atual = { ...campos, [evento.target.name]: evento.target.value }
+    definirCampos(atual)
+    guardarRascunho(chave, { campos: atual, consulta })
     definirErroPeriodo('')
   }
 
@@ -38,12 +41,16 @@ export default function EvolucoesAssistido({ assistidoId, iniciais }) {
       return
     }
     const params = Object.fromEntries(Object.entries(campos).filter(([, valor]) => valor.trim()))
+    if (params.area_atuacao) params.area_atuacao = params.area_atuacao.trim()
+    const aplicados = Object.keys(params).length ? params : null
     definirErro('')
     definirResultados(null)
-    definirConsulta(Object.keys(params).length ? params : null)
+    definirConsulta(aplicados)
+    guardarRascunho(chave, { campos, consulta: aplicados })
   }
 
   function limpar() {
+    apagarRascunho(chave)
     definirConsulta(null)
     definirCampos(vazio)
     definirErroPeriodo('')
@@ -62,7 +69,7 @@ export default function EvolucoesAssistido({ assistidoId, iniciais }) {
         <label>Até<input name="ate" type="date" value={campos.ate} onChange={preencher} aria-invalid={Boolean(erroPeriodo)} aria-describedby={erroPeriodo ? 'erro-periodo' : undefined} /></label>
         <label>Área de atuação<input name="area_atuacao" value={campos.area_atuacao} onChange={preencher} maxLength={80} /></label>
         <button className="botao-secundario">Filtrar evoluções</button>
-        {consulta && <button type="button" className="botao-secundario" onClick={limpar}>Limpar filtros</button>}
+        {(consulta || Object.values(campos).some(Boolean)) && <button type="button" className="botao-secundario" onClick={limpar}>Limpar filtros</button>}
         {erroPeriodo && <p role="alert" className={styles.erro} id="erro-periodo">{erroPeriodo}</p>}
       </form>
       {erro ? <ErroConsulta mensagem={erro} tentarNovamente={tentarNovamente} /> : !evolucoes ? <Carregando /> :

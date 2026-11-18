@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight, Plus, Search } from 'lucide-react'
-import cliente, { mensagemDeErro } from '../../api/cliente'
+import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
 import Carregando from '../../components/Carregando'
 import ErroConsulta from '../../components/ErroConsulta'
 import styles from './Assistidos.module.css'
 
 export default function Assistidos() {
-  const [busca, definirBusca] = useState('')
-  const [consulta, definirConsulta] = useState({})
+  const chave = 'busca-assistidos'
+  const [busca, definirBusca] = useState(() => lerRascunho(chave)?.busca || '')
+  const [consulta, definirConsulta] = useState(() => lerRascunho(chave)?.consulta || {})
   const [assistidos, definirAssistidos] = useState(null)
   const [erro, definirErro] = useState('')
 
@@ -28,16 +29,22 @@ export default function Assistidos() {
 
   function buscar(evento) {
     evento.preventDefault()
-    consultar(busca.trim())
+    const texto = busca.trim()
+    guardarRascunho(chave, { busca, consulta: texto ? { busca: texto } : {} })
+    consultar(texto)
   }
 
   function limpar() {
+    apagarRascunho(chave)
     definirBusca('')
     consultar('')
   }
 
   function tentarNovamente() { consultar(consulta.busca) }
-  function preencherBusca(evento) { definirBusca(evento.target.value) }
+  function preencherBusca(evento) {
+    definirBusca(evento.target.value)
+    guardarRascunho(chave, { busca: evento.target.value, consulta })
+  }
 
   return (
     <div className={styles.pagina}>
@@ -48,7 +55,7 @@ export default function Assistidos() {
         <div className={styles.pesquisa}>
           <label>Buscar pelo nome de tratamento<input type="search" value={busca} onChange={preencherBusca} /></label>
           <button className="botao-secundario"><Search size={18} aria-hidden="true" />Buscar</button>
-          {consulta.busca && <button type="button" className="botao-secundario" onClick={limpar}>Limpar busca</button>}
+          {(busca || consulta.busca) && <button type="button" className="botao-secundario" onClick={limpar}>Limpar busca</button>}
         </div>
       </form>
       {erro ? <ErroConsulta mensagem={erro} tentarNovamente={tentarNovamente} /> : !assistidos ? <Carregando /> :
