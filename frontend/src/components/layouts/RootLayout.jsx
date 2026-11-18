@@ -1,14 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { CalendarDays, ClipboardList, FolderOpen, LayoutDashboard, LogOut, Menu, UserRound, X } from 'lucide-react'
+import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import {
+  CalendarDays, CalendarRange, ClipboardList, ContactRound, FileText, FolderOpen, History,
+  LayoutDashboard, LogOut, Menu, Send, UserRound, UsersRound, X,
+} from 'lucide-react'
 import cliente, { apagarSessao, expiraEm, expirarSessao, lerSessao } from '../../api/cliente'
 import { perfis } from '../../dominio'
-import { FileText } from 'lucide-react'
-import { History } from 'lucide-react'
-import { UsersRound } from 'lucide-react'
-import { Send } from 'lucide-react'
-import { ContactRound } from 'lucide-react'
-import { CalendarRange } from 'lucide-react'
 import classes from './RootLayout.module.css'
 
 const navegacao = [
@@ -30,6 +27,8 @@ const formatoData = new Intl.DateTimeFormat('pt-BR', {
 export default function RootLayout() {
   const { usuario, token } = lerSessao()
   const { pathname, search } = useLocation()
+  const secao = pathname.split('/')[1].toLowerCase()
+  const rotaAtual = secao === 'evolucoes' ? '/assistidos' : '/' + secao
   const navegar = useNavigate()
   const [menuAberto, definirMenuAberto] = useState(false)
   const [saindo, definirSaindo] = useState(false)
@@ -85,9 +84,6 @@ export default function RootLayout() {
 
   function alternarMenu() { definirMenuAberto(!menuAberto) }
   function fecharMenu() { definirMenuAberto(false) }
-  function classeDoLink({ isActive }) {
-    return isActive ? classes.ativo : undefined
-  }
 
   if (!token || !usuario) return <Navigate to="/entrar" replace state={{ destino: pathname + search }} />
 
@@ -107,9 +103,10 @@ export default function RootLayout() {
         <div id="navegacao" className={menuAberto ? classes.navegacaoAberta : classes.navegacao}>
           <nav aria-label="Navegação principal">
             {navegacao.filter(item => !item.direcao || usuario.perfil === 'direcao').map(({ rota, texto, icone: Icone }) => (
-              <NavLink key={rota} to={rota} end={rota === '/'} className={classeDoLink} onClick={fecharMenu}>
+              <Link key={rota} to={rota} className={rotaAtual === rota ? classes.ativo : undefined}
+                aria-current={rotaAtual === rota ? 'page' : undefined} onClick={fecharMenu}>
                 <Icone size={20} strokeWidth={1.8} aria-hidden="true" /> {texto}
-              </NavLink>
+              </Link>
             ))}
           </nav>
         </div>
@@ -128,7 +125,7 @@ export default function RootLayout() {
           </div>
         </header>
         <main className={classes.conteudo} ref={conteudo} id="conteudo" tabIndex={-1}>
-          <Outlet key={pathname} />
+          <Outlet key={pathname + search} />
         </main>
       </div>
     </div>
