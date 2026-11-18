@@ -16,7 +16,7 @@ export default function ListaDemandas({ demandas, titulo, mensagemVazia }) {
             <tr key={demanda.id}>
               <th scope="row">
                 <Link to={`/demandas/${demanda.id}`}>
-                  <small>#{demanda.id}</small> {demanda.descricao}
+                  <small>nº {demanda.id}</small> {demanda.descricao}
                 </Link>
               </th>
               <td>{estados[demanda.estado]}</td>

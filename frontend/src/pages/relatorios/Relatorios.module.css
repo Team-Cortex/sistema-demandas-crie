@@ -1,0 +1,26 @@
+.pagina { display: grid; gap: 22px; }
+.formulario, .resultado { padding: clamp(18px, 2.2vw, 30px); border: 1px solid var(--borda); border-radius: var(--raio); background: var(--superficie); }
+.formulario { max-width: 800px; display: grid; gap: 18px; }
+.formulario fieldset { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.formulario legend { margin-bottom: 16px; font-weight: 650; font-size: 1.2rem; }
+.inteira { grid-column: 1/-1; }
+.formulario label { display: grid; gap: 6px; font-weight: 550; }
+.formulario button { justify-self: start; }
+.resultado { display: grid; gap: 16px; overflow-wrap: anywhere; }
+.resultado header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.resultado header p, .resultado footer { color: var(--texto-secundario); }
+.resultado footer { border-top: 1px solid var(--borda); padding-top: 12px; }
+.resultado ol { padding: 0; margin: 0; list-style: none; }
+.resultado li { padding-block: 10px; border-bottom: 1px solid var(--borda); }
+.totais { display: grid; grid-template-columns: repeat(auto-fit,minmax(105px,1fr)); gap: 10px; margin: 0; }
+.totais > div { border-radius: 8px; padding: 12px; background: var(--fundo); }
+.totais dd { margin: 4px 0 0; font-size: 1.6rem; font-weight: 650; }
+.totais dt { font-size: .86rem; color: var(--texto-secundario); }
+@media (max-width: 560px) { .formulario fieldset { grid-template-columns: 1fr; } }
+@media print {
+  .formulario, .pagina > h1, .resultado button { display: none; }
+  .resultado { display: block; border: 0; padding: 0; }
+  .resultado > * { margin-block: 12px; }
+  .resultado li, .resultado tr { break-inside: avoid; }
+  .resultado a { color: inherit; text-decoration: none; }
+}

@@ -1,0 +1,19 @@
+.pagina, .formulario { display: grid; gap: 1.25rem; }
+.cabecalho, .acoes { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.cabecalho { justify-content: space-between; }
+.lista { margin: 0; padding: 0; list-style: none; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio); }
+.lista li { display: grid; grid-template-columns: minmax(0,2fr) minmax(0,1fr) 6rem minmax(11rem,auto); gap: 1rem; align-items: center; padding: 1.1rem 1.3rem; }
+.lista li + li { border-top: 1px solid var(--borda); }
+.pessoa h2 { font-size: 1.03rem; }
+.pessoa p { color: var(--texto-secundario); }
+.ativo, .inativo { border-radius: 1rem; justify-self: start; font-size: .9rem; font-weight: 600; padding: .2rem .65rem; }
+.ativo { color: var(--sucesso); background: #e7f4ed; }
+.inativo { color: var(--texto-secundario); background: var(--fundo); }
+.formulario { max-width: 46rem; }
+.formulario fieldset { display: grid; gap: 1rem; min-width: 0; border: 1px solid var(--borda); background: var(--superficie); padding: clamp(1rem,3vw,2rem); margin: 0; border-radius: var(--raio); }
+.formulario :is(input,select) { width: 100%; min-width: 0; }
+.voltar { display: inline-flex; align-items: center; gap: .4rem; min-height: 44px; justify-self: start; text-decoration: none; color: var(--texto-secundario); }
+@media (max-width: 1100px) {
+  .lista li { grid-template-columns: minmax(0,1fr) auto; gap: .6rem; }
+  .pessoa, .acoes { grid-column: 1 / -1; }
+}

@@ -9,41 +9,56 @@ import styles from './Demandas.module.css'
 
 const filtrosVazios = { q: '', estado: '', responsavel_id: '', categoria: '', periodo_inicio: '', periodo_fim: '', assistido_id: '' }
 
+// Só os filtros preenchidos vão para a API.
+function preenchidos(filtros) {
+  const parametros = {}
+  for (const campo in filtros) {
+    if (filtros[campo].trim()) parametros[campo] = filtros[campo].trim()
+  }
+  return parametros
+}
+
 export default function Demandas() {
-  const [filtros, setFiltros] = useState(() => lerRascunho('filtros-demandas') || filtrosVazios)
-  const [consulta, setConsulta] = useState(() => lerRascunho('filtros-aplicados') || {})
+  // Os filtros ficam no rascunho para voltarem depois que a sessão é renovada.
+  const [filtros, setFiltros] = useState(lerRascunho('filtros-demandas') || filtrosVazios)
+  const [consulta, setConsulta] = useState(preenchidos(filtros))
   const [demandas, setDemandas] = useState(null)
   const [erro, setErro] = useState('')
   const [opcoes, setOpcoes] = useState(null)
   const [erroOpcoes, setErroOpcoes] = useState('')
   const [tentativaOpcoes, setTentativaOpcoes] = useState(0)
   const [erroPeriodo, setErroPeriodo] = useState('')
-  const [maisFiltros, setMaisFiltros] = useState(() =>
+  const [maisFiltros, setMaisFiltros] = useState(
     Boolean(filtros.responsavel_id || filtros.categoria || filtros.periodo_inicio || filtros.periodo_fim || filtros.assistido_id))
 
   useEffect(() => {
-    const controlador = new AbortController()
-    Promise.all([
-      cliente.get('/api/usuarios', { signal: controlador.signal }),
-      cliente.get('/api/assistidos', { signal: controlador.signal }),
-    ])
-      .then(([usuarios, assistidos]) => setOpcoes({ usuarios: usuarios.data, assistidos: assistidos.data }))
-      .catch(falha => { if (!controlador.signal.aborted) setErroOpcoes(mensagemDeErro(falha)) })
-    return () => controlador.abort()
+    async function buscarOpcoes() {
+      try {
+        const usuarios = await cliente.get('/api/usuarios')
+        const assistidos = await cliente.get('/api/assistidos')
+        setOpcoes({ usuarios: usuarios.data, assistidos: assistidos.data })
+      } catch (falha) {
+        setErroOpcoes(mensagemDeErro(falha))
+      }
+    }
+    buscarOpcoes()
   }, [tentativaOpcoes])
 
+  // Busca de novo sempre que a consulta muda (Buscar, Limpar ou Tentar de novo).
   useEffect(() => {
-    const controlador = new AbortController()
-    cliente.get('/api/demandas', { params: consulta, signal: controlador.signal })
-      .then(resposta => setDemandas(resposta.data))
-      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
-    return () => controlador.abort()
+    async function buscarDemandas() {
+      try {
+        const resposta = await cliente.get('/api/demandas', { params: consulta })
+        setDemandas(resposta.data)
+      } catch (falha) {
+        setErro(mensagemDeErro(falha))
+      }
+    }
+    buscarDemandas()
   }, [consulta])
 
   function alterarFiltro(evento) {
-    const novosFiltros = { ...filtros, [evento.target.name]: evento.target.value }
-    setFiltros(novosFiltros)
-    guardarRascunho('filtros-demandas', novosFiltros)
+    setFiltros({ ...filtros, [evento.target.name]: evento.target.value })
     setErroPeriodo('')
   }
 
@@ -60,28 +75,30 @@ export default function Demandas() {
       setErroPeriodo('Escolha uma data final igual ou posterior à inicial.')
       return
     }
-    const parametros = {}
-    for (const [campo, valor] of Object.entries(filtros)) {
-      if (valor.trim()) parametros[campo] = valor.trim()
-    }
-    guardarRascunho('filtros-aplicados', parametros)
-    consultar(parametros)
+    guardarRascunho('filtros-demandas', filtros)
+    consultar(preenchidos(filtros))
   }
 
   function limparFiltros() {
     setFiltros(filtrosVazios)
     apagarRascunho('filtros-demandas')
-    apagarRascunho('filtros-aplicados')
     setErroPeriodo('')
     consultar({})
   }
 
-  function tentarNovamente() { consultar({ ...consulta }) }
+  // Um objeto novo, mesmo igual, faz o useEffect buscar de novo.
+  function tentarNovamente() {
+    consultar({ ...consulta })
+  }
+
   function tentarOpcoes() {
     setErroOpcoes('')
     setTentativaOpcoes(tentativaOpcoes + 1)
   }
-  function alternarFiltros() { setMaisFiltros(!maisFiltros) }
+
+  function alternarFiltros() {
+    setMaisFiltros(!maisFiltros)
+  }
 
   return (
     <>

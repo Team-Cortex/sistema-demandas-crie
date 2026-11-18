@@ -10,11 +10,15 @@ export default function MinhasDemandas() {
   const [tentativa, setTentativa] = useState(0)
 
   useEffect(() => {
-    const controlador = new AbortController()
-    cliente.get('/api/demandas/minhas', { signal: controlador.signal })
-      .then(resposta => setDemandas(resposta.data))
-      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
-    return () => controlador.abort()
+    async function buscarDemandas() {
+      try {
+        const resposta = await cliente.get('/api/demandas/minhas')
+        setDemandas(resposta.data)
+      } catch (falha) {
+        setErro(mensagemDeErro(falha))
+      }
+    }
+    buscarDemandas()
   }, [tentativa])
 
   function tentarNovamente() {

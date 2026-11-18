@@ -31,8 +31,10 @@
 .lateral nav a, .sair { display: flex; }
 .lateral nav a:hover, .sair:hover, .menu:hover { background: var(--fundo); color: var(--texto); }
 .lateral nav a.ativo { background: var(--destaque-suave); color: var(--destaque-escuro); font-weight: 650; }
-.sair { position: relative; margin-top: 24px; }
-.sair::before { position: absolute; bottom: calc(100% + 9px); left: 6px; right: 6px; height: 1px; background: var(--borda); content: ""; }
+.fimTopo { display: flex; align-items: center; gap: 18px; }
+.sair { border: 1px solid var(--borda); }
+.lateral nav a.ativo { box-shadow: inset 3px 0 var(--destaque); }
+.navegacao, .navegacaoAberta { overflow-y: auto; }
 .area { min-width: 0; }
 .topo {
   min-height: 80px;
@@ -66,4 +68,9 @@
 @media (max-width: 500px) {
   .data { display: none; }
   .conteudo { padding-inline: 16px; }
+}
+@media print {
+  .layout { display: block; background: #fff; }
+  .lateral, .topo, .pular { display: none; }
+  .conteudo { max-width: none; padding: 0; }
 }

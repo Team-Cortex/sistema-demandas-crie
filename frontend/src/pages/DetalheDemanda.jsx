@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { ArrowLeft, AlertCircle, CheckCircle2 } from 'lucide-react'
 import cliente, { guardarRascunho, lerRascunho, mensagemDeErro } from '../api/cliente'
-import { estados, prioridades, dataCurta, dataHora } from '../dominio'
+import { estados, prioridades, setores, dataCurta, dataHora } from '../dominio'
 import Confirmacao from '../components/Confirmacao'
 import HistoricoDemanda from '../components/HistoricoDemanda'
 import CampoDemanda from '../components/CampoDemanda'
@@ -17,42 +17,75 @@ export default function DetalheDemanda() {
   const local = useLocation()
   const chave = 'demanda-' + id
   const caminho = '/api/demandas/' + id
-  const [rascunho, definirRascunho] = useState(() => ({ ...inicial, ...lerRascunho(chave) }))
-  const [demanda, definirDemanda] = useState(null)
-  const [erroFicha, definirErroFicha] = useState('')
-  const [usuarios, definirUsuarios] = useState(null)
-  const [erroUsuarios, definirErroUsuarios] = useState('')
-  const [tentativa, definirTentativa] = useState(0)
-  const [confirmando, definirConfirmando] = useState(false)
-  const [enviando, definirEnviando] = useState(false)
-  const [erroCampo, definirErroCampo] = useState('')
-  const [erroServidor, definirErroServidor] = useState('')
-  const [sucesso, definirSucesso] = useState(local.state?.mensagem || '')
+  const [rascunho, setRascunho] = useState({ ...inicial, ...lerRascunho(chave) })
+  const [demanda, setDemanda] = useState(null)
+  const [reuniao, setReuniao] = useState(null)
+  const [assistido, setAssistido] = useState(null)
+  const [erroFicha, setErroFicha] = useState('')
+  const [usuarios, setUsuarios] = useState(null)
+  const [erroUsuarios, setErroUsuarios] = useState('')
+  const [tentativa, setTentativa] = useState(0)
+  const [confirmando, setConfirmando] = useState(false)
+  const [enviando, setEnviando] = useState(false)
+  const [erroCampo, setErroCampo] = useState('')
+  const [erroServidor, setErroServidor] = useState('')
+  const [sucesso, setSucesso] = useState(local.state?.mensagem || '')
 
   useEffect(() => {
-    let ativo = true
-    cliente.get(caminho).then(({ data }) => {
-      if (ativo) definirDemanda(data)
-    }).catch(erro => {
-      if (ativo) definirErroFicha(mensagemDeErro(erro))
-    })
-    return () => { ativo = false }
+    async function buscarDemanda() {
+      try {
+        const resposta = await cliente.get(caminho)
+        setDemanda(resposta.data)
+      } catch (falha) {
+        setErroFicha(mensagemDeErro(falha))
+      }
+    }
+    buscarDemanda()
   }, [caminho, tentativa])
 
+  // A demanda só traz os ids; data, setor e nome vêm das fichas. Se a consulta falhar, fica o número.
+  const reuniaoId = demanda?.reuniao_id
+  const assistidoId = demanda?.assistido_id
   useEffect(() => {
-    let ativo = true
-    cliente.get('/api/usuarios', { params: { ativo: true } }).then(({ data }) => {
-      if (ativo) definirUsuarios(data)
-    }).catch(erro => {
-      if (ativo) definirErroUsuarios(mensagemDeErro(erro))
-    })
-    return () => { ativo = false }
+    async function buscarReuniao() {
+      try {
+        const resposta = await cliente.get('/api/reunioes/' + reuniaoId)
+        setReuniao(resposta.data)
+      } catch {
+        setReuniao(null)
+      }
+    }
+    if (reuniaoId) buscarReuniao()
+  }, [reuniaoId])
+
+  useEffect(() => {
+    async function buscarAssistido() {
+      try {
+        const resposta = await cliente.get('/api/assistidos/' + assistidoId)
+        setAssistido(resposta.data)
+      } catch {
+        setAssistido(null)
+      }
+    }
+    if (assistidoId) buscarAssistido()
+  }, [assistidoId])
+
+  useEffect(() => {
+    async function buscarUsuarios() {
+      try {
+        const resposta = await cliente.get('/api/usuarios', { params: { ativo: true } })
+        setUsuarios(resposta.data)
+      } catch (falha) {
+        setErroUsuarios(mensagemDeErro(falha))
+      }
+    }
+    buscarUsuarios()
   }, [tentativa])
 
   function tentarNovamente() {
-    definirErroFicha('')
-    definirErroUsuarios('')
-    definirTentativa(tentativa + 1)
+    setErroFicha('')
+    setErroUsuarios('')
+    setTentativa(tentativa + 1)
   }
 
   const proximos = demanda ? transicoes[demanda.estado] : []
@@ -60,20 +93,20 @@ export default function DetalheDemanda() {
   const outrosUsuarios = usuarios?.filter(item => item.id !== demanda?.responsavel_id)
 
   function guardar(valores) {
-    definirRascunho(valores)
+    setRascunho(valores)
     guardarRascunho(chave, valores)
-    definirErroCampo('')
-    definirErroServidor('')
+    setErroCampo('')
+    setErroServidor('')
   }
 
   function escolherAcao(evento) {
     guardar({ ...rascunho, acao: evento.currentTarget.value })
-    definirSucesso('')
+    setSucesso('')
   }
 
   function preencherCampo(evento) {
     guardar({ ...rascunho, [acao]: evento.target.value })
-    definirSucesso('')
+    setSucesso('')
   }
 
   function revisarAlteracao(evento) {
@@ -85,43 +118,44 @@ export default function DetalheDemanda() {
       mensagem = 'Escolha um novo responsável ativo.'
     }
     if (mensagem) {
-      definirErroCampo(mensagem)
-      evento.currentTarget.elements.namedItem(acao).focus()
+      setErroCampo(mensagem)
+      evento.currentTarget.elements[acao].focus()
     } else if (acao === 'estado') {
-      definirConfirmando(true)
+      setConfirmando(true)
     } else {
       salvarAlteracao()
     }
   }
 
   function voltarAoFormulario() {
-    definirConfirmando(false)
+    setConfirmando(false)
   }
 
   async function salvarAlteracao() {
-    definirConfirmando(false)
-    definirEnviando(true)
-    definirErroServidor('')
-    definirSucesso('')
+    setConfirmando(false)
+    setEnviando(true)
+    setErroServidor('')
+    setSucesso('')
     try {
       if (acao === 'estado') {
-        const { data } = await cliente.patch(caminho + '/estado', { estado: rascunho.estado })
-        definirDemanda(data)
-        definirSucesso('Estado atualizado.')
+        const resposta = await cliente.patch(caminho + '/estado', { estado: rascunho.estado })
+        setDemanda(resposta.data)
+        setSucesso('Estado atualizado.')
       } else if (acao === 'texto') {
-        const { data } = await cliente.post(caminho + '/anotacoes', { texto: rascunho.texto.trim() })
-        definirDemanda({ ...demanda, historico: [...demanda.historico, data], ultimo_movimento: data.ocorrido_em })
-        definirSucesso('Anotação registrada no histórico.')
+        // A API devolve só a anotação nova; ela entra no fim do histórico já carregado.
+        const resposta = await cliente.post(caminho + '/anotacoes', { texto: rascunho.texto.trim() })
+        setDemanda({ ...demanda, historico: [...demanda.historico, resposta.data], ultimo_movimento: resposta.data.ocorrido_em })
+        setSucesso('Anotação registrada no histórico.')
       } else {
-        const { data } = await cliente.patch(caminho + '/responsavel', { responsavel_id: Number(rascunho.responsavel_id) })
-        definirDemanda(data)
-        definirSucesso('Responsável atualizado.')
+        const resposta = await cliente.patch(caminho + '/responsavel', { responsavel_id: Number(rascunho.responsavel_id) })
+        setDemanda(resposta.data)
+        setSucesso('Responsável atualizado.')
       }
       guardar({ ...rascunho, [acao]: '' })
-    } catch (erro) {
-      definirErroServidor(mensagemDeErro(erro))
+    } catch (falha) {
+      setErroServidor(mensagemDeErro(falha))
     } finally {
-      definirEnviando(false)
+      setEnviando(false)
     }
   }
 
@@ -133,7 +167,7 @@ export default function DetalheDemanda() {
   return (
     <div className={styles.pagina}>
       <Link className={styles.voltar} to="/demandas"><ArrowLeft size={17} aria-hidden="true" />Demandas</Link>
-      <h1>Demanda #{id}</h1>
+      <h1>Demanda nº {id}</h1>
       {sucesso && <p className={styles.sucesso} role="status"><CheckCircle2 size={19} aria-hidden="true" />{sucesso}</p>}
       {erroFicha ? <div className="aviso-erro" role="alert">{erroFicha} <button className="botao botao-secundario" onClick={tentarNovamente}>Tentar de novo</button></div> :
         !demanda && <p role="status">Carregando demanda…</p>}
@@ -147,8 +181,18 @@ export default function DetalheDemanda() {
             <div><dt>Responsável</dt><dd>{demanda.responsavel_nome}</dd></div>
             <div><dt>Prazo</dt><dd>{dataCurta(demanda.prazo)}</dd></div>
             <div><dt>Prioridade</dt><dd>{prioridades[demanda.prioridade]}</dd></div>
-            <div><dt>Reunião de origem</dt><dd>Reunião #{demanda.reuniao_id}</dd></div>
-            <div><dt>Assistido</dt><dd>{demanda.assistido_id ? 'Assistido #' + demanda.assistido_id : 'Sem vínculo'}</dd></div>
+            <div><dt>Reunião de origem</dt><dd>
+              <Link className="botao-secundario" to={'/reunioes/' + reuniaoId}>
+                {reuniao ? `Reunião de ${dataCurta(reuniao.data)} — ${setores[reuniao.setor]}` : `Reunião nº ${reuniaoId}`}
+              </Link>
+            </dd></div>
+            <div><dt>Assistido</dt><dd>
+              {assistidoId ? (
+                <Link className="botao-secundario" to={'/assistidos/' + assistidoId}>
+                  {assistido ? assistido.nome_tratamento : `Assistido nº ${assistidoId}`}
+                </Link>
+              ) : 'Sem vínculo'}
+            </dd></div>
             <div><dt>Categoria</dt><dd>{demanda.categoria || 'Sem categoria'}</dd></div>
             <div><dt>Registro</dt><dd>{dataHora(demanda.criado_em)}</dd></div>
             <div><dt>Último movimento</dt><dd>{dataHora(demanda.ultimo_movimento)}</dd></div>
@@ -159,6 +203,7 @@ export default function DetalheDemanda() {
           <div className={styles.acoes} role="group" aria-label="Tipo de atualização">
             {Object.entries(acoes).filter(([valor]) => valor !== 'estado' || proximos.length > 0).map(([valor, nome]) =>
               <button key={valor} type="button" value={valor} aria-pressed={acao === valor} onClick={escolherAcao} disabled={enviando}>{nome}</button>)}
+            <Link className="botao-secundario" to={'/encaminhamentos/novo?demanda_id=' + id}>Encaminhar</Link>
           </div>
           <form noValidate onSubmit={revisarAlteracao}>
             <fieldset className={styles.edicao} disabled={enviando}>
@@ -186,7 +231,7 @@ export default function DetalheDemanda() {
         </section>
         <HistoricoDemanda historico={demanda.historico} />
         {confirmando && <Confirmacao titulo="Confirmar mudança de estado?" acao="Confirmar mudança" aoVoltar={voltarAoFormulario} aoConfirmar={salvarAlteracao}>
-          <p>A demanda #{id} passará de <strong>{estados[demanda.estado]}</strong> para <strong>{estados[rascunho.estado]}</strong>.</p>
+          <p>A demanda nº {id} passará de <strong>{estados[demanda.estado]}</strong> para <strong>{estados[rascunho.estado]}</strong>.</p>
           {['concluida', 'cancelada'].includes(rascunho.estado) && <p>Esse estado encerra a demanda.</p>}
         </Confirmacao>}
       </>}

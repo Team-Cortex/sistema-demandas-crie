@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ClipboardList } from 'lucide-react'
 import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../api/cliente'
 import CampoDemanda from '../components/CampoDemanda'
@@ -8,58 +8,55 @@ import { prioridades, setores, dataCurta } from '../dominio'
 import { validarDemanda } from './regrasDemanda'
 import styles from './NovaDemanda.module.css'
 
-const chave = 'nova-demanda'
 const vazio = {
   descricao: '', prioridade: '', responsavel_id: '', prazo: '',
-  reuniao_id: null, assistido_id: '', categoria: '',
+  reuniao_id: '', assistido_id: '', categoria: '',
 }
 
 export default function NovaDemanda() {
   const navegar = useNavigate()
-  const [rascunho, definirRascunho] = useState(() => ({ ...vazio, ...lerRascunho(chave) }))
-  const [opcoes, definirOpcoes] = useState(null)
-  const [erroListas, definirErroListas] = useState('')
-  const [tentativa, definirTentativa] = useState(0)
-  const [erros, definirErros] = useState({})
-  const [erroServidor, definirErroServidor] = useState('')
-  const [confirmando, definirConfirmando] = useState(false)
-  const [enviando, definirEnviando] = useState(false)
+  // Vindo da ficha da reunião ("Registrar demanda desta reunião"), o endereço traz ?reuniao_id=.
+  const [parametros] = useSearchParams()
+  const reuniaoDeOrigem = parametros.get('reuniao_id') || ''
+  const chave = 'nova-demanda-' + reuniaoDeOrigem
+  const [rascunho, setRascunho] = useState({ ...vazio, reuniao_id: reuniaoDeOrigem, ...lerRascunho(chave) })
+  const [opcoes, setOpcoes] = useState(null)
+  const [erroListas, setErroListas] = useState('')
+  const [tentativa, setTentativa] = useState(0)
+  const [erros, setErros] = useState({})
+  const [erroServidor, setErroServidor] = useState('')
+  const [confirmando, setConfirmando] = useState(false)
+  const [enviando, setEnviando] = useState(false)
 
   useEffect(() => {
-    let ativo = true
-    async function listarOpcoes() {
+    async function buscarOpcoes() {
       try {
-        const [usuarios, reunioes, assistidos] = await Promise.all([
-          cliente.get('/api/usuarios', { params: { ativo: true } }),
-          cliente.get('/api/reunioes'), cliente.get('/api/assistidos'),
-        ])
-        if (ativo) definirOpcoes({ usuarios: usuarios.data, reunioes: reunioes.data, assistidos: assistidos.data })
-      } catch (erro) {
-        if (ativo) definirErroListas(mensagemDeErro(erro))
+        const usuarios = await cliente.get('/api/usuarios', { params: { ativo: true } })
+        const reunioes = await cliente.get('/api/reunioes')
+        const assistidos = await cliente.get('/api/assistidos')
+        setOpcoes({ usuarios: usuarios.data, reunioes: reunioes.data, assistidos: assistidos.data })
+      } catch (falha) {
+        setErroListas(mensagemDeErro(falha))
       }
     }
-    listarOpcoes()
-    return () => { ativo = false }
+    buscarOpcoes()
   }, [tentativa])
 
-  const campos = {
-    ...rascunho,
-    reuniao_id: rascunho.reuniao_id ?? String(opcoes?.reunioes[0]?.id ?? ''),
-  }
+  // Sem escolha, a reunião de origem é a mais recente (a API lista da mais nova para a mais antiga).
+  const campos = { ...rascunho, reuniao_id: rascunho.reuniao_id || String(opcoes?.reunioes[0]?.id || '') }
 
   function tentarNovamente() {
-    definirErroListas('')
-    definirTentativa(tentativa + 1)
+    setErroListas('')
+    setTentativa(tentativa + 1)
   }
 
   function preencherCampo(evento) {
     const { name, value } = evento.target
     const valores = { ...rascunho, [name]: value }
-    if (opcoes && valores.reuniao_id === null) valores.reuniao_id = campos.reuniao_id
-    definirRascunho(valores)
+    setRascunho(valores)
     guardarRascunho(chave, valores)
-    definirErros({ ...erros, [name]: '' })
-    definirErroServidor('')
+    setErros({ ...erros, [name]: '' })
+    setErroServidor('')
   }
 
   function atributos(nome, obrigatorio = true) {
@@ -73,26 +70,26 @@ export default function NovaDemanda() {
 
   function revisarDemanda(evento) {
     evento.preventDefault()
-    const invalidos = validarDemanda(campos, opcoes)
-    definirErros(invalidos)
+    const invalidos = validarDemanda(campos)
+    setErros(invalidos)
     const primeiro = Object.keys(invalidos)[0]
     if (primeiro) {
-      evento.currentTarget.elements.namedItem(primeiro).focus()
+      evento.currentTarget.elements[primeiro].focus()
       return
     }
-    definirConfirmando(true)
+    setConfirmando(true)
   }
 
   function voltarAoFormulario() {
-    definirConfirmando(false)
+    setConfirmando(false)
   }
 
   async function salvarDemanda() {
-    definirConfirmando(false)
-    definirEnviando(true)
-    definirErroServidor('')
+    setConfirmando(false)
+    setEnviando(true)
+    setErroServidor('')
     try {
-      const { data } = await cliente.post('/api/demandas', {
+      const resposta = await cliente.post('/api/demandas', {
         descricao: campos.descricao.trim(), prioridade: campos.prioridade,
         responsavel_id: Number(campos.responsavel_id), prazo: campos.prazo,
         reuniao_id: Number(campos.reuniao_id),
@@ -100,10 +97,10 @@ export default function NovaDemanda() {
         categoria: campos.categoria.trim() || null,
       })
       apagarRascunho(chave)
-      navegar('/demandas/' + data.id, { replace: true, state: { mensagem: 'Demanda registrada com sucesso.' } })
-    } catch (erro) {
-      definirErroServidor(mensagemDeErro(erro))
-      definirEnviando(false)
+      navegar('/demandas/' + resposta.data.id, { replace: true, state: { mensagem: 'Demanda registrada com sucesso.' } })
+    } catch (falha) {
+      setErroServidor(mensagemDeErro(falha))
+      setEnviando(false)
     }
   }
 
@@ -157,7 +154,8 @@ export default function NovaDemanda() {
             <input {...atributos('categoria', false)} type="text" maxLength={80} />
           </CampoDemanda>
         </fieldset>
-        {(semResponsavel || semReuniao) && <p role="status">Para registrar a demanda, é preciso ter uma reunião cadastrada e um responsável ativo. Consulte a direção.</p>}
+        {semResponsavel && <p role="status">Para registrar uma demanda, é preciso ter um responsável ativo. Consulte a direção.</p>}
+        {semReuniao && <p role="status">Antes, registre a reunião em que a demanda surgiu. <Link className="botao-secundario" to="/reunioes/nova">Registrar reunião</Link></p>}
         {erroServidor && <p role="alert" className="aviso-erro">{erroServidor}</p>}
         <footer className={styles.acoes}>
           <button type="submit" className="botao botao-primario" disabled={enviando || !opcoes || semReuniao || semResponsavel}>{enviando ? 'Registrando…' : 'Registrar demanda'}</button>
