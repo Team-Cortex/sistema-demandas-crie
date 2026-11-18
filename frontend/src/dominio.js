@@ -19,5 +19,9 @@ const horarioCrie = new Intl.DateTimeFormat('pt-BR', {
 })
 
 export function dataHora(iso) {
-  return horarioCrie.format(new Date(iso)).replace(',', '')
+  return horarioCrie.format(new Date(iso)).replace(/,?\s+(?=\d{2}:)/, ' às ')
+}
+
+export function hojeCrie() {
+  return new Intl.DateTimeFormat('sv-SE', { timeZone: 'America/Sao_Paulo' }).format(new Date())
 }

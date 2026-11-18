@@ -22,6 +22,7 @@ export default function RootLayout() {
   const [menuAberto, definirMenuAberto] = useState(false)
   const [saindo, definirSaindo] = useState(false)
   const botaoMenu = useRef(null)
+  const painelMenu = useRef(null)
   const conteudo = useRef(null)
   const paginaAnterior = useRef(pathname)
 
@@ -45,7 +46,14 @@ export default function RootLayout() {
       }
     }
     window.addEventListener('keydown', fecharComEscape)
-    return () => window.removeEventListener('keydown', fecharComEscape)
+    function fecharFora(evento) {
+      if (!painelMenu.current?.contains(evento.target)) definirMenuAberto(false)
+    }
+    document.addEventListener('pointerdown', fecharFora)
+    return () => {
+      window.removeEventListener('keydown', fecharComEscape)
+      document.removeEventListener('pointerdown', fecharFora)
+    }
   }, [menuAberto])
 
   async function sair() {
@@ -74,7 +82,7 @@ export default function RootLayout() {
   return (
     <div className={classes.layout}>
       <a className={classes.pular} href="#conteudo">Ir para o conteúdo</a>
-      <aside className={classes.lateral}>
+      <aside className={classes.lateral} ref={painelMenu}>
         <div className={classes.cabecalhoMenu}>
           <Link to="/" className={classes.marca} onClick={fecharMenu} aria-label="CRIE — ir para o painel">
             <img src="/crie-logo-oficial.png" alt="CRIE" width="107" height="50" />
@@ -92,18 +100,20 @@ export default function RootLayout() {
               </NavLink>
             ))}
           </nav>
-          <button className={classes.sair} type="button" onClick={sair} disabled={saindo}>
-            <LogOut size={19} aria-hidden="true" />{saindo ? 'Saindo…' : 'Sair'}
-          </button>
         </div>
       </aside>
       <div className={classes.area}>
         <header className={classes.topo}>
           <div className={classes.usuario}>
             <span className={classes.avatar}><UserRound size={21} aria-hidden="true" /></span>
-            <div><strong>Olá, {usuario.nome}</strong><span>{perfis[usuario.perfil]}</span></div>
+            <div><strong>Olá, {usuario.nome.trim().split(/\s+/)[0]}</strong><span>{perfis[usuario.perfil]}</span></div>
           </div>
-          <div className={classes.data}><CalendarDays size={17} aria-hidden="true" />{formatoData.format(new Date())}</div>
+          <div className={classes.fimTopo}>
+            <div className={classes.data}><CalendarDays size={17} aria-hidden="true" />{formatoData.format(new Date())}</div>
+            <button className={classes.sair} type="button" onClick={sair} disabled={saindo}>
+              <LogOut size={19} aria-hidden="true" />{saindo ? 'Saindo…' : 'Sair'}
+            </button>
+          </div>
         </header>
         <main className={classes.conteudo} ref={conteudo} id="conteudo" tabIndex={-1}>
           <Outlet key={pathname} />
