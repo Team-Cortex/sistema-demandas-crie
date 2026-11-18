@@ -1,18 +1,33 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import RootLayout from './components/layouts/RootLayout'
+import Entrar from './pages/Entrar'
+import ErrorPage from './pages/ErrorPage'
+import Painel from './pages/Painel'
+import MinhasDemandas from './pages/MinhasDemandas'
+import Demandas from './pages/Demandas'
+import NovaDemanda from './pages/NovaDemanda'
+import DetalheDemanda from './pages/DetalheDemanda'
 
-// Exemplo de componentes de páginas
-const Home = () => <h1>Página Inicial</h1>;
-const About = () => <h1>Sobre</h1>;
+const rotas = createBrowserRouter([
+  {
+    errorElement: <ErrorPage />,
+    children: [
+      { path: '/entrar', element: <Entrar /> },
+      {
+        path: '/',
+        element: <RootLayout />,
+        children: [
+          { index: true, element: <Painel /> },
+          { path: 'minhas', element: <MinhasDemandas /> },
+          { path: 'demandas', element: <Demandas /> },
+          { path: 'demandas/nova', element: <NovaDemanda /> },
+          { path: 'demandas/:id', element: <DetalheDemanda /> },
+        ],
+      },
+    ],
+  },
+])
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-      </Routes>
-    </BrowserRouter>
-  );
+export default function App() {
+  return <RouterProvider router={rotas} />
 }
-
-export default App;

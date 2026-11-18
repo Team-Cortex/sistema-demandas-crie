@@ -1,0 +1,15 @@
+.dialogo {
+  width: min(28rem, calc(100% - 2rem));
+  padding: clamp(1.25rem, 4vw, 2rem);
+  max-height: calc(100dvh - 2rem);
+  color: var(--texto);
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  overflow-wrap: anywhere;
+  box-shadow: 0 20px 64px #271b3433;
+}
+
+.dialogo::backdrop { background: #21172e77; }
+.dialogo h2 { margin: 0 0 1rem; }
+.acoes { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: .65rem; margin-top: 1.5rem; }

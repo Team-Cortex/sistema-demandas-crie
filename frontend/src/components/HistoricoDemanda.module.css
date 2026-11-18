@@ -1,0 +1,9 @@
+.secao { border: 1px solid var(--borda); background: var(--superficie); border-radius: var(--raio); padding: clamp(1rem, 2.5vw, 1.6rem); }
+.secao h2 { display: flex; gap: .65rem; align-items: center; margin: 0 0 1.25rem; font-size: 1.2rem; }
+.secao h2 svg { color: var(--destaque); }
+.linha { list-style: none; margin: 0; padding: 0; }
+.linha li { position: relative; margin-left: .4rem; padding: 0 0 1.5rem 1.35rem; border-left: 1px solid var(--borda); overflow-wrap: anywhere; }
+.linha li:last-child { border-left-color: transparent; padding-bottom: 0; }
+.linha li::before { content: ''; position: absolute; top: .4rem; left: -.29rem; width: .5rem; height: .5rem; border-radius: 50%; background: var(--destaque); }
+.linha p { margin: .35rem 0; white-space: pre-wrap; }
+.linha span { color: var(--texto-secundario); }

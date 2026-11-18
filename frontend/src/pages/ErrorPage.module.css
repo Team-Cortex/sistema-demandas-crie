@@ -1,0 +1,3 @@
+.tela { display: grid; place-items: center; min-height: 100svh; padding: 20px; }
+.cartao { display: grid; justify-items: start; gap: 20px; width: min(100%, 540px); padding: clamp(24px, 5vw, 42px); border: 1px solid var(--borda); border-radius: var(--raio); background: var(--superficie); }
+.cartao p { color: var(--texto-secundario); }
