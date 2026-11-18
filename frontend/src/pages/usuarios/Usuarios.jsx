@@ -21,10 +21,15 @@ export default function Usuarios() {
   const [sucesso, setSucesso] = useState(state?.mensagem)
 
   useEffect(() => {
-    const controle = new AbortController()
-    cliente.get('/api/usuarios', { signal: controle.signal }).then(({ data }) => setUsuarios(data))
-      .catch(falha => { if (!controle.signal.aborted) setErroCarga(mensagemDeErro(falha)) })
-    return () => controle.abort()
+    async function buscarUsuarios() {
+      try {
+        const resposta = await cliente.get('/api/usuarios')
+        setUsuarios(resposta.data)
+      } catch (falha) {
+        setErroCarga(mensagemDeErro(falha))
+      }
+    }
+    buscarUsuarios()
   }, [tentativa])
 
   function tentarNovamente() {
@@ -38,15 +43,17 @@ export default function Usuarios() {
     setSucesso('')
   }
 
-  function voltar() { setEscolhido(null) }
+  function voltar() {
+    setEscolhido(null)
+  }
 
   async function desativar() {
     setEscolhido(null)
     setEnviando(true)
     try {
-      const { data } = await cliente.patch('/api/usuarios/' + escolhido.id + '/desativar')
-      setUsuarios(usuarios.map(item => item.id === data.id ? data : item))
-      setSucesso('Conta de ' + data.nome + ' desativada.')
+      const resposta = await cliente.patch('/api/usuarios/' + escolhido.id + '/desativar')
+      setUsuarios(usuarios.map(item => item.id === resposta.data.id ? resposta.data : item))
+      setSucesso('Conta de ' + resposta.data.nome + ' desativada.')
     } catch (falha) {
       setErro(mensagemDeErro(falha))
     } finally {

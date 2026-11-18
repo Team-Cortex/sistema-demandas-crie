@@ -6,7 +6,11 @@ import styles from './Relatorios.module.css'
 export default function ResultadoRelatorio({ relatorio, usuarios }) {
   const { emissao, periodo, totais, assistido, filtros } = relatorio
   const responsavel = usuarios.find(pessoa => pessoa.id === filtros?.responsavel_id)
-  function imprimir() { window.print() }
+
+  function imprimir() {
+    window.print()
+  }
+
   return (
     <section className={styles.resultado} aria-labelledby="titulo-relatorio">
       <header>

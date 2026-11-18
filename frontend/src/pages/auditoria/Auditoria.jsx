@@ -18,29 +18,39 @@ const recursos = {
 const colunas = ['Quando', 'Quem', 'Ação', 'Recurso', 'Assistido']
 
 export default function Auditoria() {
-  const [filtros, setFiltros] = useState(() => lerRascunho('auditoria-filtros') || filtrosVazios)
-  const [consulta, setConsulta] = useState(() => lerRascunho('auditoria-consulta') || { pagina: 1 })
+  // Filtros e página ficam no rascunho para voltarem depois que a sessão é renovada.
+  const [filtros, setFiltros] = useState(lerRascunho('auditoria-filtros') || filtrosVazios)
+  const [consulta, setConsulta] = useState(lerRascunho('auditoria-consulta') || { pagina: 1 })
   const [dados, setDados] = useState(null)
   const [erro, setErro] = useState('')
-  const [erroCampo, setErroCampo] = useState({})
+  const [erroPeriodo, setErroPeriodo] = useState('')
   const [usuarios, setUsuarios] = useState(null)
   const [erroUsuarios, setErroUsuarios] = useState('')
   const [tentativa, setTentativa] = useState(0)
 
   useEffect(() => {
-    const controlador = new AbortController()
-    cliente.get('/api/usuarios', { signal: controlador.signal })
-      .then(({ data }) => setUsuarios(data))
-      .catch(falha => { if (!controlador.signal.aborted) setErroUsuarios(mensagemDeErro(falha)) })
-    return () => controlador.abort()
+    async function buscarUsuarios() {
+      try {
+        const resposta = await cliente.get('/api/usuarios')
+        setUsuarios(resposta.data)
+      } catch (falha) {
+        setErroUsuarios(mensagemDeErro(falha))
+      }
+    }
+    buscarUsuarios()
   }, [tentativa])
 
+  // Busca de novo sempre que a consulta muda (filtros, página ou Tentar de novo).
   useEffect(() => {
-    const controlador = new AbortController()
-    cliente.get('/api/auditoria', { params: { ...consulta, por_pagina: 20 }, signal: controlador.signal })
-      .then(({ data }) => setDados(data))
-      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
-    return () => controlador.abort()
+    async function buscarRegistros() {
+      try {
+        const resposta = await cliente.get('/api/auditoria', { params: { ...consulta, por_pagina: 20 } })
+        setDados(resposta.data)
+      } catch (falha) {
+        setErro(mensagemDeErro(falha))
+      }
+    }
+    buscarRegistros()
   }, [consulta])
 
   function consultar(parametros) {
@@ -53,18 +63,15 @@ export default function Auditoria() {
   function alterarFiltro(evento) {
     const novos = { ...filtros, [evento.target.name]: evento.target.value }
     setFiltros(novos)
-    setErroCampo({})
+    setErroPeriodo('')
     guardarRascunho('auditoria-filtros', novos)
   }
 
   function filtrar(evento) {
     evento.preventDefault()
-    const erros = {}
-    if (filtros.assistido_id && !/^[1-9]\d*$/.test(filtros.assistido_id)) erros.assistido_id = 'Informe o número do assistido.'
-    if (filtros.ate && filtros.de > filtros.ate) erros.ate = 'A data inicial não pode ser depois da final.'
-    setErroCampo(erros)
-    if (Object.keys(erros).length) {
-      evento.currentTarget.elements.namedItem(Object.keys(erros)[0]).focus()
+    if (filtros.de && filtros.ate && filtros.ate < filtros.de) {
+      setErroPeriodo('Escolha uma data final igual ou posterior à inicial.')
+      evento.currentTarget.elements.ate.focus()
       return
     }
     const parametros = { pagina: 1 }
@@ -77,17 +84,28 @@ export default function Auditoria() {
   function limparFiltros() {
     apagarRascunho('auditoria-filtros')
     setFiltros(filtrosVazios)
-    setErroCampo({})
+    setErroPeriodo('')
     consultar({ pagina: 1 })
   }
 
-  function tentarNovamente() { consultar({ ...consulta }) }
+  // Um objeto novo, mesmo igual, faz o useEffect buscar de novo.
+  function tentarNovamente() {
+    consultar({ ...consulta })
+  }
+
   function carregarUsuarios() {
     setErroUsuarios('')
     setTentativa(tentativa + 1)
   }
-  function paginaAnterior() { consultar({ ...consulta, pagina: consulta.pagina - 1 }) }
-  function proximaPagina() { consultar({ ...consulta, pagina: consulta.pagina + 1 }) }
+
+  // A página vem da consulta, não dos dados: durante a busca os dados ficam vazios.
+  function paginaAnterior() {
+    consultar({ ...consulta, pagina: consulta.pagina - 1 })
+  }
+
+  function proximaPagina() {
+    consultar({ ...consulta, pagina: consulta.pagina + 1 })
+  }
   const totalPaginas = dados ? Math.ceil(dados.total / dados.por_pagina) : 0
 
   return (
@@ -102,9 +120,7 @@ export default function Auditoria() {
             </select>
           </label>
           <label>Assistido (número)
-            <input name="assistido_id" inputMode="numeric" value={filtros.assistido_id} onChange={alterarFiltro}
-              aria-invalid={!!erroCampo.assistido_id} aria-describedby={erroCampo.assistido_id ? 'erro-assistido' : undefined} />
-            {erroCampo.assistido_id && <span id="erro-assistido" className={styles.erroCampo}>{erroCampo.assistido_id}</span>}
+            <input name="assistido_id" type="number" min="1" value={filtros.assistido_id} onChange={alterarFiltro} />
           </label>
           <label>Recurso
             <select name="recurso" value={filtros.recurso} onChange={alterarFiltro}>
@@ -120,8 +136,8 @@ export default function Auditoria() {
           </label>
           <label>De<input name="de" type="date" value={filtros.de} onChange={alterarFiltro} /></label>
           <label>Até<input name="ate" type="date" value={filtros.ate} onChange={alterarFiltro}
-            aria-invalid={!!erroCampo.ate} aria-describedby={erroCampo.ate ? 'erro-ate' : undefined} />
-            {erroCampo.ate && <span className={styles.erroCampo} id="erro-ate">{erroCampo.ate}</span>}
+            aria-invalid={Boolean(erroPeriodo)} aria-describedby={erroPeriodo ? 'erro-ate' : undefined} />
+            {erroPeriodo && <span className={styles.erroCampo} id="erro-ate">{erroPeriodo}</span>}
           </label>
         </div>
         {!usuarios && (erroUsuarios ? <ErroConsulta mensagem={erroUsuarios} tentarNovamente={carregarUsuarios} /> : <Carregando>Carregando autores…</Carregando>)}

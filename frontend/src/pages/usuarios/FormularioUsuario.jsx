@@ -14,21 +14,26 @@ export default function FormularioUsuario() {
   const chave = 'usuario:' + (id || 'novo')
   const minhaConta = id === String(lerSessao().usuario.id)
   const [original, setOriginal] = useState(null)
-  const [rascunho, setRascunho] = useState(() => lerRascunho(chave) || {})
+  const [rascunho, setRascunho] = useState(lerRascunho(chave) || {})
   const [senha, setSenha] = useState('')
   const [erros, setErros] = useState({})
   const [erroCarga, setErroCarga] = useState('')
   const [erro, setErro] = useState('')
   const [tentativa, setTentativa] = useState(0)
   const [enviando, setEnviando] = useState(false)
+  // O que foi digitado (rascunho) vale mais que o que veio da API.
   const campos = { nome: '', email: '', perfil: '', ...original, ...rascunho }
 
   useEffect(() => {
-    if (!id) return
-    const controle = new AbortController()
-    cliente.get('/api/usuarios/' + id, { signal: controle.signal }).then(({ data }) => setOriginal(data))
-      .catch(falha => { if (!controle.signal.aborted) setErroCarga(mensagemDeErro(falha)) })
-    return () => controle.abort()
+    async function buscarUsuario() {
+      try {
+        const resposta = await cliente.get('/api/usuarios/' + id)
+        setOriginal(resposta.data)
+      } catch (falha) {
+        setErroCarga(mensagemDeErro(falha))
+      }
+    }
+    if (id) buscarUsuario()
   }, [id, tentativa])
 
   function tentarNovamente() {
@@ -59,9 +64,9 @@ export default function FormularioUsuario() {
     evento.preventDefault()
     const falhas = {}
     if (!campos.nome.trim()) falhas.nome = 'Informe o nome.'
-    if (!id && (!campos.email.trim() || !evento.currentTarget.elements.email.validity.valid)) falhas.email = 'Informe um e-mail válido.'
-    if (!perfis[campos.perfil]) falhas.perfil = 'Escolha um perfil válido.'
-    if (!id && Array.from(senha).length < 8) falhas.senha = 'A senha precisa ter no mínimo 8 caracteres.'
+    if (!id && !campos.email.includes('@')) falhas.email = 'Informe um e-mail válido.'
+    if (!campos.perfil) falhas.perfil = 'Escolha o perfil.'
+    if (!id && senha.length < 8) falhas.senha = 'A senha precisa ter no mínimo 8 caracteres.'
     setErros(falhas)
     if (Object.keys(falhas).length) {
       evento.currentTarget.elements[Object.keys(falhas)[0]].focus()
@@ -73,12 +78,15 @@ export default function FormularioUsuario() {
       const dados = { nome: campos.nome.trim() }
       if (!minhaConta) dados.perfil = campos.perfil
       if (id) {
-        const { data } = await cliente.patch('/api/usuarios/' + id, dados)
+        const resposta = await cliente.patch('/api/usuarios/' + id, dados)
+        // A saudação "Olá, nome" lê o nome da sessão; sem isso, ela ficaria com o nome antigo.
         if (minhaConta) {
           const sessao = lerSessao()
-          guardarSessao({ ...sessao, usuario: { ...sessao.usuario, nome: data.nome } })
+          guardarSessao({ ...sessao, usuario: { ...sessao.usuario, nome: resposta.data.nome } })
         }
-      } else await cliente.post('/api/usuarios', { ...dados, email: campos.email.trim(), senha })
+      } else {
+        await cliente.post('/api/usuarios', { ...dados, email: campos.email.trim(), senha })
+      }
       apagarRascunho(chave)
       navegar('/usuarios', { replace: true, state: { mensagem: id ? 'Usuário atualizado.' : 'Usuário cadastrado.' } })
     } catch (falha) {

@@ -11,7 +11,7 @@ import styles from './Relatorios.module.css'
 const inicial = { tipo: 'demandas', de: '', ate: '', estado: '', categoria: '', responsavel_id: '', assistido_id: '' }
 
 export default function Relatorios() {
-  const [campos, setCampos] = useState(() => ({ ...inicial, ...lerRascunho('relatorios') }))
+  const [campos, setCampos] = useState({ ...inicial, ...lerRascunho('relatorios') })
   const [opcoes, setOpcoes] = useState(null)
   const [erroOpcoes, setErroOpcoes] = useState('')
   const [tentativa, setTentativa] = useState(0)
@@ -21,18 +21,16 @@ export default function Relatorios() {
   const [emitindo, setEmitindo] = useState(false)
 
   useEffect(() => {
-    const controlador = new AbortController()
-    async function listarOpcoes() {
+    async function buscarOpcoes() {
       try {
-        const config = { signal: controlador.signal }
-        const [usuarios, assistidos] = await Promise.all([cliente.get('/api/usuarios', config), cliente.get('/api/assistidos', config)])
+        const usuarios = await cliente.get('/api/usuarios')
+        const assistidos = await cliente.get('/api/assistidos')
         setOpcoes({ usuarios: usuarios.data, assistidos: assistidos.data })
       } catch (falha) {
-        if (!controlador.signal.aborted) setErroOpcoes(mensagemDeErro(falha))
+        setErroOpcoes(mensagemDeErro(falha))
       }
     }
-    listarOpcoes()
-    return () => controlador.abort()
+    buscarOpcoes()
   }, [tentativa])
 
   function repetirConsulta() {
@@ -55,13 +53,11 @@ export default function Relatorios() {
     if (!campos.de) falhas.de = 'Informe a data inicial.'
     if (!campos.ate) falhas.ate = 'Informe a data final.'
     else if (campos.ate < campos.de) falhas.ate = 'Escolha uma data final igual ou posterior à inicial.'
-    if (campos.tipo === 'assistido' && !opcoes.assistidos.some(item => item.id === Number(campos.assistido_id))) {
-      falhas.assistido_id = 'Selecione um assistido.'
-    }
+    if (campos.tipo === 'assistido' && !campos.assistido_id) falhas.assistido_id = 'Selecione um assistido.'
     setErrosCampos(falhas)
     const primeiro = Object.keys(falhas)[0]
     if (primeiro) {
-      evento.currentTarget.elements.namedItem(primeiro).focus()
+      evento.currentTarget.elements[primeiro].focus()
       return
     }
     setErro('')
