@@ -103,6 +103,10 @@ Abra [o sistema local](http://localhost:5173) e entre com uma conta da carga fic
 
 O painel reúne os totais e as demandas em aberto. Em **Demandas**, use a descrição e os filtros para localizar um registro. **Registrar demanda** abre um único formulário com confirmação. Na ficha é possível mudar o estado, anotar e trocar o responsável. O prazo de cada aviso e a indicação de vencimento vêm do servidor.
 
+Em **Reuniões**, a equipe registra os participantes e abre uma demanda vinculada ao encontro. **Assistidos** reúne as demandas, evoluções e encaminhamentos de cada pessoa pelo nome de tratamento. Retificar uma evolução preserva a versão anterior. Para encaminhar, abra a demanda ou a ficha do assistido. Em **Encaminhamentos**, consulte as pendências e registre o desfecho.
+
+A direção também acessa **Usuários**, **Relatórios** e **Auditoria**. Os relatórios do período e do assistido podem ser impressos pelo navegador com a identificação de quem os emitiu. A auditoria permite consultar e filtrar os registros em páginas.
+
 Para verificar o cliente, execute os comandos abaixo dentro de `frontend/`.
 
 ```bash
