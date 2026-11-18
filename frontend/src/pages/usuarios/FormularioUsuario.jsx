@@ -1,0 +1,113 @@
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
+import cliente, { apagarRascunho, guardarRascunho, guardarSessao, lerRascunho, lerSessao, mensagemDeErro } from '../../api/cliente'
+import { perfis } from '../../dominio'
+import Carregando from '../../components/Carregando'
+import CampoDemanda from '../../components/CampoDemanda'
+import ErroConsulta from '../../components/ErroConsulta'
+import styles from './Usuarios.module.css'
+
+export default function FormularioUsuario() {
+  const { id } = useParams()
+  const navegar = useNavigate()
+  const chave = 'usuario:' + (id || 'novo')
+  const minhaConta = id === String(lerSessao().usuario.id)
+  const [original, definirOriginal] = useState(null)
+  const [rascunho, definirRascunho] = useState(() => lerRascunho(chave) || {})
+  const [senha, definirSenha] = useState('')
+  const [erros, definirErros] = useState({})
+  const [erroCarga, definirErroCarga] = useState('')
+  const [erro, definirErro] = useState('')
+  const [tentativa, definirTentativa] = useState(0)
+  const [enviando, definirEnviando] = useState(false)
+  const campos = { nome: '', email: '', perfil: '', ...original, ...rascunho }
+
+  useEffect(() => {
+    if (!id) return
+    const controle = new AbortController()
+    cliente.get('/api/usuarios/' + id, { signal: controle.signal }).then(({ data }) => definirOriginal(data))
+      .catch(falha => { if (!controle.signal.aborted) definirErroCarga(mensagemDeErro(falha)) })
+    return () => controle.abort()
+  }, [id, tentativa])
+
+  function tentarNovamente() {
+    definirErroCarga('')
+    definirTentativa(tentativa + 1)
+  }
+
+  function alterarCampo(evento) {
+    const { name, value } = evento.target
+    if (name === 'senha') definirSenha(value)
+    else {
+      const valores = { ...rascunho, [name]: value }
+      definirRascunho(valores)
+      guardarRascunho(chave, valores)
+    }
+    definirErros({ ...erros, [name]: '' })
+    definirErro('')
+  }
+
+  function atributos(nome) {
+    return {
+      id: nome, name: nome, value: nome === 'senha' ? senha : campos[nome], required: true, onChange: alterarCampo,
+      'aria-invalid': Boolean(erros[nome]), 'aria-describedby': erros[nome] ? nome + '-erro' : undefined,
+    }
+  }
+
+  async function salvarUsuario(evento) {
+    evento.preventDefault()
+    const falhas = {}
+    if (!campos.nome.trim()) falhas.nome = 'Informe o nome.'
+    if (!id && (!campos.email.trim() || !evento.currentTarget.elements.email.validity.valid)) falhas.email = 'Informe um e-mail válido.'
+    if (!perfis[campos.perfil]) falhas.perfil = 'Escolha um perfil válido.'
+    if (!id && Array.from(senha).length < 8) falhas.senha = 'A senha precisa ter no mínimo 8 caracteres.'
+    definirErros(falhas)
+    if (Object.keys(falhas).length) {
+      evento.currentTarget.elements[Object.keys(falhas)[0]].focus()
+      return
+    }
+    definirErro('')
+    definirEnviando(true)
+    try {
+      const dados = { nome: campos.nome.trim() }
+      if (!minhaConta) dados.perfil = campos.perfil
+      if (id) {
+        const { data } = await cliente.patch('/api/usuarios/' + id, dados)
+        if (minhaConta) {
+          const sessao = lerSessao()
+          guardarSessao({ ...sessao, usuario: { ...sessao.usuario, nome: data.nome } })
+        }
+      } else await cliente.post('/api/usuarios', { ...dados, email: campos.email.trim(), senha })
+      apagarRascunho(chave)
+      navegar('/usuarios', { replace: true, state: { mensagem: id ? 'Usuário atualizado.' : 'Usuário cadastrado.' } })
+    } catch (falha) {
+      definirErro(mensagemDeErro(falha))
+    } finally {
+      definirEnviando(false)
+    }
+  }
+
+  return (
+    <div className={styles.formulario}>
+      <Link className={styles.voltar} to="/usuarios"><ArrowLeft size={17} aria-hidden="true" />Usuários</Link>
+      <h1>{id ? 'Editar usuário' : 'Cadastrar usuário'}</h1>
+      {erroCarga ? <ErroConsulta mensagem={erroCarga} tentarNovamente={tentarNovamente} /> : id && !original ? <Carregando /> :
+        <form onSubmit={salvarUsuario} noValidate>
+          <fieldset disabled={enviando}>
+            <CampoDemanda nome="nome" rotulo="Nome" erro={erros.nome}><input {...atributos('nome')} maxLength={120} /></CampoDemanda>
+            {!id && <CampoDemanda nome="email" rotulo="E-mail" erro={erros.email}><input {...atributos('email')} type="email" maxLength={254} autoComplete="off" /></CampoDemanda>}
+            <CampoDemanda nome="perfil" rotulo="Perfil" erro={erros.perfil}>
+              <select {...atributos('perfil')} disabled={minhaConta}>
+                <option value="">Selecione o perfil</option>
+                {Object.entries(perfis).map(([valor, rotulo]) => <option key={valor} value={valor}>{rotulo}</option>)}
+              </select>
+            </CampoDemanda>
+            {!id && <CampoDemanda nome="senha" rotulo="Senha inicial (mínimo de 8 caracteres)" erro={erros.senha}><input {...atributos('senha')} type="password" minLength={8} autoComplete="new-password" /></CampoDemanda>}
+            {erro && <p className="aviso-erro" role="alert">{erro}</p>}
+            <div className={styles.acoes}><button className="botao-primario" type="submit">{enviando ? 'Salvando…' : id ? 'Salvar alterações' : 'Cadastrar usuário'}</button></div>
+          </fieldset>
+        </form>}
+    </div>
+  )
+}

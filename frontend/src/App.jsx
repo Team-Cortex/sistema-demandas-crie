@@ -9,6 +9,8 @@ import NovaDemanda from './pages/NovaDemanda'
 import DetalheDemanda from './pages/DetalheDemanda'
 import SomenteDirecao from './components/layouts/SomenteDirecao'
 import Relatorios from './pages/relatorios/Relatorios'
+import Usuarios from './pages/usuarios/Usuarios'
+import FormularioUsuario from './pages/usuarios/FormularioUsuario'
 import FormEvolucao from './pages/evolucoes/FormEvolucao'
 import VersoesEvolucao from './pages/evolucoes/VersoesEvolucao'
 import Encaminhamentos from './pages/encaminhamentos/Encaminhamentos'
@@ -52,6 +54,9 @@ const rotas = createBrowserRouter([
           {
             element: <SomenteDirecao />,
             children: [
+              { path: 'usuarios', element: <Usuarios /> },
+              { path: 'usuarios/novo', element: <FormularioUsuario /> },
+              { path: 'usuarios/:id/editar', element: <FormularioUsuario /> },
               { path: 'relatorios', element: <Relatorios /> },
             ],
           },
