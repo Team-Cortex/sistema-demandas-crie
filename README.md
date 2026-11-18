@@ -87,12 +87,52 @@ pip install -r requirements.txt
 flask db upgrade            # cria as tabelas
 python seed.py              # opcional: dados fictícios de demonstração
 flask run
+```
 
-# Cliente
+### Front-end de demandas
+
+Com a API local em execução, abra outro terminal na raiz do repositório. Use Node.js 22.13 ou superior em uma versão LTS compatível e instale as versões registradas no lockfile.
+
+```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
+
+Abra [o sistema local](http://localhost:5173) e entre com uma conta da carga fictícia do servidor. A API deve permitir essa origem em `CORS_ORIGINS`. Em desenvolvimento, `frontend/.env.development` define `VITE_API_URL=http://localhost:5000`. A variável contém apenas a origem pública da API. No build de produção, omita-a para usar a mesma origem da interface. As rotas da API já incluem `/api`.
+
+O painel reúne os totais e as demandas em aberto. Em **Demandas**, use a descrição e os filtros para localizar um registro. **Registrar demanda** abre um único formulário com confirmação. Na ficha é possível mudar o estado, anotar e trocar o responsável. O prazo de cada aviso e a indicação de vencimento vêm do servidor.
+
+Para verificar o cliente, execute os comandos abaixo dentro de `frontend/`.
+
+```bash
+npm run lint
+node --test
+npm run build
+```
+
+#### Bibliotecas da interface
+
+| Biblioteca | Versão instalada | Licença | Uso |
+| --- | --- | --- | --- |
+| react, react-dom | 19.3.0 | MIT | Componentes funcionais, estado, efeitos e renderização no navegador |
+| react-router-dom | 7.18.5 | MIT | Rotas filhas do layout, navegação, parâmetros da ficha e página de erro |
+| axios | 1.21.1 | MIT | Cliente HTTP único, cabeçalho de autenticação e tratamento das respostas |
+| lucide-react | 1.75.0 | ISC e MIT (ícones derivados de Feather) | Ícones de navegação, estados e ações com rótulo |
+
+O interceptador de respostas do Axios é um recurso extraclasse. Em `src/api/cliente.js`, ele trata o 401 das rotas protegidas em um só lugar. Ao expirar a sessão, o sistema lembra a rota e guarda o rascunho na aba para a mesma pessoa retomar após entrar. Sair pelo menu descarta os rascunhos. A API valida o token e as permissões a cada requisição.
+
+#### Ferramentas de desenvolvimento
+
+| Pacote | Versão instalada | Licença | Uso |
+| --- | --- | --- | --- |
+| vite, @vitejs/plugin-react | 8.3.2, 6.1.1 | MIT | Servidor local, atualização durante a edição e build |
+| @babel/core, @rolldown/plugin-babel, babel-plugin-react-compiler | 7.29.7, 0.2.4, 1.0.0 | MIT | Compilação dos componentes no Vite com React Compiler |
+| eslint, @eslint/js, globals | 10.11.0, 10.0.1, 17.13.0 | MIT | Análise estática e reconhecimento das APIs do navegador |
+| eslint-plugin-react-hooks, eslint-plugin-react-refresh | 7.1.1, 0.5.7 | MIT | Verificação dos hooks e das exportações de componentes |
+| @types/react, @types/react-dom | 19.3.0, 19.3.0 | MIT | Definições do ambiente React para apoio do editor ao JSX |
+
+As origens do logotipo, da tipografia e dos ícones estão nos [créditos da interface](docs/CREDITOS-UI.md).
 
 ---
 
