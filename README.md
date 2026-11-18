@@ -122,7 +122,6 @@ npm run build
 | react, react-dom | 19.3.0 | MIT | Componentes funcionais, estado, efeitos e renderização no navegador |
 | react-router-dom | 7.18.5 | MIT | Rotas filhas do layout, navegação, parâmetros da ficha e página de erro |
 | axios | 1.21.1 | MIT | Cliente HTTP único, cabeçalho de autenticação e tratamento das respostas |
-| lucide-react | 1.75.0 | ISC e MIT (ícones derivados de Feather) | Ícones de navegação, estados e ações com rótulo |
 
 O código segue as aulas de React: componentes de função, `useState` e `useEffect` com uma função `async` de busca, eventos com `preventDefault`, rotas filhas e Axios. Dois recursos ficam fora delas, cada um em um só lugar:
 
@@ -141,7 +140,7 @@ Sair pelo menu apaga a sessão e os rascunhos da aba. A API valida o token e as 
 | eslint-plugin-react-hooks, eslint-plugin-react-refresh | 7.1.1, 0.5.7 | MIT | Verificação dos hooks e das exportações de componentes |
 | @types/react, @types/react-dom | 19.3.0, 19.3.0 | MIT | Definições do ambiente React para apoio do editor ao JSX |
 
-As origens do logotipo, da tipografia e dos ícones estão nos [créditos da interface](docs/CREDITOS-UI.md).
+As origens do logotipo e da tipografia estão nos [créditos da interface](docs/CREDITOS-UI.md).
 
 ---
 
