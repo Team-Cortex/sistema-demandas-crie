@@ -9,6 +9,9 @@ import NovaDemanda from './pages/NovaDemanda'
 import DetalheDemanda from './pages/DetalheDemanda'
 import SomenteDirecao from './components/layouts/SomenteDirecao'
 import Relatorios from './pages/relatorios/Relatorios'
+import Encaminhamentos from './pages/encaminhamentos/Encaminhamentos'
+import RegistrarEncaminhamento from './pages/encaminhamentos/RegistrarEncaminhamento'
+import RegistrarDesfecho from './pages/encaminhamentos/RegistrarDesfecho'
 import Assistidos from './pages/assistidos/Assistidos'
 import FormAssistido from './pages/assistidos/FormAssistido'
 import FichaAssistido from './pages/assistidos/FichaAssistido'
@@ -30,6 +33,9 @@ const rotas = createBrowserRouter([
           { path: 'demandas', element: <Demandas /> },
           { path: 'demandas/nova', element: <NovaDemanda /> },
           { path: 'demandas/:id', element: <DetalheDemanda /> },
+          { path: 'encaminhamentos', element: <Encaminhamentos /> },
+          { path: 'encaminhamentos/novo', element: <RegistrarEncaminhamento /> },
+          { path: 'encaminhamentos/:id/desfecho', element: <RegistrarDesfecho /> },
           { path: 'assistidos', element: <Assistidos /> },
           { path: 'assistidos/novo', element: <FormAssistido /> },
           { path: 'assistidos/:id', element: <FichaAssistido /> },

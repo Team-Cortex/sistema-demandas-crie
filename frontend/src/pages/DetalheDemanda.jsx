@@ -147,8 +147,8 @@ export default function DetalheDemanda() {
             <div><dt>Responsável</dt><dd>{demanda.responsavel_nome}</dd></div>
             <div><dt>Prazo</dt><dd>{dataCurta(demanda.prazo)}</dd></div>
             <div><dt>Prioridade</dt><dd>{prioridades[demanda.prioridade]}</dd></div>
-            <div><dt>Reunião de origem</dt><dd>Reunião #{demanda.reuniao_id}</dd></div>
-            <div><dt>Assistido</dt><dd>{demanda.assistido_id ? 'Assistido #' + demanda.assistido_id : 'Sem vínculo'}</dd></div>
+            <div><dt>Reunião de origem</dt><dd><Link to={'/reunioes/' + demanda.reuniao_id}>Reunião #{demanda.reuniao_id}</Link></dd></div>
+            <div><dt>Assistido</dt><dd>{demanda.assistido_id ? <Link to={'/assistidos/' + demanda.assistido_id}>Assistido #{demanda.assistido_id}</Link> : 'Sem vínculo'}</dd></div>
             <div><dt>Categoria</dt><dd>{demanda.categoria || 'Sem categoria'}</dd></div>
             <div><dt>Registro</dt><dd>{dataHora(demanda.criado_em)}</dd></div>
             <div><dt>Último movimento</dt><dd>{dataHora(demanda.ultimo_movimento)}</dd></div>
@@ -159,6 +159,7 @@ export default function DetalheDemanda() {
           <div className={styles.acoes} role="group" aria-label="Tipo de atualização">
             {Object.entries(acoes).filter(([valor]) => valor !== 'estado' || proximos.length > 0).map(([valor, nome]) =>
               <button key={valor} type="button" value={valor} aria-pressed={acao === valor} onClick={escolherAcao} disabled={enviando}>{nome}</button>)}
+            <Link className="botao-secundario" to={'/encaminhamentos/novo?demanda_id=' + id}>Encaminhar</Link>
           </div>
           <form noValidate onSubmit={revisarAlteracao}>
             <fieldset className={styles.edicao} disabled={enviando}>

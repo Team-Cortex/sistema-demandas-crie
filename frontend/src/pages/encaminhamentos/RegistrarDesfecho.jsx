@@ -1,0 +1,95 @@
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
+import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
+import { dataCurta } from '../../dominio'
+import CampoDemanda from '../../components/CampoDemanda'
+import Confirmacao from '../../components/Confirmacao'
+import Carregando from '../../components/Carregando'
+import ErroConsulta from '../../components/ErroConsulta'
+import styles from './Encaminhamentos.module.css'
+
+export default function RegistrarDesfecho() {
+  const { id } = useParams()
+  const navegar = useNavigate()
+  const caminho = '/api/encaminhamentos/' + id
+  const chave = 'desfecho:' + id
+  const [item, definirItem] = useState(null)
+  const [texto, definirTexto] = useState(() => lerRascunho(chave)?.texto || '')
+  const [erroCarga, definirErroCarga] = useState('')
+  const [erroCampo, definirErroCampo] = useState('')
+  const [erro, definirErro] = useState('')
+  const [tentativa, definirTentativa] = useState(0)
+  const [confirmando, definirConfirmando] = useState(false)
+  const [enviando, definirEnviando] = useState(false)
+
+  useEffect(() => {
+    const controle = new AbortController()
+    cliente.get(caminho, { signal: controle.signal }).then(({ data }) => definirItem(data))
+      .catch(falha => { if (!controle.signal.aborted) definirErroCarga(mensagemDeErro(falha)) })
+    return () => controle.abort()
+  }, [caminho, tentativa])
+
+  function tentarNovamente() {
+    definirErroCarga('')
+    definirItem(null)
+    definirTentativa(tentativa + 1)
+  }
+
+  function alterarTexto(evento) {
+    definirTexto(evento.target.value)
+    guardarRascunho(chave, { texto: evento.target.value })
+    definirErroCampo('')
+    definirErro('')
+  }
+
+  function revisarDesfecho(evento) {
+    evento.preventDefault()
+    if (!texto.trim()) {
+      definirErroCampo('Escreva o desfecho do encaminhamento.')
+      evento.currentTarget.elements.desfecho.focus()
+    } else definirConfirmando(true)
+  }
+
+  function voltar() { definirConfirmando(false) }
+
+  async function registrar() {
+    definirConfirmando(false)
+    definirEnviando(true)
+    definirErro('')
+    try {
+      await cliente.patch(caminho + '/desfecho', { desfecho: texto.trim() })
+      apagarRascunho(chave)
+      navegar('/encaminhamentos?lista=todos', { replace: true, state: { mensagem: 'Desfecho registrado.' } })
+    } catch (falha) {
+      definirErro(mensagemDeErro(falha))
+      if (falha.response?.status === 400) tentarNovamente()
+    } finally {
+      definirEnviando(false)
+    }
+  }
+
+  return (
+    <div className={styles.formulario}>
+      <Link className={styles.voltar} to="/encaminhamentos"><ArrowLeft size={17} aria-hidden="true" />Encaminhamentos</Link>
+      <h1>Registrar desfecho</h1>
+      {erro && <p className="aviso-erro" role="alert">{erro}</p>}
+      {erroCarga ? <ErroConsulta mensagem={erroCarga} tentarNovamente={tentarNovamente} /> : !item ? <Carregando /> :
+        <form onSubmit={revisarDesfecho} noValidate>
+          <fieldset disabled={enviando}>
+            <h2>{item.destino}</h2><p>{dataCurta(item.data)} · {item.responsavel_nome}</p>
+            {item.pendente ? <>
+              <CampoDemanda nome="desfecho" rotulo="Desfecho" erro={erroCampo}>
+                <textarea id="desfecho" name="desfecho" required rows={4} value={texto} onChange={alterarTexto} aria-invalid={!!erroCampo} aria-describedby={erroCampo ? 'desfecho-erro aviso-desfecho' : 'aviso-desfecho'} />
+              </CampoDemanda>
+              <p className={styles.aviso} id="aviso-desfecho">O desfecho só pode ser registrado uma vez.</p>
+              <div className={styles.acoes}><button type="submit" className="botao-primario">{enviando ? 'Registrando…' : 'Registrar desfecho'}</button></div>
+            </> : <p className={styles.texto}><strong>Desfecho registrado</strong>{item.desfecho}</p>}
+          </fieldset>
+        </form>}
+      {confirmando && <Confirmacao titulo="Confirmar o desfecho?" acao="Confirmar desfecho" aoVoltar={voltar} aoConfirmar={registrar}>
+        <p className={styles.texto}>{texto}</p><p>O desfecho só pode ser registrado uma vez.</p>
+      </Confirmacao>}
+    </div>
+  )
+}

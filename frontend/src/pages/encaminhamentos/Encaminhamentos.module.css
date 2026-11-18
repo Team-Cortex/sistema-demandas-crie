@@ -1,0 +1,19 @@
+.pagina { display: grid; gap: 1.2rem; max-width: 64rem; }
+.abas, .topo, .vinculos { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+.abas { gap: 2px; justify-self: start; padding: 3px; border: 1px solid var(--borda); border-radius: .65rem; background: var(--superficie); }
+.abas a, .vinculos a { display: inline-flex; align-items: center; min-height: 44px; }
+.abas a { padding: .5rem 1.05rem; border-radius: .45rem; text-decoration: none; color: var(--texto-secundario); }
+.abas a[aria-current] { background: var(--destaque-suave); font-weight: 600; color: var(--destaque-escuro); }
+.lista { list-style: none; display: grid; gap: .8rem; padding: 0; margin: 0; }
+.ficha { display: grid; justify-items: start; gap: .65rem; padding: clamp(1rem, 2.5vw, 1.5rem); background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio); }
+.topo { justify-content: space-between; width: 100%; }
+.situacao { font-size: .9rem; font-weight: 600; padding: .16rem .65rem; border-radius: 1rem; background: var(--destaque-suave); color: var(--destaque-escuro); }
+.vinculos { column-gap: 1.2rem; }
+.texto { white-space: pre-wrap; }
+.texto strong { display: block; font-size: .92rem; color: var(--texto-secundario); }
+.formulario { width: min(100%, 46rem); display: grid; gap: 1.2rem; }
+.formulario fieldset { display: grid; gap: 1rem; margin: 0; min-width: 0; border: 1px solid var(--borda); padding: clamp(1rem,3vw,2rem); border-radius: var(--raio); background: var(--superficie); }
+.formulario :is(input, select, textarea) { width: 100%; min-width: 0; }
+.acoes { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.voltar { display: inline-flex; gap: .4rem; align-items: center; min-height: 44px; justify-self: start; color: var(--texto-secundario); text-decoration: none; }
+.aviso { border-left: 3px solid var(--destaque); padding: .65rem .9rem; background: var(--destaque-suave); }
