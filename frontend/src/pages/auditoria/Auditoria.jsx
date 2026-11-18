@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight, ListFilter } from 'lucide-react'
 import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
 import Carregando from '../../components/Carregando'
 import ErroConsulta from '../../components/ErroConsulta'
@@ -142,7 +141,7 @@ export default function Auditoria() {
         </div>
         {!usuarios && (erroUsuarios ? <ErroConsulta mensagem={erroUsuarios} tentarNovamente={carregarUsuarios} /> : <Carregando>Carregando autores…</Carregando>)}
         <div className={styles.acoes}>
-          <button className="botao-primario"><ListFilter size={17} aria-hidden="true" />Aplicar filtros</button>
+          <button className="botao-primario">Aplicar filtros</button>
           <button className="botao-secundario" type="button" onClick={limparFiltros}>Limpar filtros</button>
         </div>
       </form>
@@ -150,7 +149,7 @@ export default function Auditoria() {
         !dados ? <Carregando>Carregando registros…</Carregando> :
         !dados.total ? <p className={styles.painel} role="status">Nenhum registro encontrado. Tente outro período ou limpe os filtros.</p> :
         <section className={styles.painel} aria-label="Registros de auditoria">
-          <h2>Registros de auditoria <small>{dados.total}</small></h2>
+          <h2>Registros de auditoria ({dados.total})</h2>
           <table className={styles.tabela} aria-label="Registros de auditoria">
             <thead><tr>{colunas.map(titulo => <th key={titulo} scope="col">{titulo}</th>)}</tr></thead>
             <tbody>{dados.itens.map(item => (
@@ -164,9 +163,9 @@ export default function Auditoria() {
             ))}</tbody>
           </table>
           <nav className={styles.paginacao} aria-label="Paginação da auditoria">
-            <button className="botao-secundario" type="button" disabled={dados.pagina <= 1} onClick={paginaAnterior}><ChevronLeft size={16} aria-hidden="true" />Anterior</button>
+            <button className="botao-secundario" type="button" disabled={dados.pagina <= 1} onClick={paginaAnterior}>Anterior</button>
             <span aria-live="polite">Página {dados.pagina} de {totalPaginas}</span>
-            <button className="botao-secundario" type="button" disabled={dados.pagina >= totalPaginas} onClick={proximaPagina}>Próxima<ChevronRight size={16} aria-hidden="true" /></button>
+            <button className="botao-secundario" type="button" disabled={dados.pagina >= totalPaginas} onClick={proximaPagina}>Próxima</button>
           </nav>
         </section>}
     </div>

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { ArrowLeft, Pencil } from 'lucide-react'
 import cliente, { mensagemDeErro } from '../../api/cliente'
 import { dataCurta } from '../../dominio'
 import AvisoSucesso from '../../components/AvisoSucesso'
@@ -36,9 +35,9 @@ export default function FichaAssistido() {
 
   return (
     <div className={styles.pagina}>
-      <Link className={styles.voltar} to="/assistidos"><ArrowLeft size={17} aria-hidden="true" />Assistidos</Link>
+      <Link className="voltar" to="/assistidos">Voltar para assistidos</Link>
       <div className={styles.cabecalho}><h1>{ficha ? ficha.assistido.nome_tratamento : 'Ficha do assistido'}</h1>
-        {ficha && <Link className="botao-secundario" to={'/assistidos/' + id + '/editar'}><Pencil size={16} aria-hidden="true" />Editar nome</Link>}
+        {ficha && <Link className="botao-secundario" to={'/assistidos/' + id + '/editar'}>Editar nome</Link>}
       </div>
       <AvisoSucesso>{state?.mensagem}</AvisoSucesso>
       {erro ? <ErroConsulta mensagem={erro} tentarNovamente={tentarNovamente} /> : !ficha ? <Carregando /> : <>
@@ -53,7 +52,7 @@ export default function FichaAssistido() {
             <Link className="botao-secundario" to={'/encaminhamentos/novo?assistido_id=' + id}>Encaminhar</Link>
           </div>
           {ficha.encaminhamentos.length ? <ul className={styles.lista}>{ficha.encaminhamentos.map(item => <li key={item.id}>
-            <strong>{item.destino}</strong><p>{dataCurta(item.data)} · {item.responsavel_nome}</p>
+            <strong>{item.destino}</strong><p>Em {dataCurta(item.data)}, por {item.responsavel_nome}</p>
             {item.pendente ? <Link className={styles.link} to={'/encaminhamentos/' + item.id + '/desfecho'}>Registrar desfecho</Link> :
               <p className={styles.texto}>Desfecho: {item.desfecho}</p>}
           </li>)}</ul> : <p>Nenhum encaminhamento registrado para este assistido.</p>}
