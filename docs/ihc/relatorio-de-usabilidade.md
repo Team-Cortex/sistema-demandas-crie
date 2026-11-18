@@ -43,7 +43,7 @@ Resumo: *(quantos do CRIE, quantos voluntários de fora; distribuição de idade
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | T1 Ver vencidas | | | | | 0 | — | | |
 | T2 Achar demanda antiga | | | | | 3 | | | |
-| T3 Registrar demanda | | | | | 6 | | | |
+| T3 Registrar demanda | | | | | 7 | | | |
 | T4 Atualizar e anotar | | | | | 7 | | | |
 | T5 Concluir e sair | | | | | 9 | | | |
 | T6 Trocar responsável | | | | | 4 | | | |

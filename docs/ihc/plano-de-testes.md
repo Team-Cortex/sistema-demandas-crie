@@ -67,7 +67,7 @@ Tiradas dos cenários (`cenarios-de-uso.md`). Passos mínimos conforme `fluxos.m
 | --- | --- | --- | --- | --- | --- |
 | T1 | "Você chegou para trabalhar. Descubra quantas demandas estão vencidas e qual delas está vencida há mais tempo." | C1 | 0 (está no painel) | 1 min | Diz o número certo e aponta a demanda |
 | T2 | "Na reunião, alguém lembrou de um pedido de material adaptado para a turma da tarde. Descubra o que já foi feito." | C2 | 3 | 1 min | Abre a demanda certa e lê o histórico |
-| T3 | "A reunião de saúde acabou. Registre esta demanda: *Solicitar ao CAPSi vaga para avaliação*, prioridade alta, responsável você, prazo daqui a 7 dias." | C3 | 6 | 3 min | Demanda gravada com os dados certos |
+| T3 | "A reunião de saúde acabou. Registre esta demanda: *Solicitar ao CAPSi vaga para avaliação*, prioridade alta, responsável você, prazo daqui a 7 dias." | C3 | 7 | 3 min | Demanda gravada com os dados certos |
 | T4 | "Você ligou para o CRAS e agora está esperando a resposta. Atualize a demanda do cadastro da família e anote o que fez." | C4 | 7 (F3 + F4) | 3 min | Estado Aguardando terceiros e anotação gravada |
 | T5 | "O material adaptado chegou. Marque a demanda como resolvida e saia do sistema." | C5 | 9 (2×F3 + F9) | 3 min | Estado Concluída e sessão encerrada |
 | T6 | "Bruna saiu de férias. Passe a demanda vencida dela para outra pessoa." | C1 | 4 | 2 min | Responsável trocado |

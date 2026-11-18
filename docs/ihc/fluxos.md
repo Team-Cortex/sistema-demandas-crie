@@ -13,7 +13,7 @@ Telas e rótulos conforme [`telas.md`](telas.md); estrutura conforme [`arquitetu
 | Fluxo | Cenário | Passos mínimos | Telas percorridas |
 | --- | --- | --- | --- |
 | F1 Entrar | todos | 3 | Entrar → Painel |
-| F2 Registrar demanda | C3 | 6 (4 obrigatórios + 2 cliques) | Painel → Registrar demanda → Demanda |
+| F2 Registrar demanda | C3 | 7 (4 campos + 3 cliques) | Painel → Registrar demanda → diálogo de confirmação → Demanda |
 | F3 Mudar estado | C4, C5 | 4 | Demanda → diálogo → Demanda |
 | F4 Anotar | C4 | 3 | Demanda |
 | F5 Trocar responsável | C1 | 4 | Demanda → diálogo → Demanda |
@@ -50,11 +50,12 @@ flowchart LR
 3. Escolher **Prioridade**.
 4. Escolher **Responsável**.
 5. Preencher **Prazo**.
-6. Clicar em **Registrar demanda**.
+6. Clicar em **Registrar demanda**: abre o diálogo "Confirmar registro da demanda?" com o resumo do que foi preenchido.
+7. Clicar em **Confirmar registro**.
 
-A **reunião de origem** já vem preenchida com a reunião mais recente (é obrigatória na API, spec 02). Assistido e categoria são opcionais e não contam no mínimo. A **confirmação** é a mensagem "Demanda registrada" na página da demanda nova, que mostra o que foi gravado.
+A **reunião de origem** já vem preenchida com a reunião mais recente (é obrigatória na API, spec 02). Assistido e categoria são opcionais e não contam no mínimo. Depois de gravar, a página da demanda nova mostra "Demanda registrada com sucesso."
 
-Interpretação do RNF12 adotada: um formulário só (sem etapas) e uma confirmação de sucesso (sem diálogo "tem certeza?" antes de salvar, que acrescentaria um passo sem proteger nada, já que a demanda pode ser cancelada depois). Se o professor ou a direção entenderem "confirmação" como um diálogo antes de gravar, muda um passo.
+Interpretação do RNF12 adotada (a mesma da implementação): **um formulário** sem etapas e **uma confirmação**, o diálogo de revisão antes de gravar. Ele deixa a pessoa conferir os dados antes de criar o registro, que não pode ser apagado depois (RNF19). **Voltar** no diálogo devolve ao formulário sem perder nada.
 
 ```mermaid
 flowchart TD

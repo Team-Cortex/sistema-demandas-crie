@@ -102,7 +102,7 @@ Cada tela tem: objetivo, quem vê, conteúdo, componentes, ação principal, est
 | Categoria | texto curto, até 80 | não | "A categoria aceita até 80 caracteres." |
 
 - **Ação principal:** **Registrar demanda**. Secundária: **Voltar** (sem salvar).
-- **Confirmação:** vai para o detalhe da demanda nova com "Demanda registrada."
+- **Confirmação (RNF12):** ao clicar em Registrar demanda, abre o diálogo "Confirmar registro da demanda?" com o resumo; **Confirmar registro** grava e vai para o detalhe com "Demanda registrada com sucesso."; **Voltar** devolve ao formulário sem perder nada.
 - **Falha de conexão:** aviso no topo do formulário; nada é apagado (RNF16).
 - **Sem reunião cadastrada:** "Antes, registre a reunião em que a demanda surgiu." com link **Registrar reunião**.
 
