@@ -14,58 +14,58 @@ export default function RegistrarDesfecho() {
   const navegar = useNavigate()
   const caminho = '/api/encaminhamentos/' + id
   const chave = 'desfecho:' + id
-  const [item, definirItem] = useState(null)
-  const [texto, definirTexto] = useState(() => lerRascunho(chave)?.texto || '')
-  const [erroCarga, definirErroCarga] = useState('')
-  const [erroCampo, definirErroCampo] = useState('')
-  const [erro, definirErro] = useState('')
-  const [tentativa, definirTentativa] = useState(0)
-  const [confirmando, definirConfirmando] = useState(false)
-  const [enviando, definirEnviando] = useState(false)
+  const [item, setItem] = useState(null)
+  const [texto, setTexto] = useState(() => lerRascunho(chave)?.texto || '')
+  const [erroCarga, setErroCarga] = useState('')
+  const [erroCampo, setErroCampo] = useState('')
+  const [erro, setErro] = useState('')
+  const [tentativa, setTentativa] = useState(0)
+  const [confirmando, setConfirmando] = useState(false)
+  const [enviando, setEnviando] = useState(false)
 
   useEffect(() => {
     const controle = new AbortController()
-    cliente.get(caminho, { signal: controle.signal }).then(({ data }) => definirItem(data))
-      .catch(falha => { if (!controle.signal.aborted) definirErroCarga(mensagemDeErro(falha)) })
+    cliente.get(caminho, { signal: controle.signal }).then(({ data }) => setItem(data))
+      .catch(falha => { if (!controle.signal.aborted) setErroCarga(mensagemDeErro(falha)) })
     return () => controle.abort()
   }, [caminho, tentativa])
 
   function tentarNovamente() {
-    definirErroCarga('')
-    definirItem(null)
-    definirTentativa(tentativa + 1)
+    setErroCarga('')
+    setItem(null)
+    setTentativa(tentativa + 1)
   }
 
   function alterarTexto(evento) {
-    definirTexto(evento.target.value)
+    setTexto(evento.target.value)
     guardarRascunho(chave, { texto: evento.target.value })
-    definirErroCampo('')
-    definirErro('')
+    setErroCampo('')
+    setErro('')
   }
 
   function revisarDesfecho(evento) {
     evento.preventDefault()
     if (!texto.trim()) {
-      definirErroCampo('Escreva o desfecho do encaminhamento.')
+      setErroCampo('Escreva o desfecho do encaminhamento.')
       evento.currentTarget.elements.desfecho.focus()
-    } else definirConfirmando(true)
+    } else setConfirmando(true)
   }
 
-  function voltar() { definirConfirmando(false) }
+  function voltar() { setConfirmando(false) }
 
   async function registrar() {
-    definirConfirmando(false)
-    definirEnviando(true)
-    definirErro('')
+    setConfirmando(false)
+    setEnviando(true)
+    setErro('')
     try {
       await cliente.patch(caminho + '/desfecho', { desfecho: texto.trim() })
       apagarRascunho(chave)
       navegar('/encaminhamentos?lista=todos', { replace: true, state: { mensagem: 'Desfecho registrado.' } })
     } catch (falha) {
-      definirErro(mensagemDeErro(falha))
+      setErro(mensagemDeErro(falha))
       if (falha.response?.status === 400) tentarNovamente()
     } finally {
-      definirEnviando(false)
+      setEnviando(false)
     }
   }
 

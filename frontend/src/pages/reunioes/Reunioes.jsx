@@ -8,29 +8,29 @@ import { dataCurta, setores } from '../../dominio'
 import styles from './Reunioes.module.css'
 
 export default function Reunioes() {
-  const [setor, definirSetor] = useState(() => lerRascunho('setor-reunioes') || '')
-  const [reunioes, definirReunioes] = useState(null)
-  const [erro, definirErro] = useState('')
-  const [tentativa, definirTentativa] = useState(0)
+  const [setor, setSetor] = useState(() => lerRascunho('setor-reunioes') || '')
+  const [reunioes, setReunioes] = useState(null)
+  const [erro, setErro] = useState('')
+  const [tentativa, setTentativa] = useState(0)
 
   useEffect(() => {
     const controlador = new AbortController()
     cliente.get('/api/reunioes', { params: setor ? { setor } : {}, signal: controlador.signal })
-      .then(({ data }) => definirReunioes(data))
-      .catch(falha => { if (!controlador.signal.aborted) definirErro(mensagemDeErro(falha)) })
+      .then(({ data }) => setReunioes(data))
+      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
     return () => controlador.abort()
   }, [setor, tentativa])
 
   function filtrarSetor(evento) {
-    definirReunioes(null)
-    definirErro('')
-    definirSetor(evento.target.value)
+    setReunioes(null)
+    setErro('')
+    setSetor(evento.target.value)
     guardarRascunho('setor-reunioes', evento.target.value)
   }
 
   function tentarNovamente() {
-    definirErro('')
-    definirTentativa(tentativa + 1)
+    setErro('')
+    setTentativa(tentativa + 1)
   }
 
   return (

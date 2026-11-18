@@ -11,21 +11,21 @@ import styles from './Reunioes.module.css'
 export default function FichaReuniao() {
   const { id } = useParams()
   const { state } = useLocation()
-  const [reuniao, definirReuniao] = useState(null)
-  const [erro, definirErro] = useState('')
-  const [tentativa, definirTentativa] = useState(0)
+  const [reuniao, setReuniao] = useState(null)
+  const [erro, setErro] = useState('')
+  const [tentativa, setTentativa] = useState(0)
 
   useEffect(() => {
     const controlador = new AbortController()
     cliente.get('/api/reunioes/' + id, { signal: controlador.signal })
-      .then(({ data }) => definirReuniao(data))
-      .catch(falha => { if (!controlador.signal.aborted) definirErro(mensagemDeErro(falha)) })
+      .then(({ data }) => setReuniao(data))
+      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
     return () => controlador.abort()
   }, [id, tentativa])
 
   function tentarNovamente() {
-    definirErro('')
-    definirTentativa(tentativa + 1)
+    setErro('')
+    setTentativa(tentativa + 1)
   }
 
   return (

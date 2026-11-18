@@ -14,28 +14,28 @@ export default function Entrar() {
   const navegar = useNavigate()
   const { state } = useLocation()
   const [jaEstavaAutenticado] = useState(() => Boolean(lerSessao().token))
-  const [email, definirEmail] = useState('')
-  const [senha, definirSenha] = useState('')
-  const [visivel, definirVisivel] = useState(false)
-  const [erros, definirErros] = useState({})
-  const [erro, definirErro] = useState('')
-  const [enviando, definirEnviando] = useState(false)
+  const [email, setEmail] = useState('')
+  const [senha, setSenha] = useState('')
+  const [visivel, setVisivel] = useState(false)
+  const [erros, setErros] = useState({})
+  const [erro, setErro] = useState('')
+  const [enviando, setEnviando] = useState(false)
   const retorno = sessionStorage.getItem('crie:retorno')
   const aviso = retorno ? 'Sua sessão terminou. Entre de novo.' : state?.aviso
 
   function atualizarEmail(evento) {
-    definirEmail(evento.target.value)
-    definirErros({ ...erros, email: '' })
-    definirErro('')
+    setEmail(evento.target.value)
+    setErros({ ...erros, email: '' })
+    setErro('')
   }
 
   function atualizarSenha(evento) {
-    definirSenha(evento.target.value)
-    definirErros({ ...erros, senha: '' })
-    definirErro('')
+    setSenha(evento.target.value)
+    setErros({ ...erros, senha: '' })
+    setErro('')
   }
 
-  function alternarSenha() { definirVisivel(!visivel) }
+  function alternarSenha() { setVisivel(!visivel) }
 
   async function entrar(evento) {
     evento.preventDefault()
@@ -44,13 +44,13 @@ export default function Entrar() {
     const falhas = {}
     if (!email.trim() || campos.email.validity.typeMismatch) falhas.email = 'Informe um e-mail válido.'
     if (!senha) falhas.senha = 'Informe a senha.'
-    definirErros(falhas)
-    definirErro('')
+    setErros(falhas)
+    setErro('')
     if (Object.keys(falhas).length) {
       campos[Object.keys(falhas)[0]].focus()
       return
     }
-    definirEnviando(true)
+    setEnviando(true)
     try {
       const { data } = await cliente.post('/api/auth/login', { email: email.trim(), senha })
       const mesmaPessoa = sessionStorage.getItem('crie:retornoUsuario') === String(data.usuario.id)
@@ -60,9 +60,9 @@ export default function Entrar() {
       sessionStorage.removeItem('crie:retornoUsuario')
       navegar(destinoInterno(caminho), { replace: true })
     } catch (falha) {
-      definirErro(mensagemDeErro(falha))
+      setErro(mensagemDeErro(falha))
     } finally {
-      definirEnviando(false)
+      setEnviando(false)
     }
   }
 

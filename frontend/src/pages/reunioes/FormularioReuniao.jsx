@@ -13,20 +13,20 @@ export default function FormularioReuniao() {
   const navegar = useNavigate()
   const chave = 'reuniao-' + (id || 'nova')
   const voltar = id ? '/reunioes/' + id : '/reunioes'
-  const [rascunho, definirRascunho] = useState(() => lerRascunho(chave) || {})
-  const [opcoes, definirOpcoes] = useState(null)
-  const [erro, definirErro] = useState('')
-  const [tentativa, definirTentativa] = useState(0)
-  const [erros, definirErros] = useState({})
-  const [erroServidor, definirErroServidor] = useState('')
-  const [enviando, definirEnviando] = useState(false)
+  const [rascunho, setRascunho] = useState(() => lerRascunho(chave) || {})
+  const [opcoes, setOpcoes] = useState(null)
+  const [erro, setErro] = useState('')
+  const [tentativa, setTentativa] = useState(0)
+  const [erros, setErros] = useState({})
+  const [erroServidor, setErroServidor] = useState('')
+  const [enviando, setEnviando] = useState(false)
 
   useEffect(() => {
     const controlador = new AbortController()
     const config = { signal: controlador.signal }
     Promise.all([cliente.get('/api/usuarios', { ...config, params: { ativo: true } }), id ? cliente.get('/api/reunioes/' + id, config) : null])
-      .then(([usuarios, ficha]) => definirOpcoes({ usuarios: usuarios.data, reuniao: ficha?.data }))
-      .catch(falha => { if (!controlador.signal.aborted) definirErro(mensagemDeErro(falha)) })
+      .then(([usuarios, ficha]) => setOpcoes({ usuarios: usuarios.data, reuniao: ficha?.data }))
+      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
     return () => controlador.abort()
   }, [id, tentativa])
 
@@ -38,16 +38,16 @@ export default function FormularioReuniao() {
   const inativos = presentes.filter(pessoa => !opcoes.usuarios.some(usuario => usuario.id === pessoa.id))
 
   function tentarNovamente() {
-    definirErro('')
-    definirTentativa(tentativa + 1)
+    setErro('')
+    setTentativa(tentativa + 1)
   }
 
   function guardar(campo, valor) {
     const atualizado = { ...rascunho, [campo]: valor }
-    definirRascunho(atualizado)
+    setRascunho(atualizado)
     guardarRascunho(chave, atualizado)
-    definirErros({ ...erros, [campo]: '' })
-    definirErroServidor('')
+    setErros({ ...erros, [campo]: '' })
+    setErroServidor('')
   }
 
   function preencherCampo(evento) { guardar(evento.target.name, evento.target.value) }
@@ -69,20 +69,20 @@ export default function FormularioReuniao() {
         invalidos.participante_ids = 'Escolha pelo menos um participante ativo.'
       }
     }
-    definirErros(invalidos)
+    setErros(invalidos)
     if (Object.keys(invalidos).length) {
       evento.currentTarget.querySelector('[name="' + Object.keys(invalidos)[0] + '"]')?.focus()
       return
     }
-    definirEnviando(true)
-    definirErroServidor('')
+    setEnviando(true)
+    setErroServidor('')
     try {
       const resposta = id ? await cliente.patch('/api/reunioes/' + id, corpo) : await cliente.post('/api/reunioes', corpo)
       apagarRascunho(chave)
       navegar('/reunioes/' + resposta.data.id, { replace: true, state: { mensagem: id ? 'Reunião atualizada.' : 'Reunião registrada.' } })
     } catch (falha) {
-      definirErroServidor(mensagemDeErro(falha))
-      definirEnviando(false)
+      setErroServidor(mensagemDeErro(falha))
+      setEnviando(false)
     }
   }
 

@@ -8,23 +8,23 @@ import styles from './Assistidos.module.css'
 
 export default function Assistidos() {
   const chave = 'busca-assistidos'
-  const [busca, definirBusca] = useState(() => lerRascunho(chave)?.busca || '')
-  const [consulta, definirConsulta] = useState(() => lerRascunho(chave)?.consulta || {})
-  const [assistidos, definirAssistidos] = useState(null)
-  const [erro, definirErro] = useState('')
+  const [busca, setBusca] = useState(() => lerRascunho(chave)?.busca || '')
+  const [consulta, setConsulta] = useState(() => lerRascunho(chave)?.consulta || {})
+  const [assistidos, setAssistidos] = useState(null)
+  const [erro, setErro] = useState('')
 
   useEffect(() => {
     const controlador = new AbortController()
     cliente.get('/api/assistidos', { params: consulta, signal: controlador.signal })
-      .then(({ data }) => definirAssistidos(data))
-      .catch(falha => { if (!controlador.signal.aborted) definirErro(mensagemDeErro(falha)) })
+      .then(({ data }) => setAssistidos(data))
+      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
     return () => controlador.abort()
   }, [consulta])
 
   function consultar(texto) {
-    definirErro('')
-    definirAssistidos(null)
-    definirConsulta(texto ? { busca: texto } : {})
+    setErro('')
+    setAssistidos(null)
+    setConsulta(texto ? { busca: texto } : {})
   }
 
   function buscar(evento) {
@@ -36,13 +36,13 @@ export default function Assistidos() {
 
   function limpar() {
     apagarRascunho(chave)
-    definirBusca('')
+    setBusca('')
     consultar('')
   }
 
   function tentarNovamente() { consultar(consulta.busca) }
   function preencherBusca(evento) {
-    definirBusca(evento.target.value)
+    setBusca(evento.target.value)
     guardarRascunho(chave, { busca: evento.target.value, consulta })
   }
 

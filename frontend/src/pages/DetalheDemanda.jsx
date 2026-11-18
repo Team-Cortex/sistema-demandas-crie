@@ -17,26 +17,26 @@ export default function DetalheDemanda() {
   const local = useLocation()
   const chave = 'demanda-' + id
   const caminho = '/api/demandas/' + id
-  const [rascunho, definirRascunho] = useState(() => ({ ...inicial, ...lerRascunho(chave) }))
-  const [demanda, definirDemanda] = useState(null)
-  const [reuniao, definirReuniao] = useState(null)
-  const [assistido, definirAssistido] = useState(null)
-  const [erroFicha, definirErroFicha] = useState('')
-  const [usuarios, definirUsuarios] = useState(null)
-  const [erroUsuarios, definirErroUsuarios] = useState('')
-  const [tentativa, definirTentativa] = useState(0)
-  const [confirmando, definirConfirmando] = useState(false)
-  const [enviando, definirEnviando] = useState(false)
-  const [erroCampo, definirErroCampo] = useState('')
-  const [erroServidor, definirErroServidor] = useState('')
-  const [sucesso, definirSucesso] = useState(local.state?.mensagem || '')
+  const [rascunho, setRascunho] = useState(() => ({ ...inicial, ...lerRascunho(chave) }))
+  const [demanda, setDemanda] = useState(null)
+  const [reuniao, setReuniao] = useState(null)
+  const [assistido, setAssistido] = useState(null)
+  const [erroFicha, setErroFicha] = useState('')
+  const [usuarios, setUsuarios] = useState(null)
+  const [erroUsuarios, setErroUsuarios] = useState('')
+  const [tentativa, setTentativa] = useState(0)
+  const [confirmando, setConfirmando] = useState(false)
+  const [enviando, setEnviando] = useState(false)
+  const [erroCampo, setErroCampo] = useState('')
+  const [erroServidor, setErroServidor] = useState('')
+  const [sucesso, setSucesso] = useState(local.state?.mensagem || '')
 
   useEffect(() => {
     let ativo = true
     cliente.get(caminho).then(({ data }) => {
-      if (ativo) definirDemanda(data)
+      if (ativo) setDemanda(data)
     }).catch(erro => {
-      if (ativo) definirErroFicha(mensagemDeErro(erro))
+      if (ativo) setErroFicha(mensagemDeErro(erro))
     })
     return () => { ativo = false }
   }, [caminho, tentativa])
@@ -46,28 +46,28 @@ export default function DetalheDemanda() {
   const assistidoId = demanda?.assistido_id
   useEffect(() => {
     if (!reuniaoId) return
-    cliente.get('/api/reunioes/' + reuniaoId).then(({ data }) => definirReuniao(data)).catch(() => definirReuniao(null))
+    cliente.get('/api/reunioes/' + reuniaoId).then(({ data }) => setReuniao(data)).catch(() => setReuniao(null))
   }, [reuniaoId])
 
   useEffect(() => {
     if (!assistidoId) return
-    cliente.get('/api/assistidos/' + assistidoId).then(({ data }) => definirAssistido(data)).catch(() => definirAssistido(null))
+    cliente.get('/api/assistidos/' + assistidoId).then(({ data }) => setAssistido(data)).catch(() => setAssistido(null))
   }, [assistidoId])
 
   useEffect(() => {
     let ativo = true
     cliente.get('/api/usuarios', { params: { ativo: true } }).then(({ data }) => {
-      if (ativo) definirUsuarios(data)
+      if (ativo) setUsuarios(data)
     }).catch(erro => {
-      if (ativo) definirErroUsuarios(mensagemDeErro(erro))
+      if (ativo) setErroUsuarios(mensagemDeErro(erro))
     })
     return () => { ativo = false }
   }, [tentativa])
 
   function tentarNovamente() {
-    definirErroFicha('')
-    definirErroUsuarios('')
-    definirTentativa(tentativa + 1)
+    setErroFicha('')
+    setErroUsuarios('')
+    setTentativa(tentativa + 1)
   }
 
   const proximos = demanda ? transicoes[demanda.estado] : []
@@ -75,20 +75,20 @@ export default function DetalheDemanda() {
   const outrosUsuarios = usuarios?.filter(item => item.id !== demanda?.responsavel_id)
 
   function guardar(valores) {
-    definirRascunho(valores)
+    setRascunho(valores)
     guardarRascunho(chave, valores)
-    definirErroCampo('')
-    definirErroServidor('')
+    setErroCampo('')
+    setErroServidor('')
   }
 
   function escolherAcao(evento) {
     guardar({ ...rascunho, acao: evento.currentTarget.value })
-    definirSucesso('')
+    setSucesso('')
   }
 
   function preencherCampo(evento) {
     guardar({ ...rascunho, [acao]: evento.target.value })
-    definirSucesso('')
+    setSucesso('')
   }
 
   function revisarAlteracao(evento) {
@@ -100,43 +100,43 @@ export default function DetalheDemanda() {
       mensagem = 'Escolha um novo responsável ativo.'
     }
     if (mensagem) {
-      definirErroCampo(mensagem)
+      setErroCampo(mensagem)
       evento.currentTarget.elements.namedItem(acao).focus()
     } else if (acao === 'estado') {
-      definirConfirmando(true)
+      setConfirmando(true)
     } else {
       salvarAlteracao()
     }
   }
 
   function voltarAoFormulario() {
-    definirConfirmando(false)
+    setConfirmando(false)
   }
 
   async function salvarAlteracao() {
-    definirConfirmando(false)
-    definirEnviando(true)
-    definirErroServidor('')
-    definirSucesso('')
+    setConfirmando(false)
+    setEnviando(true)
+    setErroServidor('')
+    setSucesso('')
     try {
       if (acao === 'estado') {
         const { data } = await cliente.patch(caminho + '/estado', { estado: rascunho.estado })
-        definirDemanda(data)
-        definirSucesso('Estado atualizado.')
+        setDemanda(data)
+        setSucesso('Estado atualizado.')
       } else if (acao === 'texto') {
         const { data } = await cliente.post(caminho + '/anotacoes', { texto: rascunho.texto.trim() })
-        definirDemanda({ ...demanda, historico: [...demanda.historico, data], ultimo_movimento: data.ocorrido_em })
-        definirSucesso('Anotação registrada no histórico.')
+        setDemanda({ ...demanda, historico: [...demanda.historico, data], ultimo_movimento: data.ocorrido_em })
+        setSucesso('Anotação registrada no histórico.')
       } else {
         const { data } = await cliente.patch(caminho + '/responsavel', { responsavel_id: Number(rascunho.responsavel_id) })
-        definirDemanda(data)
-        definirSucesso('Responsável atualizado.')
+        setDemanda(data)
+        setSucesso('Responsável atualizado.')
       }
       guardar({ ...rascunho, [acao]: '' })
     } catch (erro) {
-      definirErroServidor(mensagemDeErro(erro))
+      setErroServidor(mensagemDeErro(erro))
     } finally {
-      definirEnviando(false)
+      setEnviando(false)
     }
   }
 

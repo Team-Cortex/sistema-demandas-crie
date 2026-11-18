@@ -18,14 +18,14 @@ export default function NovaDemanda() {
   const [parametros] = useSearchParams()
   const reuniaoDeOrigem = parametros.get('reuniao_id')
   const chave = reuniaoDeOrigem ? 'nova-demanda-reuniao-' + reuniaoDeOrigem : 'nova-demanda'
-  const [rascunho, definirRascunho] = useState(() => ({ ...vazio, ...lerRascunho(chave) }))
-  const [opcoes, definirOpcoes] = useState(null)
-  const [erroListas, definirErroListas] = useState('')
-  const [tentativa, definirTentativa] = useState(0)
-  const [erros, definirErros] = useState({})
-  const [erroServidor, definirErroServidor] = useState('')
-  const [confirmando, definirConfirmando] = useState(false)
-  const [enviando, definirEnviando] = useState(false)
+  const [rascunho, setRascunho] = useState(() => ({ ...vazio, ...lerRascunho(chave) }))
+  const [opcoes, setOpcoes] = useState(null)
+  const [erroListas, setErroListas] = useState('')
+  const [tentativa, setTentativa] = useState(0)
+  const [erros, setErros] = useState({})
+  const [erroServidor, setErroServidor] = useState('')
+  const [confirmando, setConfirmando] = useState(false)
+  const [enviando, setEnviando] = useState(false)
 
   useEffect(() => {
     let ativo = true
@@ -35,9 +35,9 @@ export default function NovaDemanda() {
           cliente.get('/api/usuarios', { params: { ativo: true } }),
           cliente.get('/api/reunioes'), cliente.get('/api/assistidos'),
         ])
-        if (ativo) definirOpcoes({ usuarios: usuarios.data, reunioes: reunioes.data, assistidos: assistidos.data })
+        if (ativo) setOpcoes({ usuarios: usuarios.data, reunioes: reunioes.data, assistidos: assistidos.data })
       } catch (erro) {
-        if (ativo) definirErroListas(mensagemDeErro(erro))
+        if (ativo) setErroListas(mensagemDeErro(erro))
       }
     }
     listarOpcoes()
@@ -50,18 +50,18 @@ export default function NovaDemanda() {
   }
 
   function tentarNovamente() {
-    definirErroListas('')
-    definirTentativa(tentativa + 1)
+    setErroListas('')
+    setTentativa(tentativa + 1)
   }
 
   function preencherCampo(evento) {
     const { name, value } = evento.target
     const valores = { ...rascunho, [name]: value }
     if (opcoes && valores.reuniao_id === null) valores.reuniao_id = campos.reuniao_id
-    definirRascunho(valores)
+    setRascunho(valores)
     guardarRascunho(chave, valores)
-    definirErros({ ...erros, [name]: '' })
-    definirErroServidor('')
+    setErros({ ...erros, [name]: '' })
+    setErroServidor('')
   }
 
   function atributos(nome, obrigatorio = true) {
@@ -76,23 +76,23 @@ export default function NovaDemanda() {
   function revisarDemanda(evento) {
     evento.preventDefault()
     const invalidos = validarDemanda(campos, opcoes)
-    definirErros(invalidos)
+    setErros(invalidos)
     const primeiro = Object.keys(invalidos)[0]
     if (primeiro) {
       evento.currentTarget.elements.namedItem(primeiro).focus()
       return
     }
-    definirConfirmando(true)
+    setConfirmando(true)
   }
 
   function voltarAoFormulario() {
-    definirConfirmando(false)
+    setConfirmando(false)
   }
 
   async function salvarDemanda() {
-    definirConfirmando(false)
-    definirEnviando(true)
-    definirErroServidor('')
+    setConfirmando(false)
+    setEnviando(true)
+    setErroServidor('')
     try {
       const { data } = await cliente.post('/api/demandas', {
         descricao: campos.descricao.trim(), prioridade: campos.prioridade,
@@ -104,8 +104,8 @@ export default function NovaDemanda() {
       apagarRascunho(chave)
       navegar('/demandas/' + data.id, { replace: true, state: { mensagem: 'Demanda registrada com sucesso.' } })
     } catch (erro) {
-      definirErroServidor(mensagemDeErro(erro))
-      definirEnviando(false)
+      setErroServidor(mensagemDeErro(erro))
+      setEnviando(false)
     }
   }
 

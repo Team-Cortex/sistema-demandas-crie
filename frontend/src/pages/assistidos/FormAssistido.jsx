@@ -11,13 +11,13 @@ export default function FormAssistido() {
   const { id } = useParams()
   const navegar = useNavigate()
   const chave = 'assistido-' + (id || 'novo')
-  const [nome, definirNome] = useState(() => lerRascunho(chave)?.nome_tratamento ?? null)
-  const [assistido, definirAssistido] = useState(null)
-  const [erroConsulta, definirErroConsulta] = useState('')
-  const [tentativa, definirTentativa] = useState(0)
-  const [erro, definirErro] = useState('')
-  const [erroNome, definirErroNome] = useState('')
-  const [salvando, definirSalvando] = useState(false)
+  const [nome, setNome] = useState(() => lerRascunho(chave)?.nome_tratamento ?? null)
+  const [assistido, setAssistido] = useState(null)
+  const [erroConsulta, setErroConsulta] = useState('')
+  const [tentativa, setTentativa] = useState(0)
+  const [erro, setErro] = useState('')
+  const [erroNome, setErroNome] = useState('')
+  const [salvando, setSalvando] = useState(false)
   const valor = nome ?? assistido?.nome_tratamento ?? ''
   const titulo = id ? 'Editar nome de tratamento' : 'Cadastrar assistido'
   const voltar = id ? '/assistidos/' + id : '/assistidos'
@@ -25,38 +25,38 @@ export default function FormAssistido() {
   useEffect(() => {
     if (!id) return
     const controlador = new AbortController()
-    cliente.get('/api/assistidos/' + id, { signal: controlador.signal }).then(({ data }) => definirAssistido(data))
-      .catch(falha => { if (!controlador.signal.aborted) definirErroConsulta(mensagemDeErro(falha)) })
+    cliente.get('/api/assistidos/' + id, { signal: controlador.signal }).then(({ data }) => setAssistido(data))
+      .catch(falha => { if (!controlador.signal.aborted) setErroConsulta(mensagemDeErro(falha)) })
     return () => controlador.abort()
   }, [id, tentativa])
 
-  function tentarNovamente() { definirErroConsulta(''); definirTentativa(tentativa + 1) }
+  function tentarNovamente() { setErroConsulta(''); setTentativa(tentativa + 1) }
 
   function preencherNome(evento) {
-    definirNome(evento.target.value)
+    setNome(evento.target.value)
     guardarRascunho(chave, { nome_tratamento: evento.target.value })
-    definirErroNome('')
-    definirErro('')
+    setErroNome('')
+    setErro('')
   }
 
   async function salvarAssistido(evento) {
     evento.preventDefault()
     const nome_tratamento = valor.trim()
     if (!nome_tratamento || [...nome_tratamento].length > 120) {
-      definirErroNome(!nome_tratamento ? 'Informe o nome de tratamento.' : 'Use até 120 caracteres.')
+      setErroNome(!nome_tratamento ? 'Informe o nome de tratamento.' : 'Use até 120 caracteres.')
       evento.currentTarget.elements.nome_tratamento.focus()
       return
     }
-    definirSalvando(true)
-    definirErro('')
+    setSalvando(true)
+    setErro('')
     try {
       const { data } = id ? await cliente.patch('/api/assistidos/' + id, { nome_tratamento }) :
         await cliente.post('/api/assistidos', { nome_tratamento })
       apagarRascunho(chave)
       navegar('/assistidos/' + data.id, { replace: true, state: { mensagem: id ? 'Nome de tratamento atualizado.' : 'Assistido cadastrado.' } })
     } catch (falha) {
-      definirErro(mensagemDeErro(falha))
-      definirSalvando(false)
+      setErro(mensagemDeErro(falha))
+      setSalvando(false)
     }
   }
 

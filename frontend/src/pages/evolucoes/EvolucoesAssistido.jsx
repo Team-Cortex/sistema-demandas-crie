@@ -10,54 +10,54 @@ const vazio = { de: '', ate: '', area_atuacao: '' }
 
 export default function EvolucoesAssistido({ assistidoId, iniciais }) {
   const chave = 'filtros-evolucoes-' + assistidoId
-  const [campos, definirCampos] = useState(() => lerRascunho(chave)?.campos || vazio)
-  const [consulta, definirConsulta] = useState(() => lerRascunho(chave)?.consulta || null)
-  const [resultados, definirResultados] = useState(null)
-  const [erro, definirErro] = useState('')
-  const [erroPeriodo, definirErroPeriodo] = useState('')
+  const [campos, setCampos] = useState(() => lerRascunho(chave)?.campos || vazio)
+  const [consulta, setConsulta] = useState(() => lerRascunho(chave)?.consulta || null)
+  const [resultados, setResultados] = useState(null)
+  const [erro, setErro] = useState('')
+  const [erroPeriodo, setErroPeriodo] = useState('')
   const evolucoes = consulta ? resultados : iniciais
 
   useEffect(() => {
     if (!consulta) return
     const controlador = new AbortController()
     cliente.get('/api/assistidos/' + assistidoId + '/evolucoes', { params: consulta, signal: controlador.signal })
-      .then(({ data }) => definirResultados(data))
-      .catch(falha => { if (!controlador.signal.aborted) definirErro(mensagemDeErro(falha)) })
+      .then(({ data }) => setResultados(data))
+      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
     return () => controlador.abort()
   }, [consulta, assistidoId])
 
   function preencher(evento) {
     const atual = { ...campos, [evento.target.name]: evento.target.value }
-    definirCampos(atual)
+    setCampos(atual)
     guardarRascunho(chave, { campos: atual, consulta })
-    definirErroPeriodo('')
+    setErroPeriodo('')
   }
 
   function filtrar(evento) {
     evento.preventDefault()
     if (campos.de && campos.ate && campos.ate < campos.de) {
-      definirErroPeriodo('Informe uma data final igual ou posterior à inicial.')
+      setErroPeriodo('Informe uma data final igual ou posterior à inicial.')
       evento.currentTarget.elements.ate.focus()
       return
     }
     const params = Object.fromEntries(Object.entries(campos).filter(([, valor]) => valor.trim()))
     if (params.area_atuacao) params.area_atuacao = params.area_atuacao.trim()
     const aplicados = Object.keys(params).length ? params : null
-    definirErro('')
-    definirResultados(null)
-    definirConsulta(aplicados)
+    setErro('')
+    setResultados(null)
+    setConsulta(aplicados)
     guardarRascunho(chave, { campos, consulta: aplicados })
   }
 
   function limpar() {
     apagarRascunho(chave)
-    definirConsulta(null)
-    definirCampos(vazio)
-    definirErroPeriodo('')
-    definirErro('')
+    setConsulta(null)
+    setCampos(vazio)
+    setErroPeriodo('')
+    setErro('')
   }
 
-  function tentarNovamente() { definirErro(''); definirConsulta({ ...consulta }) }
+  function tentarNovamente() { setErro(''); setConsulta({ ...consulta }) }
 
   return (
     <section className={styles.painel}>

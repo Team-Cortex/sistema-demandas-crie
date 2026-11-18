@@ -18,42 +18,42 @@ const recursos = {
 const colunas = ['Quando', 'Quem', 'Ação', 'Recurso', 'Assistido']
 
 export default function Auditoria() {
-  const [filtros, definirFiltros] = useState(() => lerRascunho('auditoria-filtros') || filtrosVazios)
-  const [consulta, definirConsulta] = useState(() => lerRascunho('auditoria-consulta') || { pagina: 1 })
-  const [dados, definirDados] = useState(null)
-  const [erro, definirErro] = useState('')
-  const [erroCampo, definirErroCampo] = useState({})
-  const [usuarios, definirUsuarios] = useState(null)
-  const [erroUsuarios, definirErroUsuarios] = useState('')
-  const [tentativa, definirTentativa] = useState(0)
+  const [filtros, setFiltros] = useState(() => lerRascunho('auditoria-filtros') || filtrosVazios)
+  const [consulta, setConsulta] = useState(() => lerRascunho('auditoria-consulta') || { pagina: 1 })
+  const [dados, setDados] = useState(null)
+  const [erro, setErro] = useState('')
+  const [erroCampo, setErroCampo] = useState({})
+  const [usuarios, setUsuarios] = useState(null)
+  const [erroUsuarios, setErroUsuarios] = useState('')
+  const [tentativa, setTentativa] = useState(0)
 
   useEffect(() => {
     const controlador = new AbortController()
     cliente.get('/api/usuarios', { signal: controlador.signal })
-      .then(({ data }) => definirUsuarios(data))
-      .catch(falha => { if (!controlador.signal.aborted) definirErroUsuarios(mensagemDeErro(falha)) })
+      .then(({ data }) => setUsuarios(data))
+      .catch(falha => { if (!controlador.signal.aborted) setErroUsuarios(mensagemDeErro(falha)) })
     return () => controlador.abort()
   }, [tentativa])
 
   useEffect(() => {
     const controlador = new AbortController()
     cliente.get('/api/auditoria', { params: { ...consulta, por_pagina: 20 }, signal: controlador.signal })
-      .then(({ data }) => definirDados(data))
-      .catch(falha => { if (!controlador.signal.aborted) definirErro(mensagemDeErro(falha)) })
+      .then(({ data }) => setDados(data))
+      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
     return () => controlador.abort()
   }, [consulta])
 
   function consultar(parametros) {
-    definirErro('')
-    definirDados(null)
-    definirConsulta(parametros)
+    setErro('')
+    setDados(null)
+    setConsulta(parametros)
     guardarRascunho('auditoria-consulta', parametros)
   }
 
   function alterarFiltro(evento) {
     const novos = { ...filtros, [evento.target.name]: evento.target.value }
-    definirFiltros(novos)
-    definirErroCampo({})
+    setFiltros(novos)
+    setErroCampo({})
     guardarRascunho('auditoria-filtros', novos)
   }
 
@@ -62,7 +62,7 @@ export default function Auditoria() {
     const erros = {}
     if (filtros.assistido_id && !/^[1-9]\d*$/.test(filtros.assistido_id)) erros.assistido_id = 'Informe o número do assistido.'
     if (filtros.ate && filtros.de > filtros.ate) erros.ate = 'A data inicial não pode ser depois da final.'
-    definirErroCampo(erros)
+    setErroCampo(erros)
     if (Object.keys(erros).length) {
       evento.currentTarget.elements.namedItem(Object.keys(erros)[0]).focus()
       return
@@ -76,15 +76,15 @@ export default function Auditoria() {
 
   function limparFiltros() {
     apagarRascunho('auditoria-filtros')
-    definirFiltros(filtrosVazios)
-    definirErroCampo({})
+    setFiltros(filtrosVazios)
+    setErroCampo({})
     consultar({ pagina: 1 })
   }
 
   function tentarNovamente() { consultar({ ...consulta }) }
   function carregarUsuarios() {
-    definirErroUsuarios('')
-    definirTentativa(tentativa + 1)
+    setErroUsuarios('')
+    setTentativa(tentativa + 1)
   }
   function paginaAnterior() { consultar({ ...consulta, pagina: consulta.pagina - 1 }) }
   function proximaPagina() { consultar({ ...consulta, pagina: consulta.pagina + 1 }) }

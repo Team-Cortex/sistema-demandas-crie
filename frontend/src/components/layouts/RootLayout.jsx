@@ -30,8 +30,8 @@ export default function RootLayout() {
   const secao = pathname.split('/')[1].toLowerCase()
   const rotaAtual = secao === 'evolucoes' ? '/assistidos' : '/' + secao
   const navegar = useNavigate()
-  const [menuAberto, definirMenuAberto] = useState(false)
-  const [saindo, definirSaindo] = useState(false)
+  const [menuAberto, setMenuAberto] = useState(false)
+  const [saindo, setSaindo] = useState(false)
   const botaoMenu = useRef(null)
   const painelMenu = useRef(null)
   const conteudo = useRef(null)
@@ -52,13 +52,13 @@ export default function RootLayout() {
     if (!menuAberto) return
     function fecharComEscape(evento) {
       if (evento.key === 'Escape') {
-        definirMenuAberto(false)
+        setMenuAberto(false)
         botaoMenu.current?.focus()
       }
     }
     window.addEventListener('keydown', fecharComEscape)
     function fecharFora(evento) {
-      if (!painelMenu.current?.contains(evento.target)) definirMenuAberto(false)
+      if (!painelMenu.current?.contains(evento.target)) setMenuAberto(false)
     }
     document.addEventListener('pointerdown', fecharFora)
     return () => {
@@ -68,7 +68,7 @@ export default function RootLayout() {
   }, [menuAberto])
 
   async function sair() {
-    definirSaindo(true)
+    setSaindo(true)
     let aviso = ''
     try {
       await cliente.post('/api/auth/logout', null, { timeout: 8000 })
@@ -82,8 +82,8 @@ export default function RootLayout() {
     }
   }
 
-  function alternarMenu() { definirMenuAberto(!menuAberto) }
-  function fecharMenu() { definirMenuAberto(false) }
+  function alternarMenu() { setMenuAberto(!menuAberto) }
+  function fecharMenu() { setMenuAberto(false) }
 
   if (!token || !usuario) return <Navigate to="/entrar" replace state={{ destino: pathname + search }} />
 

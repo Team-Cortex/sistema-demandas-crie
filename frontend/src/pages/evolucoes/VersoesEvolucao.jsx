@@ -11,16 +11,16 @@ import styles from '../assistidos/Assistidos.module.css'
 export default function VersoesEvolucao() {
   const { id } = useParams()
   const { state } = useLocation()
-  const [evolucao, definirEvolucao] = useState(null)
-  const [erro, definirErro] = useState('')
-  const [tentativa, definirTentativa] = useState(0)
+  const [evolucao, setEvolucao] = useState(null)
+  const [erro, setErro] = useState('')
+  const [tentativa, setTentativa] = useState(0)
   useEffect(() => {
     const controlador = new AbortController()
-    cliente.get('/api/evolucoes/' + id, { signal: controlador.signal }).then(({ data }) => definirEvolucao(data))
-      .catch(falha => { if (!controlador.signal.aborted) definirErro(mensagemDeErro(falha)) })
+    cliente.get('/api/evolucoes/' + id, { signal: controlador.signal }).then(({ data }) => setEvolucao(data))
+      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
     return () => controlador.abort()
   }, [id, tentativa])
-  function tentarNovamente() { definirErro(''); definirTentativa(tentativa + 1) }
+  function tentarNovamente() { setErro(''); setTentativa(tentativa + 1) }
 
   return (
     <div className={styles.pagina}>

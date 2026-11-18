@@ -13,18 +13,18 @@ export default function RegistrarEncaminhamento() {
   const assistido = parametros.get('assistido_id')
   const origem = demanda ? '/demandas/' + demanda : '/assistidos/' + assistido
   const chave = 'encaminhar:' + origem
-  const [campos, definirCampos] = useState(() => lerRascunho(chave) || { destino: '', data: hojeCrie(), observacao: '' })
-  const [erros, definirErros] = useState({})
-  const [erro, definirErro] = useState('')
-  const [enviando, definirEnviando] = useState(false)
+  const [campos, setCampos] = useState(() => lerRascunho(chave) || { destino: '', data: hojeCrie(), observacao: '' })
+  const [erros, setErros] = useState({})
+  const [erro, setErro] = useState('')
+  const [enviando, setEnviando] = useState(false)
 
   function alterarCampo(evento) {
     const { name, value } = evento.target
     const valores = { ...campos, [name]: value }
-    definirCampos(valores)
+    setCampos(valores)
     guardarRascunho(chave, valores)
-    definirErros({ ...erros, [name]: '' })
-    definirErro('')
+    setErros({ ...erros, [name]: '' })
+    setErro('')
   }
 
   async function registrar(evento) {
@@ -32,13 +32,13 @@ export default function RegistrarEncaminhamento() {
     const falhas = {}
     if (!campos.destino.trim() || campos.destino.trim().length > 200) falhas.destino = 'Informe o destino em até 200 caracteres.'
     if (!campos.data || !evento.currentTarget.elements.data.validity.valid) falhas.data = 'Informe a data do encaminhamento.'
-    definirErros(falhas)
+    setErros(falhas)
     if (Object.keys(falhas).length) {
       evento.currentTarget.elements[Object.keys(falhas)[0]].focus()
       return
     }
-    definirEnviando(true)
-    definirErro('')
+    setEnviando(true)
+    setErro('')
     try {
       const dados = { destino: campos.destino.trim(), data: campos.data, observacao: campos.observacao.trim() }
       if (demanda) dados.demanda_id = Number(demanda)
@@ -47,9 +47,9 @@ export default function RegistrarEncaminhamento() {
       apagarRascunho(chave)
       navegar('/encaminhamentos', { replace: true, state: { mensagem: 'Encaminhamento registrado.' } })
     } catch (falha) {
-      definirErro(mensagemDeErro(falha))
+      setErro(mensagemDeErro(falha))
     } finally {
-      definirEnviando(false)
+      setEnviando(false)
     }
   }
 

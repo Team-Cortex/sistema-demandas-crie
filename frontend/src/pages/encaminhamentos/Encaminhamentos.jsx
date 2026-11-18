@@ -11,21 +11,21 @@ export default function Encaminhamentos() {
   const { state } = useLocation()
   const [parametros] = useSearchParams()
   const todos = parametros.get('lista') === 'todos'
-  const [resultado, definirResultado] = useState(null)
-  const [tentativa, definirTentativa] = useState(0)
+  const [resultado, setResultado] = useState(null)
+  const [tentativa, setTentativa] = useState(0)
   const dados = resultado?.todos === todos ? resultado : null
 
   useEffect(() => {
     const controle = new AbortController()
     cliente.get('/api/encaminhamentos' + (todos ? '' : '/pendentes'), { signal: controle.signal })
-      .then(({ data }) => definirResultado({ todos, itens: data }))
-      .catch(erro => { if (!controle.signal.aborted) definirResultado({ todos, erro: mensagemDeErro(erro) }) })
+      .then(({ data }) => setResultado({ todos, itens: data }))
+      .catch(erro => { if (!controle.signal.aborted) setResultado({ todos, erro: mensagemDeErro(erro) }) })
     return () => controle.abort()
   }, [todos, tentativa])
 
   function tentarNovamente() {
-    definirResultado(null)
-    definirTentativa(tentativa + 1)
+    setResultado(null)
+    setTentativa(tentativa + 1)
   }
 
   return (

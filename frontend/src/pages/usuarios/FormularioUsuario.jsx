@@ -13,39 +13,39 @@ export default function FormularioUsuario() {
   const navegar = useNavigate()
   const chave = 'usuario:' + (id || 'novo')
   const minhaConta = id === String(lerSessao().usuario.id)
-  const [original, definirOriginal] = useState(null)
-  const [rascunho, definirRascunho] = useState(() => lerRascunho(chave) || {})
-  const [senha, definirSenha] = useState('')
-  const [erros, definirErros] = useState({})
-  const [erroCarga, definirErroCarga] = useState('')
-  const [erro, definirErro] = useState('')
-  const [tentativa, definirTentativa] = useState(0)
-  const [enviando, definirEnviando] = useState(false)
+  const [original, setOriginal] = useState(null)
+  const [rascunho, setRascunho] = useState(() => lerRascunho(chave) || {})
+  const [senha, setSenha] = useState('')
+  const [erros, setErros] = useState({})
+  const [erroCarga, setErroCarga] = useState('')
+  const [erro, setErro] = useState('')
+  const [tentativa, setTentativa] = useState(0)
+  const [enviando, setEnviando] = useState(false)
   const campos = { nome: '', email: '', perfil: '', ...original, ...rascunho }
 
   useEffect(() => {
     if (!id) return
     const controle = new AbortController()
-    cliente.get('/api/usuarios/' + id, { signal: controle.signal }).then(({ data }) => definirOriginal(data))
-      .catch(falha => { if (!controle.signal.aborted) definirErroCarga(mensagemDeErro(falha)) })
+    cliente.get('/api/usuarios/' + id, { signal: controle.signal }).then(({ data }) => setOriginal(data))
+      .catch(falha => { if (!controle.signal.aborted) setErroCarga(mensagemDeErro(falha)) })
     return () => controle.abort()
   }, [id, tentativa])
 
   function tentarNovamente() {
-    definirErroCarga('')
-    definirTentativa(tentativa + 1)
+    setErroCarga('')
+    setTentativa(tentativa + 1)
   }
 
   function alterarCampo(evento) {
     const { name, value } = evento.target
-    if (name === 'senha') definirSenha(value)
+    if (name === 'senha') setSenha(value)
     else {
       const valores = { ...rascunho, [name]: value }
-      definirRascunho(valores)
+      setRascunho(valores)
       guardarRascunho(chave, valores)
     }
-    definirErros({ ...erros, [name]: '' })
-    definirErro('')
+    setErros({ ...erros, [name]: '' })
+    setErro('')
   }
 
   function atributos(nome) {
@@ -62,13 +62,13 @@ export default function FormularioUsuario() {
     if (!id && (!campos.email.trim() || !evento.currentTarget.elements.email.validity.valid)) falhas.email = 'Informe um e-mail válido.'
     if (!perfis[campos.perfil]) falhas.perfil = 'Escolha um perfil válido.'
     if (!id && Array.from(senha).length < 8) falhas.senha = 'A senha precisa ter no mínimo 8 caracteres.'
-    definirErros(falhas)
+    setErros(falhas)
     if (Object.keys(falhas).length) {
       evento.currentTarget.elements[Object.keys(falhas)[0]].focus()
       return
     }
-    definirErro('')
-    definirEnviando(true)
+    setErro('')
+    setEnviando(true)
     try {
       const dados = { nome: campos.nome.trim() }
       if (!minhaConta) dados.perfil = campos.perfil
@@ -82,9 +82,9 @@ export default function FormularioUsuario() {
       apagarRascunho(chave)
       navegar('/usuarios', { replace: true, state: { mensagem: id ? 'Usuário atualizado.' : 'Usuário cadastrado.' } })
     } catch (falha) {
-      definirErro(mensagemDeErro(falha))
+      setErro(mensagemDeErro(falha))
     } finally {
-      definirEnviando(false)
+      setEnviando(false)
     }
   }
 

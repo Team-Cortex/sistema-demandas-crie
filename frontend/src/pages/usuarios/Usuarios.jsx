@@ -12,45 +12,45 @@ import styles from './Usuarios.module.css'
 export default function Usuarios() {
   const { state } = useLocation()
   const meuId = lerSessao().usuario.id
-  const [usuarios, definirUsuarios] = useState(null)
-  const [erroCarga, definirErroCarga] = useState('')
-  const [erro, definirErro] = useState('')
-  const [tentativa, definirTentativa] = useState(0)
-  const [escolhido, definirEscolhido] = useState(null)
-  const [enviando, definirEnviando] = useState(false)
-  const [sucesso, definirSucesso] = useState(state?.mensagem)
+  const [usuarios, setUsuarios] = useState(null)
+  const [erroCarga, setErroCarga] = useState('')
+  const [erro, setErro] = useState('')
+  const [tentativa, setTentativa] = useState(0)
+  const [escolhido, setEscolhido] = useState(null)
+  const [enviando, setEnviando] = useState(false)
+  const [sucesso, setSucesso] = useState(state?.mensagem)
 
   useEffect(() => {
     const controle = new AbortController()
-    cliente.get('/api/usuarios', { signal: controle.signal }).then(({ data }) => definirUsuarios(data))
-      .catch(falha => { if (!controle.signal.aborted) definirErroCarga(mensagemDeErro(falha)) })
+    cliente.get('/api/usuarios', { signal: controle.signal }).then(({ data }) => setUsuarios(data))
+      .catch(falha => { if (!controle.signal.aborted) setErroCarga(mensagemDeErro(falha)) })
     return () => controle.abort()
   }, [tentativa])
 
   function tentarNovamente() {
-    definirErroCarga('')
-    definirTentativa(tentativa + 1)
+    setErroCarga('')
+    setTentativa(tentativa + 1)
   }
 
   function revisarDesativacao(evento) {
-    definirEscolhido(usuarios.find(item => String(item.id) === evento.currentTarget.value))
-    definirErro('')
-    definirSucesso('')
+    setEscolhido(usuarios.find(item => String(item.id) === evento.currentTarget.value))
+    setErro('')
+    setSucesso('')
   }
 
-  function voltar() { definirEscolhido(null) }
+  function voltar() { setEscolhido(null) }
 
   async function desativar() {
-    definirEscolhido(null)
-    definirEnviando(true)
+    setEscolhido(null)
+    setEnviando(true)
     try {
       const { data } = await cliente.patch('/api/usuarios/' + escolhido.id + '/desativar')
-      definirUsuarios(usuarios.map(item => item.id === data.id ? data : item))
-      definirSucesso('Conta de ' + data.nome + ' desativada.')
+      setUsuarios(usuarios.map(item => item.id === data.id ? data : item))
+      setSucesso('Conta de ' + data.nome + ' desativada.')
     } catch (falha) {
-      definirErro(mensagemDeErro(falha))
+      setErro(mensagemDeErro(falha))
     } finally {
-      definirEnviando(false)
+      setEnviando(false)
     }
   }
 

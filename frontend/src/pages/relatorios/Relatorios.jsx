@@ -11,14 +11,14 @@ import styles from './Relatorios.module.css'
 const inicial = { tipo: 'demandas', de: '', ate: '', estado: '', categoria: '', responsavel_id: '', assistido_id: '' }
 
 export default function Relatorios() {
-  const [campos, definirCampos] = useState(() => ({ ...inicial, ...lerRascunho('relatorios') }))
-  const [opcoes, definirOpcoes] = useState(null)
-  const [erroOpcoes, definirErroOpcoes] = useState('')
-  const [tentativa, definirTentativa] = useState(0)
-  const [relatorio, definirRelatorio] = useState(null)
-  const [erro, definirErro] = useState('')
-  const [errosCampos, definirErrosCampos] = useState({})
-  const [emitindo, definirEmitindo] = useState(false)
+  const [campos, setCampos] = useState(() => ({ ...inicial, ...lerRascunho('relatorios') }))
+  const [opcoes, setOpcoes] = useState(null)
+  const [erroOpcoes, setErroOpcoes] = useState('')
+  const [tentativa, setTentativa] = useState(0)
+  const [relatorio, setRelatorio] = useState(null)
+  const [erro, setErro] = useState('')
+  const [errosCampos, setErrosCampos] = useState({})
+  const [emitindo, setEmitindo] = useState(false)
 
   useEffect(() => {
     const controlador = new AbortController()
@@ -26,9 +26,9 @@ export default function Relatorios() {
       try {
         const config = { signal: controlador.signal }
         const [usuarios, assistidos] = await Promise.all([cliente.get('/api/usuarios', config), cliente.get('/api/assistidos', config)])
-        definirOpcoes({ usuarios: usuarios.data, assistidos: assistidos.data })
+        setOpcoes({ usuarios: usuarios.data, assistidos: assistidos.data })
       } catch (falha) {
-        if (!controlador.signal.aborted) definirErroOpcoes(mensagemDeErro(falha))
+        if (!controlador.signal.aborted) setErroOpcoes(mensagemDeErro(falha))
       }
     }
     listarOpcoes()
@@ -36,17 +36,17 @@ export default function Relatorios() {
   }, [tentativa])
 
   function repetirConsulta() {
-    definirErroOpcoes('')
-    definirTentativa(tentativa + 1)
+    setErroOpcoes('')
+    setTentativa(tentativa + 1)
   }
 
   function alterarCampo(evento) {
     const valores = { ...campos, [evento.target.name]: evento.target.value }
-    definirCampos(valores)
+    setCampos(valores)
     guardarRascunho('relatorios', valores)
-    definirErro('')
-    definirErrosCampos({})
-    definirRelatorio(null)
+    setErro('')
+    setErrosCampos({})
+    setRelatorio(null)
   }
 
   async function emitirRelatorio(evento) {
@@ -58,15 +58,15 @@ export default function Relatorios() {
     if (campos.tipo === 'assistido' && !opcoes.assistidos.some(item => item.id === Number(campos.assistido_id))) {
       falhas.assistido_id = 'Selecione um assistido.'
     }
-    definirErrosCampos(falhas)
+    setErrosCampos(falhas)
     const primeiro = Object.keys(falhas)[0]
     if (primeiro) {
       evento.currentTarget.elements.namedItem(primeiro).focus()
       return
     }
-    definirErro('')
-    definirRelatorio(null)
-    definirEmitindo(true)
+    setErro('')
+    setRelatorio(null)
+    setEmitindo(true)
     const params = { de: campos.de, ate: campos.ate }
     let caminho = '/api/relatorios/demandas'
     if (campos.tipo === 'demandas') {
@@ -78,11 +78,11 @@ export default function Relatorios() {
     }
     try {
       const resposta = await cliente.get(caminho, { params })
-      definirRelatorio(resposta.data)
+      setRelatorio(resposta.data)
     } catch (falha) {
-      definirErro(mensagemDeErro(falha))
+      setErro(mensagemDeErro(falha))
     } finally {
-      definirEmitindo(false)
+      setEmitindo(false)
     }
   }
 

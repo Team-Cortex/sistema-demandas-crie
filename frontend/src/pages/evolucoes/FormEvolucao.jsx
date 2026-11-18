@@ -12,33 +12,33 @@ export default function FormEvolucao() {
   const { id, assistidoId } = useParams()
   const navegar = useNavigate()
   const chave = id ? 'retificar-evolucao-' + id : 'lancar-evolucao-' + assistidoId
-  const [rascunho, definirRascunho] = useState(() => lerRascunho(chave))
-  const [origem, definirOrigem] = useState(null)
-  const [tentativa, definirTentativa] = useState(0)
-  const [erroConsulta, definirErroConsulta] = useState('')
-  const [erros, definirErros] = useState({})
-  const [erroServidor, definirErroServidor] = useState('')
-  const [salvando, definirSalvando] = useState(false)
+  const [rascunho, setRascunho] = useState(() => lerRascunho(chave))
+  const [origem, setOrigem] = useState(null)
+  const [tentativa, setTentativa] = useState(0)
+  const [erroConsulta, setErroConsulta] = useState('')
+  const [erros, setErros] = useState({})
+  const [erroServidor, setErroServidor] = useState('')
+  const [salvando, setSalvando] = useState(false)
 
   useEffect(() => {
     const controlador = new AbortController()
     const caminho = id ? '/api/evolucoes/' + id : '/api/assistidos/' + assistidoId + '/ficha'
-    cliente.get(caminho, { signal: controlador.signal }).then(({ data }) => definirOrigem(data))
-      .catch(falha => { if (!controlador.signal.aborted) definirErroConsulta(mensagemDeErro(falha)) })
+    cliente.get(caminho, { signal: controlador.signal }).then(({ data }) => setOrigem(data))
+      .catch(falha => { if (!controlador.signal.aborted) setErroConsulta(mensagemDeErro(falha)) })
     return () => controlador.abort()
   }, [id, assistidoId, tentativa])
 
   const campos = rascunho ?? {
     data: origem?.data ?? hojeCrie(), area_atuacao: origem?.area_atuacao ?? '', descricao: origem?.descricao ?? '',
   }
-  function tentarNovamente() { definirErroConsulta(''); definirTentativa(tentativa + 1) }
+  function tentarNovamente() { setErroConsulta(''); setTentativa(tentativa + 1) }
   function preencher(evento) {
     const { name, value } = evento.target
     const atual = { ...campos, [name]: value }
-    definirRascunho(atual)
+    setRascunho(atual)
     guardarRascunho(chave, atual)
-    definirErros({ ...erros, [name]: '' })
-    definirErroServidor('')
+    setErros({ ...erros, [name]: '' })
+    setErroServidor('')
   }
   function atributos(nome) {
     return {
@@ -54,7 +54,7 @@ export default function FormEvolucao() {
     if (!campos.area_atuacao.trim()) invalidos.area_atuacao = 'Informe a área de atuação.'
     else if ([...campos.area_atuacao].length > 80) invalidos.area_atuacao = 'A área de atuação aceita até 80 caracteres.'
     if (!campos.descricao.trim()) invalidos.descricao = 'Escreva a descrição da evolução.'
-    definirErros(invalidos)
+    setErros(invalidos)
     const primeiro = Object.keys(invalidos)[0]
     if (primeiro) {
       evento.currentTarget.elements[primeiro].focus()
@@ -63,19 +63,19 @@ export default function FormEvolucao() {
     const valores = { data: campos.data, area_atuacao: campos.area_atuacao.trim(), descricao: campos.descricao.trim() }
     const mudancas = id && Object.fromEntries(Object.entries(valores).filter(([nome, valor]) => valor !== origem[nome]))
     if (id && !Object.keys(mudancas).length) {
-      definirErroServidor('Informe o que muda na retificação.')
+      setErroServidor('Informe o que muda na retificação.')
       return
     }
-    definirErroServidor('')
-    definirSalvando(true)
+    setErroServidor('')
+    setSalvando(true)
     try {
       const { data } = id ? await cliente.patch('/api/evolucoes/' + id, mudancas) :
         await cliente.post('/api/assistidos/' + assistidoId + '/evolucoes', valores)
       apagarRascunho(chave)
       navegar('/evolucoes/' + data.id, { replace: true, state: { mensagem: id ? 'Evolução retificada.' : 'Evolução lançada.' } })
     } catch (falha) {
-      definirErroServidor(mensagemDeErro(falha))
-      definirSalvando(false)
+      setErroServidor(mensagemDeErro(falha))
+      setSalvando(false)
     }
   }
 

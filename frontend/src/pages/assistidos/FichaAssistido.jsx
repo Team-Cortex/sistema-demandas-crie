@@ -13,16 +13,16 @@ import styles from './Assistidos.module.css'
 export default function FichaAssistido() {
   const { id } = useParams()
   const { state } = useLocation()
-  const [ficha, definirFicha] = useState(null)
-  const [erro, definirErro] = useState('')
-  const [tentativa, definirTentativa] = useState(0)
+  const [ficha, setFicha] = useState(null)
+  const [erro, setErro] = useState('')
+  const [tentativa, setTentativa] = useState(0)
   useEffect(() => {
     const controlador = new AbortController()
-    cliente.get('/api/assistidos/' + id + '/ficha', { signal: controlador.signal }).then(({ data }) => definirFicha(data))
-      .catch(falha => { if (!controlador.signal.aborted) definirErro(mensagemDeErro(falha)) })
+    cliente.get('/api/assistidos/' + id + '/ficha', { signal: controlador.signal }).then(({ data }) => setFicha(data))
+      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
     return () => controlador.abort()
   }, [id, tentativa])
-  function tentarNovamente() { definirErro(''); definirTentativa(tentativa + 1) }
+  function tentarNovamente() { setErro(''); setTentativa(tentativa + 1) }
 
   return (
     <div className={styles.pagina}>

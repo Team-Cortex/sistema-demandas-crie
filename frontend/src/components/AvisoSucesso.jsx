@@ -3,11 +3,11 @@ import { CheckCircle2 } from 'lucide-react'
 import styles from './AvisoSucesso.module.css'
 
 export default function AvisoSucesso({ children }) {
-  const [visivel, definirVisivel] = useState(true)
+  const [visivel, setVisivel] = useState(true)
   useEffect(() => {
-    definirVisivel(true)
+    setVisivel(true)
     if (!children) return
-    const tempo = window.setTimeout(() => definirVisivel(false), 7000)
+    const tempo = window.setTimeout(() => setVisivel(false), 7000)
     return () => window.clearTimeout(tempo)
   }, [children])
   if (!children || !visivel) return null
