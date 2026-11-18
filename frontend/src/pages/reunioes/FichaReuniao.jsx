@@ -16,11 +16,15 @@ export default function FichaReuniao() {
   const [tentativa, setTentativa] = useState(0)
 
   useEffect(() => {
-    const controlador = new AbortController()
-    cliente.get('/api/reunioes/' + id, { signal: controlador.signal })
-      .then(({ data }) => setReuniao(data))
-      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
-    return () => controlador.abort()
+    async function buscarReuniao() {
+      try {
+        const resposta = await cliente.get('/api/reunioes/' + id)
+        setReuniao(resposta.data)
+      } catch (falha) {
+        setErro(mensagemDeErro(falha))
+      }
+    }
+    buscarReuniao()
   }, [id, tentativa])
 
   function tentarNovamente() {

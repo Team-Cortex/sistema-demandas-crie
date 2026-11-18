@@ -7,18 +7,23 @@ import ErroConsulta from '../../components/ErroConsulta'
 import styles from './Assistidos.module.css'
 
 export default function Assistidos() {
-  const chave = 'busca-assistidos'
-  const [busca, setBusca] = useState(() => lerRascunho(chave)?.busca || '')
-  const [consulta, setConsulta] = useState(() => lerRascunho(chave)?.consulta || {})
+  // A busca fica no rascunho para voltar depois que a sessão é renovada.
+  const [busca, setBusca] = useState(lerRascunho('busca-assistidos') || '')
+  const [consulta, setConsulta] = useState(busca.trim() ? { busca: busca.trim() } : {})
   const [assistidos, setAssistidos] = useState(null)
   const [erro, setErro] = useState('')
 
+  // Busca de novo sempre que a consulta muda (Buscar, Limpar ou Tentar de novo).
   useEffect(() => {
-    const controlador = new AbortController()
-    cliente.get('/api/assistidos', { params: consulta, signal: controlador.signal })
-      .then(({ data }) => setAssistidos(data))
-      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
-    return () => controlador.abort()
+    async function buscarAssistidos() {
+      try {
+        const resposta = await cliente.get('/api/assistidos', { params: consulta })
+        setAssistidos(resposta.data)
+      } catch (falha) {
+        setErro(mensagemDeErro(falha))
+      }
+    }
+    buscarAssistidos()
   }, [consulta])
 
   function consultar(texto) {
@@ -29,21 +34,23 @@ export default function Assistidos() {
 
   function buscar(evento) {
     evento.preventDefault()
-    const texto = busca.trim()
-    guardarRascunho(chave, { busca, consulta: texto ? { busca: texto } : {} })
-    consultar(texto)
+    guardarRascunho('busca-assistidos', busca)
+    consultar(busca.trim())
   }
 
   function limpar() {
-    apagarRascunho(chave)
+    apagarRascunho('busca-assistidos')
     setBusca('')
     consultar('')
   }
 
-  function tentarNovamente() { consultar(consulta.busca) }
+  // Um objeto novo, mesmo igual, faz o useEffect buscar de novo.
+  function tentarNovamente() {
+    consultar(consulta.busca)
+  }
+
   function preencherBusca(evento) {
     setBusca(evento.target.value)
-    guardarRascunho(chave, { busca: evento.target.value, consulta })
   }
 
   return (

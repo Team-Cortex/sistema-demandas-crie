@@ -16,13 +16,23 @@ export default function FichaAssistido() {
   const [ficha, setFicha] = useState(null)
   const [erro, setErro] = useState('')
   const [tentativa, setTentativa] = useState(0)
+
   useEffect(() => {
-    const controlador = new AbortController()
-    cliente.get('/api/assistidos/' + id + '/ficha', { signal: controlador.signal }).then(({ data }) => setFicha(data))
-      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
-    return () => controlador.abort()
+    async function buscarFicha() {
+      try {
+        const resposta = await cliente.get('/api/assistidos/' + id + '/ficha')
+        setFicha(resposta.data)
+      } catch (falha) {
+        setErro(mensagemDeErro(falha))
+      }
+    }
+    buscarFicha()
   }, [id, tentativa])
-  function tentarNovamente() { setErro(''); setTentativa(tentativa + 1) }
+
+  function tentarNovamente() {
+    setErro('')
+    setTentativa(tentativa + 1)
+  }
 
   return (
     <div className={styles.pagina}>

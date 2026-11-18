@@ -8,17 +8,22 @@ import { dataCurta, setores } from '../../dominio'
 import styles from './Reunioes.module.css'
 
 export default function Reunioes() {
-  const [setor, setSetor] = useState(() => lerRascunho('setor-reunioes') || '')
+  // O setor escolhido fica no rascunho para voltar depois que a sessão é renovada.
+  const [setor, setSetor] = useState(lerRascunho('setor-reunioes') || '')
   const [reunioes, setReunioes] = useState(null)
   const [erro, setErro] = useState('')
   const [tentativa, setTentativa] = useState(0)
 
   useEffect(() => {
-    const controlador = new AbortController()
-    cliente.get('/api/reunioes', { params: setor ? { setor } : {}, signal: controlador.signal })
-      .then(({ data }) => setReunioes(data))
-      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
-    return () => controlador.abort()
+    async function buscarReunioes() {
+      try {
+        const resposta = await cliente.get('/api/reunioes', { params: setor ? { setor } : {} })
+        setReunioes(resposta.data)
+      } catch (falha) {
+        setErro(mensagemDeErro(falha))
+      }
+    }
+    buscarReunioes()
   }, [setor, tentativa])
 
   function filtrarSetor(evento) {

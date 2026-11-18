@@ -13,7 +13,7 @@ export default function FormularioReuniao() {
   const navegar = useNavigate()
   const chave = 'reuniao-' + (id || 'nova')
   const voltar = id ? '/reunioes/' + id : '/reunioes'
-  const [rascunho, setRascunho] = useState(() => lerRascunho(chave) || {})
+  const [rascunho, setRascunho] = useState(lerRascunho(chave) || {})
   const [opcoes, setOpcoes] = useState(null)
   const [erro, setErro] = useState('')
   const [tentativa, setTentativa] = useState(0)
@@ -22,14 +22,20 @@ export default function FormularioReuniao() {
   const [enviando, setEnviando] = useState(false)
 
   useEffect(() => {
-    const controlador = new AbortController()
-    const config = { signal: controlador.signal }
-    Promise.all([cliente.get('/api/usuarios', { ...config, params: { ativo: true } }), id ? cliente.get('/api/reunioes/' + id, config) : null])
-      .then(([usuarios, ficha]) => setOpcoes({ usuarios: usuarios.data, reuniao: ficha?.data }))
-      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
-    return () => controlador.abort()
+    async function buscarDados() {
+      try {
+        const usuarios = await cliente.get('/api/usuarios', { params: { ativo: true } })
+        // Na edição, a reunião já gravada preenche o formulário.
+        const ficha = id ? await cliente.get('/api/reunioes/' + id) : null
+        setOpcoes({ usuarios: usuarios.data, reuniao: ficha?.data })
+      } catch (falha) {
+        setErro(mensagemDeErro(falha))
+      }
+    }
+    buscarDados()
   }, [id, tentativa])
 
+  // O que a pessoa mudou (rascunho) vale mais que o gravado; sem nada, a data é hoje.
   const reuniao = opcoes?.reuniao
   const data = rascunho.data ?? reuniao?.data ?? hojeCrie()
   const setor = rascunho.setor ?? reuniao?.setor ?? ''
@@ -50,9 +56,13 @@ export default function FormularioReuniao() {
     setErroServidor('')
   }
 
-  function preencherCampo(evento) { guardar(evento.target.name, evento.target.value) }
+  function preencherCampo(evento) {
+    guardar(evento.target.name, evento.target.value)
+  }
+
   function alterarPresenca(evento) {
     const participante = Number(evento.target.value)
+    // Quem foi desativado sai da lista assim que a seleção muda.
     const ativos = participanteIds.filter(valor => opcoes.usuarios.some(usuario => usuario.id === valor))
     guardar('participante_ids', evento.target.checked ? [...ativos, participante] : ativos.filter(valor => valor !== participante))
   }
@@ -60,17 +70,17 @@ export default function FormularioReuniao() {
   async function salvarReuniao(evento) {
     evento.preventDefault()
     const invalidos = {}
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(data) || data.startsWith('0000')) invalidos.data = 'Informe a data da reunião.'
-    if (!setores[setor]) invalidos.setor = 'Informe o setor da reunião.'
+    if (!data) invalidos.data = 'Informe a data da reunião.'
+    if (!setor) invalidos.setor = 'Informe o setor da reunião.'
+    // Na edição, só vai para a API o que mudou.
     const corpo = id ? { ...rascunho } : { data, setor }
     if (!id || rascunho.participante_ids) {
       corpo.participante_ids = participanteIds
-      if (!participanteIds.length || participanteIds.some(valor => !opcoes.usuarios.some(usuario => usuario.id === valor))) {
-        invalidos.participante_ids = 'Escolha pelo menos um participante ativo.'
-      }
+      if (!participanteIds.length) invalidos.participante_ids = 'Escolha pelo menos um participante ativo.'
     }
     setErros(invalidos)
     if (Object.keys(invalidos).length) {
+      // querySelector acha também a primeira caixa de participantes (várias com o mesmo nome).
       evento.currentTarget.querySelector('[name="' + Object.keys(invalidos)[0] + '"]')?.focus()
       return
     }

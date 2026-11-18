@@ -11,7 +11,8 @@ export default function FormAssistido() {
   const { id } = useParams()
   const navegar = useNavigate()
   const chave = 'assistido-' + (id || 'novo')
-  const [nome, setNome] = useState(() => lerRascunho(chave)?.nome_tratamento ?? null)
+  // null = ainda não digitou; aí vale o nome já gravado (na edição).
+  const [nome, setNome] = useState(lerRascunho(chave)?.nome_tratamento ?? null)
   const [assistido, setAssistido] = useState(null)
   const [erroConsulta, setErroConsulta] = useState('')
   const [tentativa, setTentativa] = useState(0)
@@ -23,14 +24,21 @@ export default function FormAssistido() {
   const voltar = id ? '/assistidos/' + id : '/assistidos'
 
   useEffect(() => {
-    if (!id) return
-    const controlador = new AbortController()
-    cliente.get('/api/assistidos/' + id, { signal: controlador.signal }).then(({ data }) => setAssistido(data))
-      .catch(falha => { if (!controlador.signal.aborted) setErroConsulta(mensagemDeErro(falha)) })
-    return () => controlador.abort()
+    async function buscarAssistido() {
+      try {
+        const resposta = await cliente.get('/api/assistidos/' + id)
+        setAssistido(resposta.data)
+      } catch (falha) {
+        setErroConsulta(mensagemDeErro(falha))
+      }
+    }
+    if (id) buscarAssistido()
   }, [id, tentativa])
 
-  function tentarNovamente() { setErroConsulta(''); setTentativa(tentativa + 1) }
+  function tentarNovamente() {
+    setErroConsulta('')
+    setTentativa(tentativa + 1)
+  }
 
   function preencherNome(evento) {
     setNome(evento.target.value)
@@ -42,18 +50,18 @@ export default function FormAssistido() {
   async function salvarAssistido(evento) {
     evento.preventDefault()
     const nome_tratamento = valor.trim()
-    if (!nome_tratamento || [...nome_tratamento].length > 120) {
-      setErroNome(!nome_tratamento ? 'Informe o nome de tratamento.' : 'Use até 120 caracteres.')
+    if (!nome_tratamento) {
+      setErroNome('Informe o nome de tratamento.')
       evento.currentTarget.elements.nome_tratamento.focus()
       return
     }
     setSalvando(true)
     setErro('')
     try {
-      const { data } = id ? await cliente.patch('/api/assistidos/' + id, { nome_tratamento }) :
+      const resposta = id ? await cliente.patch('/api/assistidos/' + id, { nome_tratamento }) :
         await cliente.post('/api/assistidos', { nome_tratamento })
       apagarRascunho(chave)
-      navegar('/assistidos/' + data.id, { replace: true, state: { mensagem: id ? 'Nome de tratamento atualizado.' : 'Assistido cadastrado.' } })
+      navegar('/assistidos/' + resposta.data.id, { replace: true, state: { mensagem: id ? 'Nome de tratamento atualizado.' : 'Assistido cadastrado.' } })
     } catch (falha) {
       setErro(mensagemDeErro(falha))
       setSalvando(false)
