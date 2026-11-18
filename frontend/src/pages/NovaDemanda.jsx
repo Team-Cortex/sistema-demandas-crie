@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, ClipboardList } from 'lucide-react'
 import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../api/cliente'
 import CampoDemanda from '../components/CampoDemanda'
 import Confirmacao from '../components/Confirmacao'
@@ -111,10 +110,9 @@ export default function NovaDemanda() {
 
   return (
     <div className={styles.pagina}>
-      <Link to="/demandas" className={styles.voltar}><ArrowLeft size={17} aria-hidden="true" />Demandas</Link>
+      <Link to="/demandas" className="voltar">Voltar para demandas</Link>
       <h1>Registrar demanda</h1>
       <form onSubmit={revisarDemanda} noValidate className={styles.ficha}>
-        <header className={styles.cabecalho}><ClipboardList size={21} aria-hidden="true" /><h2>Dados da demanda</h2></header>
         {erroListas ? <div role="alert" className="aviso-erro">{erroListas} <button type="button" className="botao botao-secundario" onClick={tentarNovamente}>Tentar de novo</button></div> :
           !opcoes && <p role="status">Carregando responsáveis, reuniões e assistidos…</p>}
         <fieldset disabled={enviando} className={styles.campos}>
@@ -141,7 +139,7 @@ export default function NovaDemanda() {
           <CampoDemanda nome="reuniao_id" rotulo="Reunião de origem" erro={erros.reuniao_id}>
             <select {...atributos('reuniao_id')} disabled={!opcoes || semReuniao}>
               <option value="">{semReuniao ? 'Nenhuma reunião cadastrada' : 'Selecione a reunião'}</option>
-              {opcoes?.reunioes.map(item => <option key={item.id} value={item.id}>Reunião de {dataCurta(item.data)} — {setores[item.setor]}</option>)}
+              {opcoes?.reunioes.map(item => <option key={item.id} value={item.id}>Reunião de {dataCurta(item.data)}, {setores[item.setor]}</option>)}
             </select>
           </CampoDemanda>
           <CampoDemanda nome="assistido_id" rotulo="Assistido (opcional)" erro={erros.assistido_id}>
@@ -167,7 +165,7 @@ export default function NovaDemanda() {
           <dt>Responsável</dt><dd>{responsavel.nome}</dd>
           <dt>Prazo</dt><dd>{dataCurta(campos.prazo)}</dd>
           <dt>Prioridade</dt><dd>{prioridades[campos.prioridade]}</dd>
-          <dt>Reunião de origem</dt><dd>{dataCurta(reuniao.data)} — {setores[reuniao.setor]}</dd>
+          <dt>Reunião de origem</dt><dd>{dataCurta(reuniao.data)}, {setores[reuniao.setor]}</dd>
           {campos.assistido_id && <><dt>Assistido</dt><dd>{opcoes.assistidos.find(item => item.id === Number(campos.assistido_id)).nome_tratamento}</dd></>}
           {campos.categoria.trim() && <><dt>Categoria</dt><dd>{campos.categoria}</dd></>}
         </dl>

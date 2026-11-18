@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { ListFilter, Search } from 'lucide-react'
 import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../api/cliente'
 import CabecalhoDemandas from '../components/CabecalhoDemandas'
 import ErroConsulta from '../components/ErroConsulta'
@@ -115,7 +114,7 @@ export default function Demandas() {
             </select>
           </label>
           <button type="button" className="botao botao-secundario" onClick={alternarFiltros} aria-controls="mais-filtros" aria-expanded={maisFiltros}>
-            <ListFilter size={17} aria-hidden="true" /> Mais filtros
+            {maisFiltros ? 'Menos filtros' : 'Mais filtros'}
           </button>
         </div>
         <div id="mais-filtros" hidden={!maisFiltros}>
@@ -147,7 +146,7 @@ export default function Demandas() {
           {erroPeriodo && <p id="erro-periodo" className="aviso-erro" role="alert">{erroPeriodo}</p>}
         </div>
         <div className={styles.acoes}>
-          <button type="submit" className="botao botao-secundario"><Search size={17} aria-hidden="true" /> Buscar</button>
+          <button type="submit" className="botao botao-primario">Buscar</button>
           {Object.values(filtros).some(Boolean) || Object.keys(consulta).length > 0
             ? <button type="button" className={styles.limpar} onClick={limparFiltros}>Limpar filtros</button>
             : null}
@@ -157,7 +156,7 @@ export default function Demandas() {
       {!erro && !demandas && <p role="status">Carregando demandas…</p>}
       {demandas && (
         <section>
-          <h2 className={styles.tituloResultados}>Resultado da busca <span>{demandas.length}</span></h2>
+          <h2 className={styles.tituloResultados}>Resultado da busca ({demandas.length})</h2>
           <ListaDemandas demandas={demandas} titulo="Resultado da busca" mensagemVazia="Nenhuma demanda encontrada. Tente outra busca ou altere os filtros." />
         </section>
       )}

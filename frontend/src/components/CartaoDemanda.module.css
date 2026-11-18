@@ -1,8 +1,9 @@
 .cartao {
   display: grid;
-  gap: 12px;
-  padding: 16px;
-  color: var(--texto);
+  gap: 4px;
+  padding: 14px;
+  color: var(--texto-secundario);
+  font-size: .9rem;
   background: var(--superficie);
   border: 1px solid var(--borda);
   border-radius: var(--raio);
@@ -10,27 +11,6 @@
   overflow-wrap: anywhere;
 }
 .cartao:hover { border-color: var(--destaque); }
-.linha, .dado, .etiquetas { display: flex; align-items: center; gap: 6px; }
-.linha { justify-content: space-between; color: var(--texto-secundario); }
-.numero { font-size: .78rem; font-weight: 600; }
-.descricao { font-size: 1rem; line-height: 1.45; }
-.etiquetas, .dado { flex-wrap: wrap; }
-.prioridade, .estado, .vencida {
-  padding: 3px 8px;
-  border-radius: 5px;
-  font-size: .76rem;
-  line-height: 1.4;
-  font-weight: 600;
-}
-.prioridade, .estado { color: #414952; background: #f1f2f4; }
-.prioridade[data-nivel='alta'] { color: #843b0c; background: #fff0dd; }
-.rodape {
-  display: grid;
-  gap: 6px;
-  border-top: 1px solid var(--borda);
-  padding-top: 12px;
-  font-size: .84rem;
-  color: var(--texto-secundario);
-}
-.dado svg { flex-shrink: 0; }
-.vencida { color: var(--erro); background: var(--erro-suave); }
+.cartao > strong { margin-bottom: 4px; color: var(--texto); font-size: 1rem; line-height: 1.45; }
+.numero { font-size: .8rem; }
+.vencida { color: var(--erro); }

@@ -1,11 +1,6 @@
 .pagina { max-width: 58rem; }
-.voltar { display: inline-flex; gap: .45rem; align-items: center; min-height: 44px; font-weight: 600; text-decoration: none; color: var(--texto-secundario); }
-.voltar:hover { color: var(--destaque); }
 .pagina h1 { margin: .35rem 0 1.5rem; }
 .ficha { padding: clamp(1rem, 3vw, 2rem); border: 1px solid var(--borda); border-radius: var(--raio); background: var(--superficie); }
-.cabecalho { display: flex; align-items: center; gap: .65rem; margin-bottom: 1.5rem; }
-.cabecalho h2 { margin: 0; font-size: 1.25rem; }
-.cabecalho svg { color: var(--destaque); }
 .campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; padding: 0; margin: 0; border: none; min-width: 0; }
 .inteira { grid-column: 1 / -1; }
 .campos :is(input, select, textarea) { width: 100%; min-width: 0; }
