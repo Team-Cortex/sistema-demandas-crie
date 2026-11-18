@@ -133,7 +133,7 @@ export default function Relatorios() {
         </button>
       </form>
       {emitindo && <Carregando>Preparando o relatório…</Carregando>}
-      {relatorio && <ResultadoRelatorio relatorio={relatorio} />}
+      {relatorio && <ResultadoRelatorio relatorio={relatorio} usuarios={opcoes.usuarios} />}
     </div>
   )
 }
