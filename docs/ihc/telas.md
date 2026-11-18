@@ -11,7 +11,7 @@ Cada tela tem: objetivo, quem vê, conteúdo, componentes, ação principal, est
 **Layout base** (todas, menos Entrar):
 - Menu lateral à esquerda, com o logo do CRIE no topo, os itens na ordem do sitemap e o item atual marcado (cor + barra + `aria-current="page"`).
 - No topo do conteúdo: saudação "Olá, *primeiro nome*", o perfil por extenso e o botão **Sair**.
-- No celular (até ~768 px): o menu vira um painel recolhível aberto pelo botão **Menu**; Esc e clique fora fecham.
+- No celular (até ~768 px): o menu vira um painel recolhível aberto pelo botão **Menu**, que empurra o conteúdo para baixo; Esc ou a escolha de um item fecham, e o foco volta ao botão.
 - Título `h1` da página igual ao rótulo do menu.
 
 **Estados** que toda tela com dados tem:
@@ -21,7 +21,7 @@ Cada tela tem: objetivo, quem vê, conteúdo, componentes, ação principal, est
 | Carregando | Esqueleto (blocos cinza com o formato do conteúdo) e texto para leitor de tela "Carregando..." |
 | Vazio | Frase que explica e diz o que fazer, com a ação principal quando fizer sentido |
 | Erro | A mensagem do servidor (já em português) ou a de conexão, e o botão **Tentar de novo** |
-| Sucesso (depois de salvar) | Aviso curto no topo, "Demanda registrada.", que some sozinho e é anunciado ao leitor de tela |
+| Sucesso (depois de salvar) | Aviso curto no topo, "Demanda registrada.", anunciado ao leitor de tela; fica até a próxima ação, sem tempo para sumir (WCAG 2.2.1) |
 
 **Selo de estado** (texto + cor, nunca só cor):
 
