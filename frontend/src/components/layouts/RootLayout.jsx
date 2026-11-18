@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   CalendarDays, CalendarRange, ClipboardList, ContactRound, FileText, FolderOpen, History,
   LayoutDashboard, LogOut, Menu, Send, UserRound, UsersRound, X,
 } from 'lucide-react'
-import cliente, { apagarSessao, expiraEm, expirarSessao, lerSessao } from '../../api/cliente'
-import { perfis } from '../../dominio'
+import cliente, { apagarSessao, lerSessao } from '../../api/cliente'
+import { dataCurta, hojeCrie, perfis } from '../../dominio'
 import classes from './RootLayout.module.css'
 
 const navegacao = [
@@ -20,52 +20,15 @@ const navegacao = [
   { rota: '/auditoria', texto: 'Auditoria', icone: History, direcao: true },
 ]
 
-const formatoData = new Intl.DateTimeFormat('pt-BR', {
-  day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Sao_Paulo',
-})
-
 export default function RootLayout() {
   const { usuario, token } = lerSessao()
   const { pathname, search } = useLocation()
-  const secao = pathname.split('/')[1].toLowerCase()
-  const rotaAtual = secao === 'evolucoes' ? '/assistidos' : '/' + secao
   const navegar = useNavigate()
   const [menuAberto, setMenuAberto] = useState(false)
   const [saindo, setSaindo] = useState(false)
-  const botaoMenu = useRef(null)
-  const painelMenu = useRef(null)
-  const conteudo = useRef(null)
-  const paginaAnterior = useRef(pathname)
-
-  useEffect(() => {
-    if (paginaAnterior.current !== pathname) conteudo.current?.focus()
-    paginaAnterior.current = pathname
-  }, [pathname])
-
-  useEffect(() => {
-    if (!token) return
-    const temporizador = window.setTimeout(expirarSessao, Math.max(0, expiraEm() - Date.now()))
-    return () => window.clearTimeout(temporizador)
-  }, [token])
-
-  useEffect(() => {
-    if (!menuAberto) return
-    function fecharComEscape(evento) {
-      if (evento.key === 'Escape') {
-        setMenuAberto(false)
-        botaoMenu.current?.focus()
-      }
-    }
-    window.addEventListener('keydown', fecharComEscape)
-    function fecharFora(evento) {
-      if (!painelMenu.current?.contains(evento.target)) setMenuAberto(false)
-    }
-    document.addEventListener('pointerdown', fecharFora)
-    return () => {
-      window.removeEventListener('keydown', fecharComEscape)
-      document.removeEventListener('pointerdown', fecharFora)
-    }
-  }, [menuAberto])
+  // As telas de evolução ficam dentro de Assistidos no menu.
+  const secao = pathname.split('/')[1]
+  const rotaAtual = secao === 'evolucoes' ? '/assistidos' : '/' + secao
 
   async function sair() {
     setSaindo(true)
@@ -76,27 +39,38 @@ export default function RootLayout() {
       if (erro.response?.status !== 401) {
         aviso = 'Você saiu deste navegador. O servidor não confirmou o encerramento da sessão.'
       }
-    } finally {
-      apagarSessao()
-      navegar('/entrar', { replace: true, state: { aviso } })
+    }
+    apagarSessao()
+    navegar('/entrar', { replace: true, state: { aviso } })
+  }
+
+  function alternarMenu() {
+    setMenuAberto(!menuAberto)
+  }
+
+  function fecharMenu() {
+    setMenuAberto(false)
+  }
+
+  function fecharComEsc(evento) {
+    if (menuAberto && evento.key === 'Escape') {
+      setMenuAberto(false)
+      document.getElementById('botao-menu').focus()
     }
   }
 
-  function alternarMenu() { setMenuAberto(!menuAberto) }
-  function fecharMenu() { setMenuAberto(false) }
-
-  if (!token || !usuario) return <Navigate to="/entrar" replace state={{ destino: pathname + search }} />
+  if (!token) return <Navigate to="/entrar" replace state={{ destino: pathname + search }} />
 
   return (
     <div className={classes.layout}>
       <a className={classes.pular} href="#conteudo">Ir para o conteúdo</a>
-      <aside className={classes.lateral} ref={painelMenu}>
+      <aside className={classes.lateral} onKeyDown={fecharComEsc}>
         <div className={classes.cabecalhoMenu}>
           <Link to="/" className={classes.marca} onClick={fecharMenu} aria-label="CRIE — ir para o painel">
             <img src="/crie-logo-oficial.png" alt="CRIE" width="107" height="50" />
           </Link>
-          <button type="button" className={classes.menu} aria-expanded={menuAberto}
-            aria-controls="navegacao" ref={botaoMenu} onClick={alternarMenu}>
+          <button type="button" id="botao-menu" className={classes.menu} aria-expanded={menuAberto}
+            aria-controls="navegacao" onClick={alternarMenu}>
             {menuAberto ? <X size={19} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />} Menu
           </button>
         </div>
@@ -115,16 +89,17 @@ export default function RootLayout() {
         <header className={classes.topo}>
           <div className={classes.usuario}>
             <span className={classes.avatar}><UserRound size={21} aria-hidden="true" /></span>
-            <div><strong>Olá, {usuario.nome.trim().split(/\s+/)[0]}</strong><span>{perfis[usuario.perfil]}</span></div>
+            <div><strong>Olá, {usuario.nome.split(' ')[0]}</strong><span>{perfis[usuario.perfil]}</span></div>
           </div>
           <div className={classes.fimTopo}>
-            <div className={classes.data}><CalendarDays size={17} aria-hidden="true" />{formatoData.format(new Date())}</div>
+            <div className={classes.data}><CalendarDays size={17} aria-hidden="true" />{dataCurta(hojeCrie())}</div>
             <button className={classes.sair} type="button" onClick={sair} disabled={saindo}>
               <LogOut size={19} aria-hidden="true" />{saindo ? 'Saindo…' : 'Sair'}
             </button>
           </div>
         </header>
-        <main className={classes.conteudo} ref={conteudo} id="conteudo" tabIndex={-1}>
+        <main className={classes.conteudo} id="conteudo" tabIndex={-1}>
+          {/* A chave faz cada endereço abrir a tela do zero, sem estado da tela anterior. */}
           <Outlet key={pathname + search} />
         </main>
       </div>

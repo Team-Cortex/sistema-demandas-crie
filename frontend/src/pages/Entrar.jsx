@@ -1,25 +1,19 @@
 import { useState } from 'react'
 import { ArrowRight, Eye, EyeOff } from 'lucide-react'
-import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import cliente, { guardarSessao, lerSessao, mensagemDeErro } from '../api/cliente'
+import { useLocation, useNavigate } from 'react-router-dom'
+import cliente, { guardarSessao, mensagemDeErro } from '../api/cliente'
 import classes from './Entrar.module.css'
-
-function destinoInterno(caminho) {
-  if (!caminho?.startsWith('/') || caminho.startsWith('//')) return '/'
-  const url = new URL(caminho, window.location.origin)
-  return url.origin === window.location.origin ? url.pathname + url.search : '/'
-}
 
 export default function Entrar() {
   const navegar = useNavigate()
   const { state } = useLocation()
-  const [jaEstavaAutenticado] = useState(() => Boolean(lerSessao().token))
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
-  const [visivel, setVisivel] = useState(false)
+  const [senhaVisivel, setSenhaVisivel] = useState(false)
   const [erros, setErros] = useState({})
   const [erro, setErro] = useState('')
   const [enviando, setEnviando] = useState(false)
+  // Página de onde a sessão vencida saiu (o cliente guarda no 401).
   const retorno = sessionStorage.getItem('crie:retorno')
   const aviso = retorno ? 'Sua sessão terminou. Entre de novo.' : state?.aviso
 
@@ -35,38 +29,33 @@ export default function Entrar() {
     setErro('')
   }
 
-  function alternarSenha() { setVisivel(!visivel) }
+  function alternarSenha() {
+    setSenhaVisivel(!senhaVisivel)
+  }
 
   async function entrar(evento) {
     evento.preventDefault()
-    if (enviando) return
-    const campos = evento.currentTarget.elements
     const falhas = {}
-    if (!email.trim() || campos.email.validity.typeMismatch) falhas.email = 'Informe um e-mail válido.'
+    if (!email.includes('@')) falhas.email = 'Informe um e-mail válido.'
     if (!senha) falhas.senha = 'Informe a senha.'
     setErros(falhas)
     setErro('')
-    if (Object.keys(falhas).length) {
-      campos[Object.keys(falhas)[0]].focus()
+    if (falhas.email || falhas.senha) {
+      evento.currentTarget.elements[falhas.email ? 'email' : 'senha'].focus()
       return
     }
     setEnviando(true)
     try {
-      const { data } = await cliente.post('/api/auth/login', { email: email.trim(), senha })
-      const mesmaPessoa = sessionStorage.getItem('crie:retornoUsuario') === String(data.usuario.id)
-      const caminho = retorno ? (mesmaPessoa ? retorno : '/') : state?.destino
-      guardarSessao(data)
+      const resposta = await cliente.post('/api/auth/login', { email: email.trim(), senha })
+      guardarSessao(resposta.data)
       sessionStorage.removeItem('crie:retorno')
-      sessionStorage.removeItem('crie:retornoUsuario')
-      navegar(destinoInterno(caminho), { replace: true })
+      navegar(retorno || state?.destino || '/', { replace: true })
     } catch (falha) {
       setErro(mensagemDeErro(falha))
     } finally {
       setEnviando(false)
     }
   }
-
-  if (jaEstavaAutenticado) return <Navigate to="/" replace />
 
   return (
     <main className={classes.tela}>
@@ -86,11 +75,11 @@ export default function Entrar() {
           <div className={classes.campo}>
             <label htmlFor="senha">Senha</label>
             <div className={classes.senha}>
-              <input id="senha" name="senha" type={visivel ? 'text' : 'password'} value={senha} onChange={atualizarSenha}
+              <input id="senha" name="senha" type={senhaVisivel ? 'text' : 'password'} value={senha} onChange={atualizarSenha}
                 autoComplete="current-password" required aria-invalid={Boolean(erros.senha)}
                 aria-describedby={erros.senha ? 'erro-senha' : undefined} />
-              <button type="button" onClick={alternarSenha} aria-label={visivel ? 'Ocultar senha' : 'Mostrar senha'}>
-                {visivel ? <EyeOff size={19} aria-hidden="true" /> : <Eye size={19} aria-hidden="true" />}
+              <button type="button" onClick={alternarSenha} aria-label={senhaVisivel ? 'Ocultar senha' : 'Mostrar senha'}>
+                {senhaVisivel ? <EyeOff size={19} aria-hidden="true" /> : <Eye size={19} aria-hidden="true" />}
               </button>
             </div>
             {erros.senha && <span id="erro-senha" className={classes.erroCampo}>{erros.senha}</span>}
