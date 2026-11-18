@@ -22,12 +22,17 @@ export default function Painel() {
   const [tentativa, setTentativa] = useState(0)
   const { avisos } = lerSessao()
 
+  // Busca de novo quando a pessoa clica em "Tentar de novo" (tentativa muda).
   useEffect(() => {
-    const controlador = new AbortController()
-    cliente.get('/api/demandas/painel', { signal: controlador.signal })
-      .then(resposta => setPainel(resposta.data))
-      .catch(falha => { if (!controlador.signal.aborted) setErro(mensagemDeErro(falha)) })
-    return () => controlador.abort()
+    async function buscarPainel() {
+      try {
+        const resposta = await cliente.get('/api/demandas/painel')
+        setPainel(resposta.data)
+      } catch (falha) {
+        setErro(mensagemDeErro(falha))
+      }
+    }
+    buscarPainel()
   }, [tentativa])
 
   function tentarNovamente() {

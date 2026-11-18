@@ -17,7 +17,7 @@ export default function DetalheDemanda() {
   const local = useLocation()
   const chave = 'demanda-' + id
   const caminho = '/api/demandas/' + id
-  const [rascunho, setRascunho] = useState(() => ({ ...inicial, ...lerRascunho(chave) }))
+  const [rascunho, setRascunho] = useState({ ...inicial, ...lerRascunho(chave) })
   const [demanda, setDemanda] = useState(null)
   const [reuniao, setReuniao] = useState(null)
   const [assistido, setAssistido] = useState(null)
@@ -32,36 +32,54 @@ export default function DetalheDemanda() {
   const [sucesso, setSucesso] = useState(local.state?.mensagem || '')
 
   useEffect(() => {
-    let ativo = true
-    cliente.get(caminho).then(({ data }) => {
-      if (ativo) setDemanda(data)
-    }).catch(erro => {
-      if (ativo) setErroFicha(mensagemDeErro(erro))
-    })
-    return () => { ativo = false }
+    async function buscarDemanda() {
+      try {
+        const resposta = await cliente.get(caminho)
+        setDemanda(resposta.data)
+      } catch (falha) {
+        setErroFicha(mensagemDeErro(falha))
+      }
+    }
+    buscarDemanda()
   }, [caminho, tentativa])
 
   // A demanda só traz os ids; data, setor e nome vêm das fichas. Se a consulta falhar, fica o número.
   const reuniaoId = demanda?.reuniao_id
   const assistidoId = demanda?.assistido_id
   useEffect(() => {
-    if (!reuniaoId) return
-    cliente.get('/api/reunioes/' + reuniaoId).then(({ data }) => setReuniao(data)).catch(() => setReuniao(null))
+    async function buscarReuniao() {
+      try {
+        const resposta = await cliente.get('/api/reunioes/' + reuniaoId)
+        setReuniao(resposta.data)
+      } catch {
+        setReuniao(null)
+      }
+    }
+    if (reuniaoId) buscarReuniao()
   }, [reuniaoId])
 
   useEffect(() => {
-    if (!assistidoId) return
-    cliente.get('/api/assistidos/' + assistidoId).then(({ data }) => setAssistido(data)).catch(() => setAssistido(null))
+    async function buscarAssistido() {
+      try {
+        const resposta = await cliente.get('/api/assistidos/' + assistidoId)
+        setAssistido(resposta.data)
+      } catch {
+        setAssistido(null)
+      }
+    }
+    if (assistidoId) buscarAssistido()
   }, [assistidoId])
 
   useEffect(() => {
-    let ativo = true
-    cliente.get('/api/usuarios', { params: { ativo: true } }).then(({ data }) => {
-      if (ativo) setUsuarios(data)
-    }).catch(erro => {
-      if (ativo) setErroUsuarios(mensagemDeErro(erro))
-    })
-    return () => { ativo = false }
+    async function buscarUsuarios() {
+      try {
+        const resposta = await cliente.get('/api/usuarios', { params: { ativo: true } })
+        setUsuarios(resposta.data)
+      } catch (falha) {
+        setErroUsuarios(mensagemDeErro(falha))
+      }
+    }
+    buscarUsuarios()
   }, [tentativa])
 
   function tentarNovamente() {
@@ -101,7 +119,7 @@ export default function DetalheDemanda() {
     }
     if (mensagem) {
       setErroCampo(mensagem)
-      evento.currentTarget.elements.namedItem(acao).focus()
+      evento.currentTarget.elements[acao].focus()
     } else if (acao === 'estado') {
       setConfirmando(true)
     } else {
@@ -120,21 +138,22 @@ export default function DetalheDemanda() {
     setSucesso('')
     try {
       if (acao === 'estado') {
-        const { data } = await cliente.patch(caminho + '/estado', { estado: rascunho.estado })
-        setDemanda(data)
+        const resposta = await cliente.patch(caminho + '/estado', { estado: rascunho.estado })
+        setDemanda(resposta.data)
         setSucesso('Estado atualizado.')
       } else if (acao === 'texto') {
-        const { data } = await cliente.post(caminho + '/anotacoes', { texto: rascunho.texto.trim() })
-        setDemanda({ ...demanda, historico: [...demanda.historico, data], ultimo_movimento: data.ocorrido_em })
+        // A API devolve só a anotação nova; ela entra no fim do histórico já carregado.
+        const resposta = await cliente.post(caminho + '/anotacoes', { texto: rascunho.texto.trim() })
+        setDemanda({ ...demanda, historico: [...demanda.historico, resposta.data], ultimo_movimento: resposta.data.ocorrido_em })
         setSucesso('Anotação registrada no histórico.')
       } else {
-        const { data } = await cliente.patch(caminho + '/responsavel', { responsavel_id: Number(rascunho.responsavel_id) })
-        setDemanda(data)
+        const resposta = await cliente.patch(caminho + '/responsavel', { responsavel_id: Number(rascunho.responsavel_id) })
+        setDemanda(resposta.data)
         setSucesso('Responsável atualizado.')
       }
       guardar({ ...rascunho, [acao]: '' })
-    } catch (erro) {
-      setErroServidor(mensagemDeErro(erro))
+    } catch (falha) {
+      setErroServidor(mensagemDeErro(falha))
     } finally {
       setEnviando(false)
     }

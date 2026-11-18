@@ -10,15 +10,16 @@ import styles from './NovaDemanda.module.css'
 
 const vazio = {
   descricao: '', prioridade: '', responsavel_id: '', prazo: '',
-  reuniao_id: null, assistido_id: '', categoria: '',
+  reuniao_id: '', assistido_id: '', categoria: '',
 }
 
 export default function NovaDemanda() {
   const navegar = useNavigate()
+  // Vindo da ficha da reunião ("Registrar demanda desta reunião"), o endereço traz ?reuniao_id=.
   const [parametros] = useSearchParams()
-  const reuniaoDeOrigem = parametros.get('reuniao_id')
-  const chave = reuniaoDeOrigem ? 'nova-demanda-reuniao-' + reuniaoDeOrigem : 'nova-demanda'
-  const [rascunho, setRascunho] = useState(() => ({ ...vazio, ...lerRascunho(chave) }))
+  const reuniaoDeOrigem = parametros.get('reuniao_id') || ''
+  const chave = 'nova-demanda-' + reuniaoDeOrigem
+  const [rascunho, setRascunho] = useState({ ...vazio, reuniao_id: reuniaoDeOrigem, ...lerRascunho(chave) })
   const [opcoes, setOpcoes] = useState(null)
   const [erroListas, setErroListas] = useState('')
   const [tentativa, setTentativa] = useState(0)
@@ -28,26 +29,21 @@ export default function NovaDemanda() {
   const [enviando, setEnviando] = useState(false)
 
   useEffect(() => {
-    let ativo = true
-    async function listarOpcoes() {
+    async function buscarOpcoes() {
       try {
-        const [usuarios, reunioes, assistidos] = await Promise.all([
-          cliente.get('/api/usuarios', { params: { ativo: true } }),
-          cliente.get('/api/reunioes'), cliente.get('/api/assistidos'),
-        ])
-        if (ativo) setOpcoes({ usuarios: usuarios.data, reunioes: reunioes.data, assistidos: assistidos.data })
-      } catch (erro) {
-        if (ativo) setErroListas(mensagemDeErro(erro))
+        const usuarios = await cliente.get('/api/usuarios', { params: { ativo: true } })
+        const reunioes = await cliente.get('/api/reunioes')
+        const assistidos = await cliente.get('/api/assistidos')
+        setOpcoes({ usuarios: usuarios.data, reunioes: reunioes.data, assistidos: assistidos.data })
+      } catch (falha) {
+        setErroListas(mensagemDeErro(falha))
       }
     }
-    listarOpcoes()
-    return () => { ativo = false }
+    buscarOpcoes()
   }, [tentativa])
 
-  const campos = {
-    ...rascunho,
-    reuniao_id: rascunho.reuniao_id ?? reuniaoDeOrigem ?? String(opcoes?.reunioes[0]?.id ?? ''),
-  }
+  // Sem escolha, a reunião de origem é a mais recente (a API lista da mais nova para a mais antiga).
+  const campos = { ...rascunho, reuniao_id: rascunho.reuniao_id || String(opcoes?.reunioes[0]?.id || '') }
 
   function tentarNovamente() {
     setErroListas('')
@@ -57,7 +53,6 @@ export default function NovaDemanda() {
   function preencherCampo(evento) {
     const { name, value } = evento.target
     const valores = { ...rascunho, [name]: value }
-    if (opcoes && valores.reuniao_id === null) valores.reuniao_id = campos.reuniao_id
     setRascunho(valores)
     guardarRascunho(chave, valores)
     setErros({ ...erros, [name]: '' })
@@ -75,11 +70,11 @@ export default function NovaDemanda() {
 
   function revisarDemanda(evento) {
     evento.preventDefault()
-    const invalidos = validarDemanda(campos, opcoes)
+    const invalidos = validarDemanda(campos)
     setErros(invalidos)
     const primeiro = Object.keys(invalidos)[0]
     if (primeiro) {
-      evento.currentTarget.elements.namedItem(primeiro).focus()
+      evento.currentTarget.elements[primeiro].focus()
       return
     }
     setConfirmando(true)
@@ -94,7 +89,7 @@ export default function NovaDemanda() {
     setEnviando(true)
     setErroServidor('')
     try {
-      const { data } = await cliente.post('/api/demandas', {
+      const resposta = await cliente.post('/api/demandas', {
         descricao: campos.descricao.trim(), prioridade: campos.prioridade,
         responsavel_id: Number(campos.responsavel_id), prazo: campos.prazo,
         reuniao_id: Number(campos.reuniao_id),
@@ -102,9 +97,9 @@ export default function NovaDemanda() {
         categoria: campos.categoria.trim() || null,
       })
       apagarRascunho(chave)
-      navegar('/demandas/' + data.id, { replace: true, state: { mensagem: 'Demanda registrada com sucesso.' } })
-    } catch (erro) {
-      setErroServidor(mensagemDeErro(erro))
+      navegar('/demandas/' + resposta.data.id, { replace: true, state: { mensagem: 'Demanda registrada com sucesso.' } })
+    } catch (falha) {
+      setErroServidor(mensagemDeErro(falha))
       setEnviando(false)
     }
   }
