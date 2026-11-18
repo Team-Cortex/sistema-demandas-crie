@@ -7,6 +7,7 @@ import AvisoSucesso from '../../components/AvisoSucesso'
 import Carregando from '../../components/Carregando'
 import ErroConsulta from '../../components/ErroConsulta'
 import ListaDemandas from '../../components/ListaDemandas'
+import EvolucoesAssistido from '../evolucoes/EvolucoesAssistido'
 import styles from './Assistidos.module.css'
 
 export default function FichaAssistido() {
@@ -36,15 +37,7 @@ export default function FichaAssistido() {
           <h2>Demandas</h2>
           <ListaDemandas demandas={ficha.demandas} titulo="Demandas do assistido" mensagemVazia="Nenhuma demanda vinculada a este assistido." />
         </section>
-        <section className={styles.painel}>
-          <div className={styles.cabecalho}><h2>Evoluções</h2>
-            <Link className="botao-primario" to={'/assistidos/' + id + '/evolucoes/nova'}>Lançar evolução</Link>
-          </div>
-          {ficha.evolucoes.length ? <ul className={styles.lista}>{ficha.evolucoes.map(item => <li key={item.id}>
-            <Link className={styles.link} to={'/evolucoes/' + item.id}>{dataCurta(item.data)} — {item.area_atuacao}</Link>
-            <p className={styles.texto}>{item.descricao}</p>
-          </li>)}</ul> : <p>Nenhuma evolução lançada para este assistido.</p>}
-        </section>
+        <EvolucoesAssistido assistidoId={id} iniciais={ficha.evolucoes} />
         <section className={styles.painel}>
           <div className={styles.cabecalho}><h2>Encaminhamentos</h2>
             <Link className="botao-secundario" to={'/encaminhamentos/novo?assistido_id=' + id}>Encaminhar</Link>
