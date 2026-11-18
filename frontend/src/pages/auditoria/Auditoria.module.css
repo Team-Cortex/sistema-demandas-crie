@@ -1,0 +1,24 @@
+.pagina, .painel { display: grid; gap: 18px; }
+.painel { min-width: 0; padding: clamp(16px, 2vw, 24px); background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio); }
+.campos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.campos label { display: grid; align-content: start; gap: 5px; font-weight: 600; }
+.campos label input, .campos label select { width: 100%; min-width: 0; font-weight: 400; }
+.acoes, .paginacao { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.paginacao { justify-content: space-between; color: var(--texto-secundario); }
+.erroCampo { color: var(--erro); font-size: .9rem; }
+.painel h2 small { font-size: .88rem; font-weight: 550; background: var(--fundo); color: var(--texto-secundario); padding: 3px 8px; border-radius: 6px; }
+.tabela { width: 100%; text-align: left; border-collapse: collapse; font-size: .9rem; overflow-wrap: anywhere; }
+.tabela thead { color: var(--texto-secundario); background: var(--fundo); }
+.tabela th, .tabela td { padding: 12px 8px; border-bottom: 1px solid var(--borda); }
+@media (max-width: 800px) {
+  .campos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tabela, .tabela tbody, .tabela tr { display: block; }
+  .tabela thead { position: absolute; clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; }
+  .tabela tbody tr { border-top: 1px solid var(--borda); padding: 10px 0; }
+  .tabela td { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 8px; padding: 2px 0; border: 0; }
+  .tabela td::before { content: attr(data-rotulo); color: var(--texto-secundario); font-weight: 600; }
+}
+@media (max-width: 520px) {
+  .campos { grid-template-columns: 1fr; }
+  .paginacao { justify-content: center; }
+}
