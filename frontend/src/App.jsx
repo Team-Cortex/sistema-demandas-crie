@@ -9,6 +9,7 @@ import NovaDemanda from './pages/NovaDemanda'
 import DetalheDemanda from './pages/DetalheDemanda'
 import SomenteDirecao from './components/layouts/SomenteDirecao'
 import Relatorios from './pages/relatorios/Relatorios'
+import Auditoria from './pages/auditoria/Auditoria'
 import Usuarios from './pages/usuarios/Usuarios'
 import FormularioUsuario from './pages/usuarios/FormularioUsuario'
 import FormEvolucao from './pages/evolucoes/FormEvolucao'
@@ -57,6 +58,7 @@ const rotas = createBrowserRouter([
               { path: 'usuarios', element: <Usuarios /> },
               { path: 'usuarios/novo', element: <FormularioUsuario /> },
               { path: 'usuarios/:id/editar', element: <FormularioUsuario /> },
+              { path: 'auditoria', element: <Auditoria /> },
               { path: 'relatorios', element: <Relatorios /> },
             ],
           },

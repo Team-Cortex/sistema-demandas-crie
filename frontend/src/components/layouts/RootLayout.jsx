@@ -4,6 +4,7 @@ import { CalendarDays, ClipboardList, FolderOpen, LayoutDashboard, LogOut, Menu,
 import cliente, { apagarSessao, expiraEm, expirarSessao, lerSessao } from '../../api/cliente'
 import { perfis } from '../../dominio'
 import { FileText } from 'lucide-react'
+import { History } from 'lucide-react'
 import { UsersRound } from 'lucide-react'
 import { Send } from 'lucide-react'
 import { ContactRound } from 'lucide-react'
@@ -19,6 +20,7 @@ const navegacao = [
   { rota: '/encaminhamentos', texto: 'Encaminhamentos', icone: Send },
   { rota: '/usuarios', texto: 'Usuários', icone: UsersRound, direcao: true },
   { rota: '/relatorios', texto: 'Relatórios', icone: FileText, direcao: true },
+  { rota: '/auditoria', texto: 'Auditoria', icone: History, direcao: true },
 ]
 
 const formatoData = new Intl.DateTimeFormat('pt-BR', {
