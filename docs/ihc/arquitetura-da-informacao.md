@@ -195,7 +195,7 @@ Busca também existe, mais simples, em **Assistidos** (trecho do nome).
 
 ## 5. Wireframe e tree testing
 
-- **Wireframe:** a especificação tela a tela está em [`telas.md`](telas.md), para o protótipo no Figma (frente de IHC, decisão D2 em aberto) e para a implementação contarem a mesma história.
+- **Wireframe:** a especificação tela a tela está em [`telas.md`](telas.md), para o protótipo no Figma (frente de IHC, decisão D2 em aberto) e para a implementação contarem a mesma história. Há também um [protótipo clicável](prototipo/LEIA-ME.md) em HTML, com navegação por fluxos e hotspots, que abre sem internet.
 - **Tree testing:** proposta para antes dos testes de usabilidade, só com o sitemap em texto (sem tela). Perguntas, uma por cenário: "Onde você clicaria para ver as demandas atrasadas?" (Painel), "...para achar o pedido de material adaptado do mês passado?" (Demandas → busca), "...para lançar como foi a oficina do Assistido Fictício A?" (Assistidos → ficha), "...para saber quais encaminhamentos a rede ainda não respondeu?" (Encaminhamentos). Anotar o primeiro clique e se acertou. **Não executado.**
 
 ---

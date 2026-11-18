@@ -6,7 +6,7 @@ Fundamento (Aula 03): Design Centrado no Usuário, ciclo da ISO 9241-210 — ent
 
 **Pendências que este plano não decide** (seção 9 do briefing):
 - **D4:** quando e com quem serão os 8 testes (profissionais do CRIE ou voluntários). O plano serve aos dois casos (§3).
-- **D6:** em que ambiente. O banco de produção não tem usuários; até haver decisão, os testes rodam no **preview da Vercel** ou num computador da equipe com a API local e a carga fictícia (`backend/seed.py`).
+- **D6:** em que ambiente. O banco de produção não tem usuários; até haver decisão, os testes rodam no **preview da Vercel** ou num computador da equipe com a API local e a carga fictícia (`backend/seed.py`). O [protótipo clicável](prototipo/LEIA-ME.md) roda sem internet e já traz T1 a T7; serve ao menos para o teste-piloto e o ensaio do moderador. Usá-lo nas sessões também faz parte de D6.
 
 ---
 
@@ -75,7 +75,7 @@ Tiradas dos cenários (`cenarios-de-uso.md`). Passos mínimos conforme `fluxos.m
 
 Ordem: T1 → T7. T7 só entra quando a tela de evoluções estiver pronta; até lá, a sessão tem T1 a T6.
 
-**Preparação do ambiente antes de cada sessão:** rodar a carga fictícia num banco limpo (ou restaurar o banco de teste), para todo participante encontrar os mesmos dados. Conferir que existe a demanda "Pedir material adaptado para a turma da tarde" (T2, T5), "Solicitar ao CRAS a atualização do cadastro da família" em andamento (T4) e uma demanda vencida de Bruna Fictícia (T1, T6). Ajustar a carga se necessário (**não verificado** que a semente atual cobre T4 e T5 exatamente como escrito).
+**Preparação do ambiente antes de cada sessão:** rodar a carga fictícia num banco limpo (ou restaurar o banco de teste), para todo participante encontrar os mesmos dados. Conferir que existe a demanda "Pedir material adaptado para a turma da tarde" (T2, T5), "Solicitar ao CRAS a atualização do cadastro da família" em andamento (T4) e uma demanda vencida de Bruna Fictícia (T1, T6). Conferido em 18/11/2026 na carga atual: a demanda do CRAS começa **Aberta**, e Aberta não passa direto para Aguardando terceiros. Antes de cada sessão, passe-a para Em andamento (ou ajuste a carga). O material adaptado começa Aberta, como T5 prevê. O protótipo já começa com o CRAS em andamento.
 
 ## 5. Métricas por tarefa
 

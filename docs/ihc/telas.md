@@ -1,6 +1,6 @@
 # Especificação tela a tela
 
-Frente de IHC, para o protótipo no Figma (decisão D2 em aberto: quem monta) e para o front-end React contarem a mesma história. Rotas da API conforme `docs/contrato-api.md` §2; regras de campo conforme as specs.
+Frente de IHC, para o protótipo no Figma (decisão D2 em aberto: quem monta), para o [protótipo clicável](prototipo/LEIA-ME.md) e para o front-end React contarem a mesma história. Rotas da API conforme `docs/contrato-api.md` §2; regras de campo conforme as specs.
 
 Cada tela tem: objetivo, quem vê, conteúdo, componentes, ação principal, estados e textos. Os textos são os que aparecem na tela, já na linguagem do CRIE ([`arquitetura-da-informacao.md`](arquitetura-da-informacao.md) §4.3).
 
