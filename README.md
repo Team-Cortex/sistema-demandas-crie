@@ -124,7 +124,12 @@ npm run build
 | axios | 1.21.1 | MIT | Cliente HTTP único, cabeçalho de autenticação e tratamento das respostas |
 | lucide-react | 1.75.0 | ISC e MIT (ícones derivados de Feather) | Ícones de navegação, estados e ações com rótulo |
 
-O interceptador de respostas do Axios é um recurso extraclasse. Em `src/api/cliente.js`, ele trata o 401 das rotas protegidas em um só lugar. Ao expirar a sessão, o sistema lembra a rota e guarda o rascunho na aba para a mesma pessoa retomar após entrar. Sair pelo menu descarta os rascunhos. A API valida o token e as permissões a cada requisição.
+O código segue as aulas de React: componentes de função, `useState` e `useEffect` com uma função `async` de busca, eventos com `preventDefault`, rotas filhas e Axios. Dois recursos ficam fora delas, cada um em um só lugar:
+
+- o **interceptador de respostas do Axios**, em `src/api/cliente.js`, trata o 401 das rotas protegidas. Quando a sessão vence, o sistema lembra a página. O rascunho guardado na aba volta para a mesma conta depois de entrar;
+- o **`useRef`**, em `src/components/Confirmacao.jsx`, abre o `<dialog>` nativo com `showModal()`, que prende o foco no diálogo e volta com Esc.
+
+Sair pelo menu apaga a sessão e os rascunhos da aba. A API valida o token e as permissões a cada requisição.
 
 #### Ferramentas de desenvolvimento
 
