@@ -3,6 +3,7 @@ import cliente from '../api/cliente'
 import CabecalhoDemandas from '../components/CabecalhoDemandas'
 import ErroConsulta from '../components/ErroConsulta'
 import ListaDemandas from '../components/ListaDemandas'
+import Demanda from '../modelos/Demanda'
 import { estados } from '../dominio'
 import styles from './Demandas.module.css'
 
@@ -48,7 +49,7 @@ export default function Demandas() {
     async function buscarDemandas() {
       try {
         const resposta = await cliente.get('/api/demandas', { params: consulta })
-        setDemandas(resposta.data)
+        setDemandas(resposta.data.map(dados => new Demanda(dados)))
       } catch (falha) {
         setErro(cliente.mensagemDeErro(falha))
       }

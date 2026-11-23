@@ -4,7 +4,8 @@ import cliente from '../api/cliente'
 import CabecalhoDemandas from '../components/CabecalhoDemandas'
 import CartaoDemanda from '../components/CartaoDemanda'
 import ErroConsulta from '../components/ErroConsulta'
-import { dataCurta, estados } from '../dominio'
+import { estados } from '../dominio'
+import Demanda from '../modelos/Demanda'
 import styles from './Painel.module.css'
 
 const colunas = ['aberta', 'em_andamento', 'aguardando_terceiros']
@@ -20,6 +21,8 @@ export default function Painel() {
   const [erro, setErro] = useState('')
   const [tentativa, setTentativa] = useState(0)
   const { avisos } = cliente.lerSessao()
+  // O aviso do login traz só id, prazo, estado e vencida (spec 09); cada item vira um objeto Demanda.
+  const pendencias = avisos ? avisos.demandas.map(dados => new Demanda(dados)) : []
 
   // Busca de novo quando a pessoa clica em "Tentar de novo" (tentativa muda).
   useEffect(() => {
@@ -54,15 +57,15 @@ export default function Painel() {
           ))}
         </dl>
       )}
-      {avisos?.demandas.length > 0 && (
+      {pendencias.length > 0 && (
         <details className={styles.avisos}>
           <summary>
             Você tem {avisos.vencidas} {avisos.vencidas === 1 ? 'demanda vencida' : 'demandas vencidas'} e {avisos.perto_do_prazo} perto do prazo
           </summary>
           <ul>
-            {avisos.demandas.map(demanda => (
+            {pendencias.map(demanda => (
               <li key={demanda.id}>
-                <Link to={`/demandas/${demanda.id}`}>Demanda nº {demanda.id}</Link>, prazo {dataCurta(demanda.prazo)} ({demanda.vencida ? 'vencida' : 'perto do prazo'})
+                <Link to={`/demandas/${demanda.id}`}>Demanda nº {demanda.id}</Link>, prazo {demanda.prazoFormatado()} ({demanda.estaVencida() ? 'vencida' : 'perto do prazo'})
               </li>
             ))}
           </ul>
@@ -77,7 +80,7 @@ export default function Painel() {
                 <h3>{estados[estado]} ({painel.totais[estado]})</h3>
                 {painel.por_estado[estado].length ? (
                   <ul>
-                    {painel.por_estado[estado].map(demanda => <li key={demanda.id}><CartaoDemanda demanda={demanda} /></li>)}
+                    {painel.por_estado[estado].map(dados => <li key={dados.id}><CartaoDemanda demanda={new Demanda(dados)} /></li>)}
                   </ul>
                 ) : <p className={styles.vazia}>Nenhuma demanda neste estado.</p>}
               </section>

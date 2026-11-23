@@ -4,7 +4,8 @@ import cliente from '../../api/cliente'
 import AvisoSucesso from '../../components/AvisoSucesso'
 import Carregando from '../../components/Carregando'
 import ErroConsulta from '../../components/ErroConsulta'
-import { dataCurta, estados, setores } from '../../dominio'
+import { dataCurta, setores } from '../../dominio'
+import Demanda from '../../modelos/Demanda'
 import styles from './Reunioes.module.css'
 
 export default function FichaReuniao() {
@@ -18,7 +19,7 @@ export default function FichaReuniao() {
     async function buscarReuniao() {
       try {
         const resposta = await cliente.get('/api/reunioes/' + id)
-        setReuniao(resposta.data)
+        setReuniao({ ...resposta.data, demandas: resposta.data.demandas.map(dados => new Demanda(dados)) })
       } catch (falha) {
         setErro(cliente.mensagemDeErro(falha))
       }
@@ -53,7 +54,7 @@ export default function FichaReuniao() {
             </div>
             {reuniao.demandas.length ? <ul className={styles.lista}>{reuniao.demandas.map(demanda =>
               <li key={demanda.id}><Link className={styles.linha} to={'/demandas/' + demanda.id}>
-                <strong>{demanda.descricao}</strong><small>Estado: {estados[demanda.estado]}</small>
+                <strong>{demanda.descricao}</strong><small>Estado: {demanda.rotuloEstado()}</small>
               </Link></li>)}</ul> : <p>Nenhuma demanda registrada nesta reunião.</p>}
           </section>
         </>}

@@ -3,6 +3,7 @@ import cliente from '../api/cliente'
 import CabecalhoDemandas from '../components/CabecalhoDemandas'
 import ErroConsulta from '../components/ErroConsulta'
 import ListaDemandas from '../components/ListaDemandas'
+import Demanda from '../modelos/Demanda'
 
 export default function MinhasDemandas() {
   const [demandas, setDemandas] = useState(null)
@@ -13,7 +14,8 @@ export default function MinhasDemandas() {
     async function buscarDemandas() {
       try {
         const resposta = await cliente.get('/api/demandas/minhas')
-        setDemandas(resposta.data)
+        // Cada item do JSON vira um objeto Demanda, com os métodos que a lista usa.
+        setDemandas(resposta.data.map(dados => new Demanda(dados)))
       } catch (falha) {
         setErro(cliente.mensagemDeErro(falha))
       }

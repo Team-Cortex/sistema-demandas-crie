@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
-import { dataCurta, estados, prioridades } from '../dominio'
 import CartaoDemanda from './CartaoDemanda'
 import styles from './ListaDemandas.module.css'
 
+// `demandas` é uma lista de objetos da classe Demanda (src/modelos/Demanda.js).
 export default function ListaDemandas({ demandas, titulo, mensagemVazia }) {
   if (!demandas.length) return <p className={styles.vazia} role="status">{mensagemVazia}</p>
   return (
@@ -19,12 +19,12 @@ export default function ListaDemandas({ demandas, titulo, mensagemVazia }) {
                   <small>nº {demanda.id}</small> {demanda.descricao}
                 </Link>
               </th>
-              <td>{estados[demanda.estado]}</td>
+              <td>{demanda.rotuloEstado()}</td>
               <td>{demanda.responsavel_nome}</td>
-              <td>{prioridades[demanda.prioridade]}</td>
+              <td>{demanda.rotuloPrioridade()}</td>
               <td>
-                <time dateTime={demanda.prazo}>{dataCurta(demanda.prazo)}</time>
-                {demanda.vencida && <strong className={styles.vencida}>Vencida</strong>}
+                <time dateTime={demanda.prazo}>{demanda.prazoFormatado()}</time>
+                {demanda.estaVencida() && <strong className={styles.vencida}>Vencida</strong>}
               </td>
             </tr>
           ))}

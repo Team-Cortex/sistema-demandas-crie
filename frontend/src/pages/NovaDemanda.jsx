@@ -4,7 +4,7 @@ import cliente from '../api/cliente'
 import CampoDemanda from '../components/CampoDemanda'
 import Confirmacao from '../components/Confirmacao'
 import { prioridades, setores, dataCurta } from '../dominio'
-import { validarDemanda } from './regrasDemanda'
+import Demanda from '../modelos/Demanda'
 import styles from './NovaDemanda.module.css'
 
 const vazio = {
@@ -69,7 +69,7 @@ export default function NovaDemanda() {
 
   function revisarDemanda(evento) {
     evento.preventDefault()
-    const invalidos = validarDemanda(campos)
+    const invalidos = Demanda.validar(campos)
     setErros(invalidos)
     const primeiro = Object.keys(invalidos)[0]
     if (primeiro) {
