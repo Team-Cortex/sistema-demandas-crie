@@ -22,7 +22,7 @@ FERR = os.path.join(RAIZ, 'ferramentas')
 ENTREGA = next((p for p in (os.path.join(RAIZ, 'entrega'), os.path.join(RAIZ, '..', 'sql'))
                 if os.path.exists(os.path.join(p, '01_criacao_banco.sql'))), os.path.join(RAIZ, 'entrega'))
 sys.path.insert(0, FERR)
-from conteudo import EQUIPE, RELACIONAMENTOS  # noqa: E402
+from conteudo import RELACIONAMENTOS  # noqa: E402
 
 EDGE = r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
 e = html.escape
@@ -112,6 +112,9 @@ CHIPS_Q = {
 }
 # Quebras só de exibição (o SQL é o mesmo; muda a linha para caber a 24 px).
 QUEBRAS = {'Q16': ('NOT IN (SELECT retifica_id FROM evolucao WHERE', 'NOT IN (SELECT retifica_id FROM evolucao\n{ind}WHERE')}
+
+
+PARTE_DE = {quem: n for n, quem, *_ in PARTES}  # os slides mostram a parte, não o nome de quem fala
 
 
 def quem_apresenta(num):
@@ -464,15 +467,14 @@ def montar():
     ifsp = re.sub(r'<\?xml[^>]*>', '', ler(AQUI, 'assets', 'logos', 'ifsp-marca-horizontal-2015.svg'))
     ifsp = ifsp.replace('<svg ', '<svg class="logo-ifsp" role="img" aria-label="Instituto Federal de São Paulo" ', 1)
     tabelas = {t['nome']: t for t in tabelas_do_ddl()}
-    equipe = ''.join(f'<li>{e(n)}</li>' for n in EQUIPE)
 
     # 1. Capa (faixa clara com a marca, como o cabeçalho do site; área escura, como o hero)
     slide(f'''<div class="capa-topo"><div class="lockup">{logo}<span>Centro de Integração<br>Especial</span></div>{ifsp}</div>
 <div class="capa-hero"><div class="capa-txt">{barra4()}
 <h1>O banco de dados das demandas do CRIE</h1>
 <p class="capa-sub">Projeto interdisciplinar de Banco de Dados I: do minimundo às 17 consultas em MySQL.</p>
-<ul class="equipe">{equipe}</ul>
-<p class="capa-rod">IFSP Bragança Paulista · ADS, 2º semestre · Profª Letícia Souza Netto Brandi · 30/11/2026</p></div>
+<p class="capa-equipe">Equipe Cortex</p>
+<p class="capa-rod">IFSP Bragança Paulista · ADS, 2º semestre · 30/11/2026</p></div>
 <figure class="capa-fig">{cartao_tabela(tabelas["demanda"], "escuro")}<figcaption>A tabela central do recorte, como o script 01 a cria</figcaption></figure></div>''',
           'capa escuro', 'Abertura', 'Vinícius', 'Apresentar a equipe Cortex, o parceiro (CRIE) e o que vamos mostrar: modelagem, scripts e 17 consultas.',
           ident='capa', rotulo='Capa')
@@ -482,13 +484,13 @@ def montar():
         m, s = t.split(':')
         return int(m) * 60 + int(s)
     blocos = ''
-    for _, quem, ini, fim, nome, oque in PARTES:
+    for n, quem, ini, fim, nome, oque in PARTES:
         cor = PESSOAS[quem]
         blocos += (f'<div class="bloco" style="flex:{seg(fim) - seg(ini)};background:{cor};color:{TEXTO_SOBRE[cor]}">'
-                   f'<span class="b-t">{ini}</span><b>{e(quem)}</b><span class="b-o">{e(nome)}</span></div>')
-    itens = ''.join(f'<li><span class="r-cor" style="background:{PESSOAS[q]}"></span><b>{e(q)}</b><span>{e(o)}</span><em>{ini} a {fim}</em></li>'
-                    for _, q, ini, fim, _n, o in PARTES)
-    slide(titulo('Roteiro: 20 minutos, cinco vozes') + f'<div class="linha-tempo">{blocos}</div><ul class="roteiro">{itens}</ul>',
+                   f'<span class="b-t">{ini}</span><b>{n:02d}</b><span class="b-o">{e(nome)}</span></div>')
+    itens = ''.join(f'<li><span class="r-cor" style="background:{PESSOAS[q]}"></span><b>{n:02d} · {e(nome)}</b><span>{e(o)}</span><em>{ini} a {fim}</em></li>'
+                    for n, q, ini, fim, nome, o in PARTES)
+    slide(titulo('Roteiro: 20 minutos em cinco partes') + f'<div class="linha-tempo">{blocos}</div><ul class="roteiro">{itens}</ul>',
           '', 'Abertura', 'Vinícius', 'Cada integrante apresenta um bloco e explica o processamento das próprias consultas, como pede o enunciado.',
           ident='roteiro', rotulo='Roteiro')
 
@@ -535,8 +537,8 @@ def montar():
         n, quem, ini, fim, nome, oque = parte
         cor = PESSOAS[quem]
         slide(f'''{barra4()}<div class="div-corpo"><span class="div-num" style="color:{NO_ESCURO.get(cor, cor)}">0{n}</span>
-<div><h2>{e(nome)}</h2><p>{e(oque)}</p><div class="div-pessoa"><i style="background:{cor}"></i><b>{e(quem)}</b><em>{ini} a {fim}</em></div></div></div>''',
-              'divisor escuro', nome, quem, f'Passagem para {quem}.', ident=f'parte{n}', rotulo=f'Parte {n}: {nome}')
+<div><h2>{e(nome)}</h2><p>{e(oque)}</p><div class="div-pessoa"><i style="background:{cor}"></i><b>Parte {n}</b><em>{ini} a {fim}</em></div></div></div>''',
+              'divisor escuro', nome, quem, f'Passagem para a parte {n}: {nome}.', ident=f'parte{n}', rotulo=f'Parte {n}: {nome}')
 
     divisor(PARTES[1])
 
@@ -664,7 +666,7 @@ ALTER TABLE evolucao
     tot = ''.join(f'<td class="tot">{t}</td>' for t in totais)
     slide(titulo('17 consultas, cada uma com um recurso diferente') +
           f'<table class="mapa"><thead><tr><th></th>{cab}</tr></thead><tbody>{corpo_m}<tr class="t"><th>total</th>{tot}</tr></tbody></table>',
-          'denso', 'Consultas', 'Inácio', 'O enunciado pede no mínimo 12 consultas diferentes, com funções de data ou matemáticas, junção e GROUP BY. A contagem foi feita no próprio SQL. A cor de cada linha é de quem apresenta.',
+          'denso', 'Consultas', 'Inácio', 'O enunciado pede no mínimo 12 consultas diferentes, com funções de data ou matemáticas, junção e GROUP BY. A contagem foi feita no próprio SQL. A cor de cada linha é a da parte em que a consulta é apresentada.',
           ident='mapa', rotulo='Mapa das consultas')
 
     # Ordem de processamento
@@ -728,7 +730,7 @@ ALTER TABLE evolucao
 
     # Encerramento
     slide(f'''{barra4()}<div class="fim"><div class="placa">{logo}</div><h2>Obrigado.</h2><p class="fim-sub">Perguntas?</p>
-<ul class="equipe linha">{equipe}</ul>
+<p class="fim-equipe">Equipe Cortex</p>
 <p class="capa-rod">Documento ABNT, scripts .sql e este deck no repositório da equipe Cortex · todos os dados são fictícios</p></div>''',
           'fim-slide escuro', 'Perguntas', 'Todos', 'Perguntas. Respostas prontas no GUIA_APRESENTACAO.md.', ident='fim', rotulo='Encerramento')
 
@@ -780,6 +782,7 @@ h3{font:600 28px/1.2 'Archivo',sans-serif;color:var(--t8);margin:0 0 20px}
 .capa-sub{font-size:32px;line-height:1.4;color:var(--ce);max-width:960px;margin-bottom:44px}
 .equipe{list-style:none;padding:0;margin:0 0 48px;display:grid;grid-template-columns:1fr 1fr;gap:10px 48px;font:600 28px 'Archivo',sans-serif;color:var(--papel)}
 .capa-rod{font-size:24px;color:var(--ce)}
+.capa-equipe,.fim-equipe{font:600 32px 'Archivo',sans-serif;color:var(--papel);margin:0 0 40px}
 .capa-fig{margin:0}.capa-fig figcaption{font-size:24px;color:var(--me);margin-top:20px}
 
 /* cartões de tabela (dicionário) */
@@ -802,7 +805,7 @@ h3{font:600 28px/1.2 'Archivo',sans-serif;color:var(--t8);margin:0 0 20px}
 .bloco{padding:22px 20px;display:flex;flex-direction:column;gap:6px;min-width:0}
 .bloco .b-t{font:500 24px 'IBM Plex Mono',monospace}.bloco b{font:800 34px/1.05 'Bricolage Grotesque',sans-serif}.bloco .b-o{font-size:24px;line-height:1.2}
 .roteiro{list-style:none;padding:0;margin:0;display:grid;gap:14px}
-.roteiro li{display:grid;grid-template-columns:22px 180px 1fr 220px;align-items:center;gap:20px;font-size:28px;padding-bottom:14px;border-bottom:1px solid var(--linha)}
+.roteiro li{display:grid;grid-template-columns:22px 440px 1fr 220px;align-items:center;gap:20px;font-size:28px;padding-bottom:14px;border-bottom:1px solid var(--linha)}
 .roteiro .r-cor{width:22px;height:22px}.roteiro b{color:var(--t8)}.roteiro em{font:500 26px 'IBM Plex Mono',monospace;font-style:normal;text-align:right;color:var(--cinza)}
 
 /* universo */
@@ -966,7 +969,9 @@ addEventListener('resize',ajustar);ajustar();mostrar((parseInt(location.hash.sli
 def rodape(s, i, total):
     pessoa = ''
     if s['pessoa']:
-        pessoa = f'<span class="rod-pessoa"><i style="background:{PESSOAS[s["pessoa"]]}"></i>{e(s["pessoa"])}</span>'
+        n = PARTE_DE[s['pessoa']]
+        rotulo = 'Perguntas' if n == 6 else f'Parte {n}'
+        pessoa = f'<span class="rod-pessoa"><i style="background:{PESSOAS[s["pessoa"]]}"></i>{rotulo}</span>'
     return f'<footer class="rodape"><span class="rod-secao">{e(s["secao"])}</span><span class="rod-dir">{pessoa}<span class="rod-num">{i:02d} / {total}</span></span></footer>'
 
 

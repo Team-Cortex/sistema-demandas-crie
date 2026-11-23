@@ -15,7 +15,7 @@ Critério que mais pesa na fala: o enunciado diz que "os estudantes deverão exp
 | 13:30 a 18:30 | Miguel | 29 a 38 | Q12 a Q17, script 04 (manutenção), do banco ao sistema, critérios do enunciado |
 | 18:30 a 20:00 | Todos | 39 | Perguntas |
 
-Os slides 6, 14, 22 e 29 são de passagem: mostram quem fala e o tempo do bloco.
+Os slides 6, 14, 22 e 29 são de passagem: mostram a parte e o tempo do bloco. Os slides não trazem nomes (nem da equipe nem da professora): cada um se apresenta ao começar a sua parte.
 
 ## Como usar o deck
 
