@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
-import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../api/cliente'
+import cliente from '../api/cliente'
+import Carregando from '../components/Carregando'
 import CabecalhoDemandas from '../components/CabecalhoDemandas'
 import ErroConsulta from '../components/ErroConsulta'
 import ListaDemandas from '../components/ListaDemandas'
+import Demanda from '../modelos/Demanda'
 import { estados } from '../dominio'
 import styles from './Demandas.module.css'
 
@@ -19,7 +21,7 @@ function preenchidos(filtros) {
 
 export default function Demandas() {
   // Os filtros ficam no rascunho para voltarem depois que a sessão é renovada.
-  const [filtros, setFiltros] = useState(lerRascunho('filtros-demandas') || filtrosVazios)
+  const [filtros, setFiltros] = useState(cliente.lerRascunho('filtros-demandas') || filtrosVazios)
   const [consulta, setConsulta] = useState(preenchidos(filtros))
   const [demandas, setDemandas] = useState(null)
   const [erro, setErro] = useState('')
@@ -37,7 +39,7 @@ export default function Demandas() {
         const assistidos = await cliente.get('/api/assistidos')
         setOpcoes({ usuarios: usuarios.data, assistidos: assistidos.data })
       } catch (falha) {
-        setErroOpcoes(mensagemDeErro(falha))
+        setErroOpcoes(cliente.mensagemDeErro(falha))
       }
     }
     buscarOpcoes()
@@ -48,9 +50,9 @@ export default function Demandas() {
     async function buscarDemandas() {
       try {
         const resposta = await cliente.get('/api/demandas', { params: consulta })
-        setDemandas(resposta.data)
+        setDemandas(resposta.data.map(dados => new Demanda(dados)))
       } catch (falha) {
-        setErro(mensagemDeErro(falha))
+        setErro(cliente.mensagemDeErro(falha))
       }
     }
     buscarDemandas()
@@ -74,13 +76,13 @@ export default function Demandas() {
       setErroPeriodo('Escolha uma data final igual ou posterior à inicial.')
       return
     }
-    guardarRascunho('filtros-demandas', filtros)
+    cliente.guardarRascunho('filtros-demandas', filtros)
     consultar(preenchidos(filtros))
   }
 
   function limparFiltros() {
     setFiltros(filtrosVazios)
-    apagarRascunho('filtros-demandas')
+    cliente.apagarRascunho('filtros-demandas')
     setErroPeriodo('')
     consultar({})
   }
@@ -118,7 +120,7 @@ export default function Demandas() {
           </button>
         </div>
         <div id="mais-filtros" hidden={!maisFiltros}>
-          {!opcoes && !erroOpcoes && <p role="status">Carregando responsáveis e assistidos…</p>}
+          {!opcoes && !erroOpcoes && <Carregando>Carregando responsáveis e assistidos…</Carregando>}
           {erroOpcoes && <ErroConsulta mensagem={erroOpcoes} tentarNovamente={tentarOpcoes} />}
           <div className={styles.campos}>
             <label htmlFor="filtro-responsavel">Responsável
@@ -153,7 +155,7 @@ export default function Demandas() {
         </div>
       </form>
       {erro && <ErroConsulta mensagem={erro} tentarNovamente={tentarNovamente} />}
-      {!erro && !demandas && <p role="status">Carregando demandas…</p>}
+      {!erro && !demandas && <Carregando>Carregando demandas…</Carregando>}
       {demandas && (
         <section>
           <h2 className={styles.tituloResultados}>Resultado da busca ({demandas.length})</h2>

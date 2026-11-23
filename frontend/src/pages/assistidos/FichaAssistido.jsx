@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import cliente, { mensagemDeErro } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import { dataCurta } from '../../dominio'
 import AvisoSucesso from '../../components/AvisoSucesso'
 import Carregando from '../../components/Carregando'
 import ErroConsulta from '../../components/ErroConsulta'
 import ListaDemandas from '../../components/ListaDemandas'
+import Demanda from '../../modelos/Demanda'
 import EvolucoesAssistido from '../evolucoes/EvolucoesAssistido'
 import styles from './Assistidos.module.css'
 
@@ -20,9 +21,9 @@ export default function FichaAssistido() {
     async function buscarFicha() {
       try {
         const resposta = await cliente.get('/api/assistidos/' + id + '/ficha')
-        setFicha(resposta.data)
+        setFicha({ ...resposta.data, demandas: resposta.data.demandas.map(dados => new Demanda(dados)) })
       } catch (falha) {
-        setErro(mensagemDeErro(falha))
+        setErro(cliente.mensagemDeErro(falha))
       }
     }
     buscarFicha()

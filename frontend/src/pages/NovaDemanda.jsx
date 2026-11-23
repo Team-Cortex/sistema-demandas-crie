@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../api/cliente'
+import cliente from '../api/cliente'
+import Carregando from '../components/Carregando'
 import CampoDemanda from '../components/CampoDemanda'
 import Confirmacao from '../components/Confirmacao'
 import { prioridades, setores, dataCurta } from '../dominio'
-import { validarDemanda } from './regrasDemanda'
+import Demanda from '../modelos/Demanda'
 import styles from './NovaDemanda.module.css'
 
 const vazio = {
@@ -18,7 +19,7 @@ export default function NovaDemanda() {
   const [parametros] = useSearchParams()
   const reuniaoDeOrigem = parametros.get('reuniao_id') || ''
   const chave = 'nova-demanda-' + reuniaoDeOrigem
-  const [rascunho, setRascunho] = useState({ ...vazio, reuniao_id: reuniaoDeOrigem, ...lerRascunho(chave) })
+  const [rascunho, setRascunho] = useState({ ...vazio, reuniao_id: reuniaoDeOrigem, ...cliente.lerRascunho(chave) })
   const [opcoes, setOpcoes] = useState(null)
   const [erroListas, setErroListas] = useState('')
   const [tentativa, setTentativa] = useState(0)
@@ -35,7 +36,7 @@ export default function NovaDemanda() {
         const assistidos = await cliente.get('/api/assistidos')
         setOpcoes({ usuarios: usuarios.data, reunioes: reunioes.data, assistidos: assistidos.data })
       } catch (falha) {
-        setErroListas(mensagemDeErro(falha))
+        setErroListas(cliente.mensagemDeErro(falha))
       }
     }
     buscarOpcoes()
@@ -53,7 +54,7 @@ export default function NovaDemanda() {
     const { name, value } = evento.target
     const valores = { ...rascunho, [name]: value }
     setRascunho(valores)
-    guardarRascunho(chave, valores)
+    cliente.guardarRascunho(chave, valores)
     setErros({ ...erros, [name]: '' })
     setErroServidor('')
   }
@@ -69,7 +70,7 @@ export default function NovaDemanda() {
 
   function revisarDemanda(evento) {
     evento.preventDefault()
-    const invalidos = validarDemanda(campos)
+    const invalidos = Demanda.validar(campos)
     setErros(invalidos)
     const primeiro = Object.keys(invalidos)[0]
     if (primeiro) {
@@ -95,10 +96,10 @@ export default function NovaDemanda() {
         assistido_id: campos.assistido_id ? Number(campos.assistido_id) : null,
         categoria: campos.categoria.trim() || null,
       })
-      apagarRascunho(chave)
+      cliente.apagarRascunho(chave)
       navegar('/demandas/' + resposta.data.id, { replace: true, state: { mensagem: 'Demanda registrada com sucesso.' } })
     } catch (falha) {
-      setErroServidor(mensagemDeErro(falha))
+      setErroServidor(cliente.mensagemDeErro(falha))
       setEnviando(false)
     }
   }
@@ -114,7 +115,7 @@ export default function NovaDemanda() {
       <h1>Registrar demanda</h1>
       <form onSubmit={revisarDemanda} noValidate className={styles.ficha}>
         {erroListas ? <div role="alert" className="aviso-erro">{erroListas} <button type="button" className="botao botao-secundario" onClick={tentarNovamente}>Tentar de novo</button></div> :
-          !opcoes && <p role="status">Carregando responsáveis, reuniões e assistidos…</p>}
+          !opcoes && <Carregando>Carregando responsáveis, reuniões e assistidos…</Carregando>}
         <fieldset disabled={enviando} className={styles.campos}>
           <div className={styles.inteira}>
             <CampoDemanda nome="descricao" rotulo="Descrição" erro={erros.descricao}>

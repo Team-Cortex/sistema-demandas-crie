@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import cliente, { guardarSessao, mensagemDeErro } from '../api/cliente'
+import cliente from '../api/cliente'
 import styles from './Entrar.module.css'
 
 export default function Entrar() {
@@ -46,11 +46,11 @@ export default function Entrar() {
     setEnviando(true)
     try {
       const resposta = await cliente.post('/api/auth/login', { email: email.trim(), senha })
-      guardarSessao(resposta.data)
+      cliente.guardarSessao(resposta.data)
       sessionStorage.removeItem('crie:retorno')
       navegar(retorno || state?.destino || '/', { replace: true })
     } catch (falha) {
-      setErro(mensagemDeErro(falha))
+      setErro(cliente.mensagemDeErro(falha))
     } finally {
       setEnviando(false)
     }

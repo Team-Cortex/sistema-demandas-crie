@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import cliente, { mensagemDeErro, lerRascunho, guardarRascunho } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import Carregando from '../../components/Carregando'
 import ErroConsulta from '../../components/ErroConsulta'
 import { dataCurta, setores } from '../../dominio'
@@ -8,7 +8,7 @@ import styles from './Reunioes.module.css'
 
 export default function Reunioes() {
   // O setor escolhido fica no rascunho para voltar depois que a sessão é renovada.
-  const [setor, setSetor] = useState(lerRascunho('setor-reunioes') || '')
+  const [setor, setSetor] = useState(cliente.lerRascunho('setor-reunioes') || '')
   const [reunioes, setReunioes] = useState(null)
   const [erro, setErro] = useState('')
   const [tentativa, setTentativa] = useState(0)
@@ -19,7 +19,7 @@ export default function Reunioes() {
         const resposta = await cliente.get('/api/reunioes', { params: setor ? { setor } : {} })
         setReunioes(resposta.data)
       } catch (falha) {
-        setErro(mensagemDeErro(falha))
+        setErro(cliente.mensagemDeErro(falha))
       }
     }
     buscarReunioes()
@@ -29,7 +29,7 @@ export default function Reunioes() {
     setReunioes(null)
     setErro('')
     setSetor(evento.target.value)
-    guardarRascunho('setor-reunioes', evento.target.value)
+    cliente.guardarRascunho('setor-reunioes', evento.target.value)
   }
 
   function tentarNovamente() {

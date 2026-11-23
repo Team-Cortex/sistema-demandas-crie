@@ -198,14 +198,16 @@ A senha nunca é acessível diretamente. O atributo `_senha_hash` só é manipul
 
 Cada perfil estende `Usuario` e herda identificação, autenticação e estado de ativação. `AssistenteSocial` e `EquipePedagogica` estendem `Profissional`, que concentra o que é comum a quem atende assistidos.
 
-**Polimorfismo — `models/usuario.py` e `routes/assistidos.py`**
+**Polimorfismo — `models/usuario.py` e `services/acesso.py`**
 
-O método `pode_ver_evolucao` tem implementação distinta em cada perfil: a direção sempre pode; o profissional só pode se acompanhar aquele assistido. A rota que protege o acesso não sabe nem precisa saber com qual perfil está lidando:
+O método `pode_ver_evolucao` tem implementação distinta em cada perfil: a direção sempre pode; o profissional pode enquanto vale o acesso aberto escolhido pela direção do CRIE e, com a regra restritiva ligada (`Profissional.acesso_restrito`), só se acompanhar aquele assistido. A função que protege o acesso (`exigir_acesso_ao_assistido`, em `services/acesso.py`) não sabe nem precisa saber com qual perfil está lidando:
 
 ```python
 if not usuario.pode_ver_evolucao(assistido):
-    raise PermissaoNegada("Você não tem acesso às evoluções deste assistido.")
+    raise PermissaoNegada(mensagem)
 ```
+
+O detalhe, com arquivo e linha de cada conceito, está em [`poo-no-backend.md`](poo-no-backend.md).
 
 Acrescentar um perfil novo no futuro não exige alterar nenhuma rota — apenas criar a subclasse e sobrescrever o método. É a vantagem prática do polimorfismo, e vale explicá-la assim na apresentação.
 
@@ -230,17 +232,21 @@ O fluxo usa **JWT** (JSON Web Token):
 ## 7. Front-end
 
 ```
-main.jsx  →  App.jsx (rotas)  →  pages/  →  components/
-                                    │
-                                    ▼
-                                 api/cliente.js  →  API
+main.jsx  →  App.jsx (rotas)  →  layouts/RootLayout.jsx  →  pages/  →  components/
+                                                              │
+                                                              ├──▶ api/cliente.js (objeto da classe ClienteApi)  →  API
+                                                              └──▶ modelos/Demanda.js (cada demanda vira um objeto)
 ```
 
-**Todo acesso à API passa por `api/cliente.js`.** Nenhuma tela chama `fetch` diretamente. Isso concentra num único arquivo o endereço base, o envio do token, o tratamento de erro e a reação à sessão expirada — se o contrato mudar, muda-se um arquivo.
+**Todo acesso à API passa pela classe `ClienteApi`, em `api/cliente.js`.** O arquivo cria um único objeto, `cliente`, que as páginas importam (`cliente.get(...)`, `cliente.mensagemDeErro(...)`). Nenhuma tela chama `fetch` nem `axios` diretamente. A classe concentra o endereço base (no construtor), o envio do token, os rascunhos (RNF16), o tratamento de erro e a reação à sessão expirada; o Axios fica num campo privado (`#http`). Se o contrato mudar, muda-se um arquivo.
 
-**`pages/` e `components/`:** páginas correspondem a rotas e buscam dados; componentes são reutilizáveis e recebem tudo por props. Um componente que busca dados sozinho deixa de ser reutilizável.
+**`modelos/Demanda.js`:** a classe de domínio do front. A página transforma cada demanda do JSON num objeto (`new Demanda(dados)`), e os componentes usam os métodos (`rotuloEstado()`, `prazoFormatado()`, `estaVencida()`, `proximosEstados()`). A explicação, com arquivo e linha, está em [`front-orientacao-a-objetos.md`](front-orientacao-a-objetos.md).
 
-Os estilos atuais são mínimos e provisórios. O visual definitivo virá do protótipo em Figma produzido na disciplina de IHC.
+**`pages/` e `components/`:** páginas correspondem a rotas e buscam dados com `useState` e `useEffect`; componentes são funções reutilizáveis e recebem tudo por props. Um componente que busca dados sozinho deixa de ser reutilizável.
+
+**Layout e sessão:** `RootLayout` (rota-mãe) monta o menu conforme o perfil, manda para Entrar quem não tem token e encerra a sessão depois de 15 minutos sem uso (RF02, RNF05), com um `setTimeout` reiniciado a cada clique, tecla ou movimento e limpo na desmontagem do efeito.
+
+**Estilos (definitivos):** um CSS Module ao lado de cada componente e página (`Painel.module.css`) e as variáveis de cor, os botões e o foco visível em `src/index.css`. Base neutra com o roxo do CRIE como única cor de destaque, estado escrito por extenso (nunca só cor), alvos de 44 px e fonte Archivo servida pelo próprio site. As telas seguem a especificação de [`ihc/telas.md`](ihc/telas.md) e o [protótipo clicável](ihc/prototipo/LEIA-ME.md).
 
 ---
 

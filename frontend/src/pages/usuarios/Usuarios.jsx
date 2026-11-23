@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import cliente, { lerSessao, mensagemDeErro } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import { perfis } from '../../dominio'
 import Carregando from '../../components/Carregando'
 import AvisoSucesso from '../../components/AvisoSucesso'
@@ -10,7 +10,7 @@ import styles from './Usuarios.module.css'
 
 export default function Usuarios() {
   const { state } = useLocation()
-  const meuId = lerSessao().usuario.id
+  const meuId = cliente.lerSessao().usuario.id
   const [usuarios, setUsuarios] = useState(null)
   const [erroCarga, setErroCarga] = useState('')
   const [erro, setErro] = useState('')
@@ -25,7 +25,7 @@ export default function Usuarios() {
         const resposta = await cliente.get('/api/usuarios')
         setUsuarios(resposta.data)
       } catch (falha) {
-        setErroCarga(mensagemDeErro(falha))
+        setErroCarga(cliente.mensagemDeErro(falha))
       }
     }
     buscarUsuarios()
@@ -54,7 +54,7 @@ export default function Usuarios() {
       setUsuarios(usuarios.map(item => item.id === resposta.data.id ? resposta.data : item))
       setSucesso('Conta de ' + resposta.data.nome + ' desativada.')
     } catch (falha) {
-      setErro(mensagemDeErro(falha))
+      setErro(cliente.mensagemDeErro(falha))
     } finally {
       setEnviando(false)
     }

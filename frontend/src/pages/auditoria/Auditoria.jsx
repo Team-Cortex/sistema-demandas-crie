@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import Carregando from '../../components/Carregando'
 import ErroConsulta from '../../components/ErroConsulta'
 import { dataHora } from '../../dominio'
@@ -18,8 +18,8 @@ const colunas = ['Quando', 'Quem', 'Ação', 'Recurso', 'Assistido']
 
 export default function Auditoria() {
   // Filtros e página ficam no rascunho para voltarem depois que a sessão é renovada.
-  const [filtros, setFiltros] = useState(lerRascunho('auditoria-filtros') || filtrosVazios)
-  const [consulta, setConsulta] = useState(lerRascunho('auditoria-consulta') || { pagina: 1 })
+  const [filtros, setFiltros] = useState(cliente.lerRascunho('auditoria-filtros') || filtrosVazios)
+  const [consulta, setConsulta] = useState(cliente.lerRascunho('auditoria-consulta') || { pagina: 1 })
   const [dados, setDados] = useState(null)
   const [erro, setErro] = useState('')
   const [erroPeriodo, setErroPeriodo] = useState('')
@@ -33,7 +33,7 @@ export default function Auditoria() {
         const resposta = await cliente.get('/api/usuarios')
         setUsuarios(resposta.data)
       } catch (falha) {
-        setErroUsuarios(mensagemDeErro(falha))
+        setErroUsuarios(cliente.mensagemDeErro(falha))
       }
     }
     buscarUsuarios()
@@ -46,7 +46,7 @@ export default function Auditoria() {
         const resposta = await cliente.get('/api/auditoria', { params: { ...consulta, por_pagina: 20 } })
         setDados(resposta.data)
       } catch (falha) {
-        setErro(mensagemDeErro(falha))
+        setErro(cliente.mensagemDeErro(falha))
       }
     }
     buscarRegistros()
@@ -56,14 +56,14 @@ export default function Auditoria() {
     setErro('')
     setDados(null)
     setConsulta(parametros)
-    guardarRascunho('auditoria-consulta', parametros)
+    cliente.guardarRascunho('auditoria-consulta', parametros)
   }
 
   function alterarFiltro(evento) {
     const novos = { ...filtros, [evento.target.name]: evento.target.value }
     setFiltros(novos)
     setErroPeriodo('')
-    guardarRascunho('auditoria-filtros', novos)
+    cliente.guardarRascunho('auditoria-filtros', novos)
   }
 
   function filtrar(evento) {
@@ -81,7 +81,7 @@ export default function Auditoria() {
   }
 
   function limparFiltros() {
-    apagarRascunho('auditoria-filtros')
+    cliente.apagarRascunho('auditoria-filtros')
     setFiltros(filtrosVazios)
     setErroPeriodo('')
     consultar({ pagina: 1 })

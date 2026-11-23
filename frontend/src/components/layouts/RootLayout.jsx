@@ -1,8 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import cliente, { apagarSessao, lerSessao } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import { perfis } from '../../dominio'
 import styles from './RootLayout.module.css'
+
+// RF02 e RNF05: o computador é compartilhado, então 15 minutos sem uso encerram a sessão.
+const limiteInatividade = 15 * 60 * 1000
+const atividades = ['click', 'keydown', 'mousemove', 'touchstart']
 
 const navegacao = [
   { rota: '/', texto: 'Painel' },
@@ -17,7 +21,7 @@ const navegacao = [
 ]
 
 export default function RootLayout() {
-  const { usuario, token } = lerSessao()
+  const { usuario, token } = cliente.lerSessao()
   const { pathname, search } = useLocation()
   const navegar = useNavigate()
   const [menuAberto, setMenuAberto] = useState(false)
@@ -25,6 +29,40 @@ export default function RootLayout() {
   // As telas de evolução ficam dentro de Assistidos no menu.
   const secao = pathname.split('/')[1]
   const rotaAtual = secao === 'evolucoes' ? '/assistidos' : '/' + secao
+
+  // Montagem: liga o relógio e os ouvintes de atividade. Desmontagem (o return): desliga tudo, senão o
+  // relógio continuaria correndo depois de sair do layout (Aula 08).
+  useEffect(() => {
+    if (!token) return
+    let relogio
+
+    async function encerrarPorInatividade() {
+      try {
+        // O servidor também invalida o token, para ninguém reaproveitar a sessão.
+        await cliente.post('/api/auth/logout', null, { timeout: 8000 })
+      } catch {
+        // Sem resposta do servidor, a sessão sai deste navegador mesmo assim.
+      }
+      // Como no 401, só a sessão sai: o rascunho volta para quem entrar de novo com a mesma conta (RNF16).
+      cliente.esquecerSessao()
+      navegar('/entrar', {
+        replace: true,
+        state: { aviso: 'Sua sessão foi encerrada por inatividade. Entre de novo.', destino: pathname + search },
+      })
+    }
+
+    function reiniciarRelogio() {
+      clearTimeout(relogio)
+      relogio = setTimeout(encerrarPorInatividade, limiteInatividade)
+    }
+
+    reiniciarRelogio()
+    atividades.forEach(atividade => window.addEventListener(atividade, reiniciarRelogio))
+    return () => {
+      clearTimeout(relogio)
+      atividades.forEach(atividade => window.removeEventListener(atividade, reiniciarRelogio))
+    }
+  }, [token, navegar, pathname, search])
 
   async function sair() {
     setSaindo(true)
@@ -36,7 +74,7 @@ export default function RootLayout() {
         aviso = 'Você saiu deste navegador. O servidor não confirmou o encerramento da sessão.'
       }
     }
-    apagarSessao()
+    cliente.apagarSessao()
     navegar('/entrar', { replace: true, state: { aviso } })
   }
 

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
-import cliente, { mensagemDeErro } from '../api/cliente'
+import cliente from '../api/cliente'
+import Carregando from '../components/Carregando'
 import CabecalhoDemandas from '../components/CabecalhoDemandas'
 import ErroConsulta from '../components/ErroConsulta'
 import ListaDemandas from '../components/ListaDemandas'
+import Demanda from '../modelos/Demanda'
 
 export default function MinhasDemandas() {
   const [demandas, setDemandas] = useState(null)
@@ -13,9 +15,10 @@ export default function MinhasDemandas() {
     async function buscarDemandas() {
       try {
         const resposta = await cliente.get('/api/demandas/minhas')
-        setDemandas(resposta.data)
+        // Cada item do JSON vira um objeto Demanda, com os métodos que a lista usa.
+        setDemandas(resposta.data.map(dados => new Demanda(dados)))
       } catch (falha) {
-        setErro(mensagemDeErro(falha))
+        setErro(cliente.mensagemDeErro(falha))
       }
     }
     buscarDemandas()
@@ -30,8 +33,8 @@ export default function MinhasDemandas() {
     <>
       <CabecalhoDemandas titulo="Minhas demandas">Demandas em aberto sob sua responsabilidade, por ordem de prazo.</CabecalhoDemandas>
       {erro && <ErroConsulta mensagem={erro} tentarNovamente={tentarNovamente} />}
-      {!erro && !demandas && <p role="status">Carregando suas demandas…</p>}
-      {demandas && <ListaDemandas demandas={demandas} titulo="Minhas demandas" mensagemVazia="Nenhuma demanda em aberto sob sua responsabilidade." />}
+      {!erro && !demandas && <Carregando>Carregando suas demandas…</Carregando>}
+      {demandas && <ListaDemandas demandas={demandas} titulo="Minhas demandas" mensagemVazia="Você não tem demandas em aberto." />}
     </>
   )
 }

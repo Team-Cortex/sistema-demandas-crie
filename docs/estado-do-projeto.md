@@ -20,16 +20,16 @@ O relato acadêmico da versão 2 (02/10/2026) é a referência de escopo quando 
 
 ## 2. Como está desenhado
 
-Cliente-servidor. O navegador não fala com o PostgreSQL.
+Cliente-servidor. O navegador não fala com o banco.
 
 | Parte | Onde | Quem preenche |
 | --- | --- | --- |
-| Cliente React | `frontend/` | os arquivos do Gabriel, apenas movidos da raiz para esta pasta |
+| Cliente React | `frontend/`; acesso à API pela classe `ClienteApi` (`src/api/cliente.js`) | frente de front-end (Gabriel Borba) |
 | Servidor Flask | `backend/` | Miguel Vaz |
 | Camadas do servidor | `schemas/`, `routes/`, `services/`, `models/` | back-end; um arquivo por recurso das specs |
-| Banco | PostgreSQL via `docker-compose.yml`; scripts em `docs/modelagem/sql/` | Henry Claro |
+| Banco | PostgreSQL (Neon em produção, `docker-compose.yml` local) ou SQLite3 (`DATABASE_URL=sqlite:///...`); scripts em `docs/modelagem/sql/` | Henry Claro |
 | Requisitos e plano | `docs/requisitos.md`, `docs/plano-de-projeto.md` | Vinícius Marrocos |
-| Interface | Figma, fora deste repositório | Inácio Fontes |
+| Interface (IHC) | `docs/ihc/`, com o protótipo clicável em `docs/ihc/prototipo/`; Figma fora do repositório | Inácio Fontes |
 
 Contrato HTTP: [`contrato-api.md`](contrato-api.md). Comportamento do servidor: [`specs/`](specs/).
 
@@ -67,6 +67,17 @@ Entidades SQLAlchemy em `backend/app/models/`, testadas contra SQLite em memóri
 | `RegistroAuditoria` | `auditoria` | autor, ação, recurso, `recurso_id`, assistido, detalhe curto e `ocorrido_em` do servidor (spec 05, migração `3f00c11df825`); somente inserção pela sessão e por trigger que recusa UPDATE e DELETE |
 | `TokenRevogado` | `token_revogado` | `jti` do token encerrado por logout, até a expiração original (migração `3df29fd96f0b`); linha vencida sai no logout seguinte |
 | `Encaminhamento` | `encaminhamento` | destino em texto (A1 aberta), data, responsável, observação opcional; ligado a assistido, a demanda ou aos dois, nunca a nenhum (CHECK); vindo da demanda, herda o assistido dela; `registrar_desfecho(texto, autor)` grava desfecho, autor e momento uma única vez; `Encaminhamento.pendentes(responsavel_id, assistido_id)` lista os sem desfecho, do mais antigo; sem exclusão |
+
+## 3.2 Interface, IHC e publicação
+
+Situação em 23/11/2026.
+
+| Parte | Situação |
+| --- | --- |
+| Front-end | pronto em `frontend/`: Entrar, Painel, Minhas demandas, Demandas, Registrar demanda, ficha da demanda, Reuniões, Assistidos, Evoluções, Encaminhamentos e, só para a direção, Usuários, Relatórios e Auditoria. Toda chamada passa pelo objeto `cliente` (classe `ClienteApi`); cada demanda vira um objeto `Demanda` (`src/modelos/Demanda.js`). A sessão termina com **Sair**, com o 401 da API e depois de 15 minutos sem uso; o aviso de prazo do login (spec 09) aparece aberto no topo do Painel |
+| IHC | documentos prontos em `docs/ihc/`: personas, cenários de uso, arquitetura da informação, fluxos, telas, protótipo clicável, plano de testes e planilhas modelo. O relatório de usabilidade tem a estrutura pronta e espera os testes com participantes (nenhum resultado preenchido) |
+| Produção | https://sistema-demandas-crie.vercel.app. Cada merge na `main` publica na Vercel; interface e API na mesma origem (`/api`); banco PostgreSQL no Neon. O banco publicado não tem contas de demonstração (o `seed.py` recusa produção) |
+| POO | onde estão os conceitos: [`poo-no-backend.md`](poo-no-backend.md) e [`front-orientacao-a-objetos.md`](front-orientacao-a-objetos.md) |
 
 ## 4. Decisões abertas
 

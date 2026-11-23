@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import cliente, { apagarRascunho, guardarRascunho, guardarSessao, lerRascunho, lerSessao, mensagemDeErro } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import { perfis } from '../../dominio'
 import Carregando from '../../components/Carregando'
 import CampoDemanda from '../../components/CampoDemanda'
@@ -11,9 +11,9 @@ export default function FormularioUsuario() {
   const { id } = useParams()
   const navegar = useNavigate()
   const chave = 'usuario:' + (id || 'novo')
-  const minhaConta = id === String(lerSessao().usuario.id)
+  const minhaConta = id === String(cliente.lerSessao().usuario.id)
   const [original, setOriginal] = useState(null)
-  const [rascunho, setRascunho] = useState(lerRascunho(chave) || {})
+  const [rascunho, setRascunho] = useState(cliente.lerRascunho(chave) || {})
   const [senha, setSenha] = useState('')
   const [erros, setErros] = useState({})
   const [erroCarga, setErroCarga] = useState('')
@@ -29,7 +29,7 @@ export default function FormularioUsuario() {
         const resposta = await cliente.get('/api/usuarios/' + id)
         setOriginal(resposta.data)
       } catch (falha) {
-        setErroCarga(mensagemDeErro(falha))
+        setErroCarga(cliente.mensagemDeErro(falha))
       }
     }
     if (id) buscarUsuario()
@@ -46,7 +46,7 @@ export default function FormularioUsuario() {
     else {
       const valores = { ...rascunho, [name]: value }
       setRascunho(valores)
-      guardarRascunho(chave, valores)
+      cliente.guardarRascunho(chave, valores)
     }
     setErros({ ...erros, [name]: '' })
     setErro('')
@@ -80,16 +80,16 @@ export default function FormularioUsuario() {
         const resposta = await cliente.patch('/api/usuarios/' + id, dados)
         // O topo da tela lê o nome da sessão; sem isso, ele ficaria com o nome antigo.
         if (minhaConta) {
-          const sessao = lerSessao()
-          guardarSessao({ ...sessao, usuario: { ...sessao.usuario, nome: resposta.data.nome } })
+          const sessao = cliente.lerSessao()
+          cliente.guardarSessao({ ...sessao, usuario: { ...sessao.usuario, nome: resposta.data.nome } })
         }
       } else {
         await cliente.post('/api/usuarios', { ...dados, email: campos.email.trim(), senha })
       }
-      apagarRascunho(chave)
+      cliente.apagarRascunho(chave)
       navegar('/usuarios', { replace: true, state: { mensagem: id ? 'Usuário atualizado.' : 'Usuário cadastrado.' } })
     } catch (falha) {
-      setErro(mensagemDeErro(falha))
+      setErro(cliente.mensagemDeErro(falha))
     } finally {
       setEnviando(false)
     }

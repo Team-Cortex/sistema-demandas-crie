@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import CampoDemanda from '../../components/CampoDemanda'
 import Carregando from '../../components/Carregando'
 import ErroConsulta from '../../components/ErroConsulta'
@@ -11,7 +11,7 @@ export default function FormEvolucao() {
   const { id, assistidoId } = useParams()
   const navegar = useNavigate()
   const chave = id ? 'retificar-evolucao-' + id : 'lancar-evolucao-' + assistidoId
-  const [rascunho, setRascunho] = useState(lerRascunho(chave))
+  const [rascunho, setRascunho] = useState(cliente.lerRascunho(chave))
   const [origem, setOrigem] = useState(null)
   const [tentativa, setTentativa] = useState(0)
   const [erroConsulta, setErroConsulta] = useState('')
@@ -26,7 +26,7 @@ export default function FormEvolucao() {
         const resposta = await cliente.get(id ? '/api/evolucoes/' + id : '/api/assistidos/' + assistidoId + '/ficha')
         setOrigem(resposta.data)
       } catch (falha) {
-        setErroConsulta(mensagemDeErro(falha))
+        setErroConsulta(cliente.mensagemDeErro(falha))
       }
     }
     buscarOrigem()
@@ -46,7 +46,7 @@ export default function FormEvolucao() {
     const { name, value } = evento.target
     const atual = { ...campos, [name]: value }
     setRascunho(atual)
-    guardarRascunho(chave, atual)
+    cliente.guardarRascunho(chave, atual)
     setErros({ ...erros, [name]: '' })
     setErroServidor('')
   }
@@ -85,10 +85,10 @@ export default function FormEvolucao() {
     try {
       const resposta = id ? await cliente.patch('/api/evolucoes/' + id, mudancas) :
         await cliente.post('/api/assistidos/' + assistidoId + '/evolucoes', valores)
-      apagarRascunho(chave)
+      cliente.apagarRascunho(chave)
       navegar('/evolucoes/' + resposta.data.id, { replace: true, state: { mensagem: id ? 'Evolução retificada.' : 'Evolução lançada.' } })
     } catch (falha) {
-      setErroServidor(mensagemDeErro(falha))
+      setErroServidor(cliente.mensagemDeErro(falha))
       setSalvando(false)
     }
   }

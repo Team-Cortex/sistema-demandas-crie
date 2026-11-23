@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
-import cliente, { mensagemDeErro } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import { dataCurta, dataHora } from '../../dominio'
 import Carregando from '../../components/Carregando'
 import AvisoSucesso from '../../components/AvisoSucesso'
@@ -22,7 +22,7 @@ export default function Encaminhamentos() {
         const resposta = await cliente.get(todos ? '/api/encaminhamentos' : '/api/encaminhamentos/pendentes')
         setItens(resposta.data)
       } catch (falha) {
-        setErro(mensagemDeErro(falha))
+        setErro(cliente.mensagemDeErro(falha))
       }
     }
     buscarEncaminhamentos()

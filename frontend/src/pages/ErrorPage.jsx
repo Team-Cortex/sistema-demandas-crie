@@ -1,10 +1,10 @@
 import { Link, isRouteErrorResponse, useRouteError } from 'react-router-dom'
-import { lerSessao } from '../api/cliente'
+import cliente from '../api/cliente'
 import styles from './ErrorPage.module.css'
 
 export default function ErrorPage() {
   const erro = useRouteError()
-  const sessao = lerSessao()
+  const sessao = cliente.lerSessao()
   const inexistente = isRouteErrorResponse(erro) && erro.status === 404
   return (
     <main className={styles.tela}>

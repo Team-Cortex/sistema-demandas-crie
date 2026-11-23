@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import cliente, { guardarRascunho, lerRascunho, mensagemDeErro } from '../api/cliente'
-import { estados, prioridades, setores, dataCurta, dataHora } from '../dominio'
+import cliente from '../api/cliente'
+import Carregando from '../components/Carregando'
+import { estados, setores, dataCurta, dataHora } from '../dominio'
 import AvisoSucesso from '../components/AvisoSucesso'
 import Confirmacao from '../components/Confirmacao'
 import HistoricoDemanda from '../components/HistoricoDemanda'
 import CampoDemanda from '../components/CampoDemanda'
-import { transicoes } from './regrasDemanda'
+import Demanda from '../modelos/Demanda'
 import styles from './DetalheDemanda.module.css'
 
 const acoes = { estado: 'Mudar estado', texto: 'Anotar', responsavel_id: 'Trocar responsável' }
@@ -17,7 +18,7 @@ export default function DetalheDemanda() {
   const local = useLocation()
   const chave = 'demanda-' + id
   const caminho = '/api/demandas/' + id
-  const [rascunho, setRascunho] = useState({ ...inicial, ...lerRascunho(chave) })
+  const [rascunho, setRascunho] = useState({ ...inicial, ...cliente.lerRascunho(chave) })
   const [demanda, setDemanda] = useState(null)
   const [reuniao, setReuniao] = useState(null)
   const [assistido, setAssistido] = useState(null)
@@ -35,9 +36,9 @@ export default function DetalheDemanda() {
     async function buscarDemanda() {
       try {
         const resposta = await cliente.get(caminho)
-        setDemanda(resposta.data)
+        setDemanda(new Demanda(resposta.data))
       } catch (falha) {
-        setErroFicha(mensagemDeErro(falha))
+        setErroFicha(cliente.mensagemDeErro(falha))
       }
     }
     buscarDemanda()
@@ -76,7 +77,7 @@ export default function DetalheDemanda() {
         const resposta = await cliente.get('/api/usuarios', { params: { ativo: true } })
         setUsuarios(resposta.data)
       } catch (falha) {
-        setErroUsuarios(mensagemDeErro(falha))
+        setErroUsuarios(cliente.mensagemDeErro(falha))
       }
     }
     buscarUsuarios()
@@ -88,13 +89,13 @@ export default function DetalheDemanda() {
     setTentativa(tentativa + 1)
   }
 
-  const proximos = demanda ? transicoes[demanda.estado] : []
+  const proximos = demanda ? demanda.proximosEstados() : []
   const acao = rascunho.acao === 'estado' && !proximos.length ? 'texto' : rascunho.acao
   const outrosUsuarios = usuarios?.filter(item => item.id !== demanda?.responsavel_id)
 
   function guardar(valores) {
     setRascunho(valores)
-    guardarRascunho(chave, valores)
+    cliente.guardarRascunho(chave, valores)
     setErroCampo('')
     setErroServidor('')
   }
@@ -139,21 +140,21 @@ export default function DetalheDemanda() {
     try {
       if (acao === 'estado') {
         const resposta = await cliente.patch(caminho + '/estado', { estado: rascunho.estado })
-        setDemanda(resposta.data)
+        setDemanda(new Demanda(resposta.data))
         setSucesso('Estado atualizado.')
       } else if (acao === 'texto') {
         // A API devolve só a anotação nova; ela entra no fim do histórico já carregado.
         const resposta = await cliente.post(caminho + '/anotacoes', { texto: rascunho.texto.trim() })
-        setDemanda({ ...demanda, historico: [...demanda.historico, resposta.data], ultimo_movimento: resposta.data.ocorrido_em })
+        setDemanda(new Demanda({ ...demanda, historico: [...demanda.historico, resposta.data], ultimo_movimento: resposta.data.ocorrido_em }))
         setSucesso('Anotação registrada no histórico.')
       } else {
         const resposta = await cliente.patch(caminho + '/responsavel', { responsavel_id: Number(rascunho.responsavel_id) })
-        setDemanda(resposta.data)
+        setDemanda(new Demanda(resposta.data))
         setSucesso('Responsável atualizado.')
       }
       guardar({ ...rascunho, [acao]: '' })
     } catch (falha) {
-      setErroServidor(mensagemDeErro(falha))
+      setErroServidor(cliente.mensagemDeErro(falha))
     } finally {
       setEnviando(false)
     }
@@ -170,17 +171,17 @@ export default function DetalheDemanda() {
       <h1>Demanda nº {id}</h1>
       <AvisoSucesso>{sucesso}</AvisoSucesso>
       {erroFicha ? <div className="aviso-erro" role="alert">{erroFicha} <button className="botao botao-secundario" onClick={tentarNovamente}>Tentar de novo</button></div> :
-        !demanda && <p role="status">Carregando demanda…</p>}
+        !demanda && <Carregando>Carregando demanda…</Carregando>}
       {demanda && <>
         <section className={styles.ficha} aria-label="Dados da demanda">
           <p className={styles.descricao}>{demanda.descricao}</p>
           <dl className={styles.dados}>
-            <div><dt>Estado</dt><dd>{estados[demanda.estado]}</dd></div>
+            <div><dt>Estado</dt><dd>{demanda.rotuloEstado()}</dd></div>
             <div><dt>Responsável</dt><dd>{demanda.responsavel_nome}</dd></div>
             <div><dt>Prazo</dt><dd>
-              {dataCurta(demanda.prazo)}{demanda.vencida && <strong className={styles.vencida}> (vencida)</strong>}
+              {demanda.prazoFormatado()}{demanda.estaVencida() && <strong className={styles.vencida}> (vencida)</strong>}
             </dd></div>
-            <div><dt>Prioridade</dt><dd>{prioridades[demanda.prioridade]}</dd></div>
+            <div><dt>Prioridade</dt><dd>{demanda.rotuloPrioridade()}</dd></div>
             <div><dt>Reunião de origem</dt><dd>
               <Link to={'/reunioes/' + reuniaoId}>
                 {reuniao ? `${dataCurta(reuniao.data)}, ${setores[reuniao.setor]}` : `Reunião nº ${reuniaoId}`}
@@ -215,7 +216,7 @@ export default function DetalheDemanda() {
               {acao === 'texto' && <CampoDemanda nome={acao} rotulo="Anotação" erro={erroCampo}><textarea {...atributos} rows="3" /></CampoDemanda>}
               {acao === 'responsavel_id' && <>
                 {erroUsuarios ? <div className="aviso-erro" role="alert">{erroUsuarios} <button type="button" className="botao botao-secundario" onClick={tentarNovamente}>Tentar de novo</button></div> :
-                  !usuarios && <p role="status">Carregando responsáveis…</p>}
+                  !usuarios && <Carregando>Carregando responsáveis…</Carregando>}
                 <CampoDemanda nome={acao} rotulo="Novo responsável" erro={erroCampo}>
                   <select {...atributos} disabled={!outrosUsuarios?.length}><option value="">{usuarios && !outrosUsuarios.length ? 'Nenhum outro responsável ativo' : 'Selecione o novo responsável'}</option>
                     {outrosUsuarios?.map(item => <option key={item.id} value={item.id}>{item.nome}</option>)}
@@ -231,7 +232,7 @@ export default function DetalheDemanda() {
         </section>
         <HistoricoDemanda historico={demanda.historico} />
         {confirmando && <Confirmacao titulo="Confirmar mudança de estado?" acao="Confirmar mudança" aoVoltar={voltarAoFormulario} aoConfirmar={salvarAlteracao}>
-          <p>A demanda nº {id} passará de <strong>{estados[demanda.estado]}</strong> para <strong>{estados[rascunho.estado]}</strong>.</p>
+          <p>A demanda nº {id} passará de <strong>{demanda.rotuloEstado()}</strong> para <strong>{estados[rascunho.estado]}</strong>.</p>
           {['concluida', 'cancelada'].includes(rascunho.estado) && <p>Esse estado encerra a demanda.</p>}
         </Confirmacao>}
       </>}

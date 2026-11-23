@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import CampoDemanda from '../../components/CampoDemanda'
 import Carregando from '../../components/Carregando'
 import ErroConsulta from '../../components/ErroConsulta'
@@ -11,7 +11,7 @@ export default function FormAssistido() {
   const navegar = useNavigate()
   const chave = 'assistido-' + (id || 'novo')
   // null = ainda não digitou; aí vale o nome já gravado (na edição).
-  const [nome, setNome] = useState(lerRascunho(chave)?.nome_tratamento ?? null)
+  const [nome, setNome] = useState(cliente.lerRascunho(chave)?.nome_tratamento ?? null)
   const [assistido, setAssistido] = useState(null)
   const [erroConsulta, setErroConsulta] = useState('')
   const [tentativa, setTentativa] = useState(0)
@@ -28,7 +28,7 @@ export default function FormAssistido() {
         const resposta = await cliente.get('/api/assistidos/' + id)
         setAssistido(resposta.data)
       } catch (falha) {
-        setErroConsulta(mensagemDeErro(falha))
+        setErroConsulta(cliente.mensagemDeErro(falha))
       }
     }
     if (id) buscarAssistido()
@@ -41,7 +41,7 @@ export default function FormAssistido() {
 
   function preencherNome(evento) {
     setNome(evento.target.value)
-    guardarRascunho(chave, { nome_tratamento: evento.target.value })
+    cliente.guardarRascunho(chave, { nome_tratamento: evento.target.value })
     setErroNome('')
     setErro('')
   }
@@ -59,10 +59,10 @@ export default function FormAssistido() {
     try {
       const resposta = id ? await cliente.patch('/api/assistidos/' + id, { nome_tratamento }) :
         await cliente.post('/api/assistidos', { nome_tratamento })
-      apagarRascunho(chave)
+      cliente.apagarRascunho(chave)
       navegar('/assistidos/' + resposta.data.id, { replace: true, state: { mensagem: id ? 'Nome de tratamento atualizado.' : 'Assistido cadastrado.' } })
     } catch (falha) {
-      setErro(mensagemDeErro(falha))
+      setErro(cliente.mensagemDeErro(falha))
       setSalvando(false)
     }
   }
