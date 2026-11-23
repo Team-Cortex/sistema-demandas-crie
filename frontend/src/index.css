@@ -1,3 +1,24 @@
+/* Archivo servida pelo próprio site (public/fonts, licença OFL): não depende do Google Fonts nem de
+   outra conexão, o que ajuda na internet instável do CRIE. Um arquivo por peso usado nas telas. */
+@font-face {
+  font-family: Archivo;
+  src: url("/fonts/archivo-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: Archivo;
+  src: url("/fonts/archivo-latin-600-normal.woff2") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: Archivo;
+  src: url("/fonts/archivo-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
 :root {
   font-family: Archivo, "Segoe UI", Arial, sans-serif;
   font-size: 16px;
