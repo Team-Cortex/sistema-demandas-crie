@@ -1,0 +1,780 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<title>Projeto Interdisciplinar - Banco de Dados I - Equipe Cortex</title>
+<style>
+@page { size: A4; margin: 2cm 1.8cm; }
+html { color-scheme: light; }
+body { font: 11pt/1.5 Arial, Helvetica, sans-serif; color: #1b1b1b; background: #fff; }
+h1 { font-size: 17pt; color: #1f7a33; margin: 0 0 6px; }
+h2 { font-size: 14pt; color: #1f7a33; border-bottom: 2px solid #1f7a33; padding-bottom: 3px; margin: 26px 0 10px; page-break-after: avoid; }
+h3 { font-size: 11.5pt; margin: 18px 0 6px; page-break-after: avoid; }
+h4 { font-size: 10.5pt; margin: 14px 0 4px; }
+p { margin: 6px 0; text-align: justify; }
+code { font: 9.5pt Consolas, monospace; background: #f1f4f2; padding: 0 3px; }
+pre { font: 8.6pt/1.35 Consolas, monospace; background: #f6f8f6; border: 1px solid #dfe8e1; border-left: 3px solid #1f7a33; padding: 8px 10px; white-space: pre-wrap; page-break-inside: avoid; }
+pre.script { page-break-inside: auto; font-size: 7.8pt; }
+table { border-collapse: collapse; width: 100%; margin: 6px 0 8px; font-size: 8.6pt; page-break-inside: avoid; }
+th { background: #1f7a33; color: #fff; text-align: left; padding: 3px 5px; }
+td { border-bottom: 1px solid #dfe8e1; padding: 3px 5px; vertical-align: top; }
+table.dic { font-size: 9pt; }
+.capa { height: 25.5cm; display: flex; flex-direction: column; justify-content: space-between; text-align: center; page-break-after: always; }
+.capa .topo { font-size: 11.5pt; font-weight: 700; line-height: 1.6; }
+.capa .titulo { font-size: 20pt; font-weight: 700; color: #1f7a33; }
+.capa .sub { font-size: 13pt; margin-top: 10px; }
+.capa .equipe { font-size: 11.5pt; line-height: 1.7; }
+.sumario li { margin: 3px 0; }
+.consulta { page-break-inside: auto; border-top: 1px solid #dfe8e1; margin-top: 10px; }
+.cmd { color: #444; font-size: 10pt; }
+.lbl { font-weight: 700; font-size: 10pt; margin-bottom: 2px; }
+.sis { background: #eef6ef; padding: 5px 8px; border-radius: 3px; }
+.rel-txt { font: 10.5pt Consolas, monospace; margin: 8px 0 2px; text-align: left; }
+.ref { font-size: 9.5pt; color: #444; margin: 0 0 8px 16px; }
+.quebra { page-break-before: always; }
+.der { border: 1px solid #dfe8e1; padding: 6px; }
+.nota { font-size: 9.5pt; color: #444; }
+</style></head><body>
+
+<div class="capa">
+  <div class="topo">INSTITUTO FEDERAL DE EDUCAÇÃO, CIÊNCIA E TECNOLOGIA DE SÃO PAULO<br>CÂMPUS BRAGANÇA PAULISTA<br>TECNOLOGIA EM ANÁLISE E DESENVOLVIMENTO DE SISTEMAS</div>
+  <div>
+    <div class="titulo">Projeto Interdisciplinar<br>Banco de Dados I</div>
+    <div class="sub">Sistema de Gestão de Demandas de Articulação<br>CRIE / APAE de Extrema-MG</div>
+    <div class="sub">Disciplina: Banco de Dados I (BRABCD1)<br>Profª Letícia</div>
+  </div>
+  <div class="equipe"><b>Equipe Cortex</b><br>Gabriel Ribeiro de Borba<br>Henry Claro Maruca<br>Inácio Fontes Bueno<br>Miguel Vaz de Souza<br>Vinícius Fatichi Marrocos</div>
+  <div class="topo">Bragança Paulista<br>Novembro de 2026</div>
+</div>
+
+<h1>Sumário</h1>
+<ol class="sumario">
+<li>Universo de discurso</li>
+<li>Diagrama Entidade-Relacionamento</li>
+<li>Notação textual das tabelas (modelo relacional)</li>
+<li>Dicionário de dados</li>
+<li>Scripts de implementação e carga dos dados</li>
+<li>Consultas em SQL (17 consultas)</li>
+<li>Manutenção dos dados (INSERT, UPDATE e DELETE)</li>
+<li>Arquivos entregues e como executar</li>
+<li>Apêndice: script de carga dos dados</li>
+</ol>
+
+<h2 class="quebra">1. Universo de discurso</h2>
+<p>O CRIE (Centro de Integração Especial, ligado à APAE de Extrema/MG) atende pessoas com deficiência e organiza seus atendimentos em três setores: pedagógico, saúde e serviço de convivência. Cada setor realiza uma reunião semanal de equipe, na qual são discutidas as situações dos assistidos que não puderam ser resolvidas só com os recursos internos da instituição. De cada reunião registram-se a data, o setor que a realizou e o momento do registro.</p><p>Nas reuniões são levantadas <b>demandas de articulação</b>: situações que exigem providências com profissionais da instituição, famílias ou serviços da rede pública (CRAS, unidades de saúde, escolas, Conselho Tutelar). Cada demanda nasce em uma única reunião, e uma reunião pode originar várias demandas ou nenhuma. De cada demanda registram-se a descrição, a categoria, a prioridade (baixa, média ou alta), o prazo, o estado e os momentos de criação e da última atualização. O estado assume apenas os valores aberta, em andamento, aguardando terceiros, concluída ou cancelada; toda demanda nasce aberta, e as concluídas ou canceladas são consideradas encerradas. Cada demanda tem um único profissional responsável e pode se referir a no máximo um assistido, ou a nenhum, nos casos institucionais.</p><p>Os profissionais e a direção acessam o sistema como <b>usuários</b>. De cada usuário registram-se o nome, o e-mail (único), a senha, guardada apenas na forma de hash, o perfil (direção, assistente social ou equipe pedagógica), se está ativo e a data de cadastro. Usuários não são excluídos, apenas desativados, para preservar a autoria dos registros antigos.</p><p>Dos <b>assistidos</b> registram-se apenas o nome de tratamento, a situação (ativo ou não) e a data de cadastro, seguindo o princípio da minimização de dados da LGPD. Um assistido pode ser acompanhado por vários profissionais, e cada profissional pode acompanhar vários assistidos; desse vínculo registra-se a data de início.</p><p>Por fim, os profissionais registram <b>evoluções</b>: anotações sobre o acompanhamento de um assistido, com data, área de atuação, descrição e o momento do lançamento. Cada evolução pertence a um único assistido e a um único profissional. Uma evolução nunca é apagada nem alterada: para corrigi-la, lança-se uma nova versão que aponta para a versão corrigida. Cada versão pode ser retificada no máximo uma vez, o que forma uma cadeia de versões.</p><p>Todos os dados usados nesta entrega são fictícios, como exige o minimundo do projeto.</p>
+<h3>1.1 Recorte implementado nesta disciplina</h3>
+<p>O sistema completo, descrito no minimundo e no DER da equipe, tem 12 entidades. Como a especificação de Banco de Dados I pede de quatro a seis tabelas, este trabalho implementa o recorte central do sistema: <b>usuário, assistido, acompanhamento (assistido_profissional), reunião, demanda e evolução</b>. Ficaram fora deste recorte o encaminhamento, o retorno de acompanhamento, o histórico da demanda, o registro de auditoria e os participantes da reunião. Os nomes de tabelas e colunas são os mesmos do back-end do sistema (Flask/SQLAlchemy), para que o banco desta disciplina e o do servidor contem a mesma história.</p>
+
+<h2 class="quebra">2. Diagrama Entidade-Relacionamento</h2>
+<p class="nota">Notação de Heuser, como nas aulas 02 e 03: retângulos são entidades, losangos são relacionamentos e o par (mínimo, máximo) junto a cada entidade indica quantas ocorrências dela participam do relacionamento. Atributo com círculo preenchido e sublinhado é o identificador.</p>
+<div class="der"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 790" width="100%"><style>.ent{fill:#fff;stroke:#1f7a33;stroke-width:1.6}.enth{fill:#1f7a33}.entn{fill:#fff;font:700 13px Arial;text-anchor:middle}.att,.atpk{font:12px Arial;fill:#1b1b1b}.atpk{text-decoration:underline;font-weight:700}.pk{fill:#1b1b1b}.at{fill:#fff;stroke:#1b1b1b;stroke-width:1.2}.rel{fill:#eef6ef;stroke:#1f7a33;stroke-width:1.6}.reln{font:600 11.5px Arial;text-anchor:middle;fill:#1b1b1b}.lig{fill:none;stroke:#1b1b1b;stroke-width:1.3}.card{font:700 12px Arial;fill:#cd191e}.papel{font:italic 10.5px Arial;fill:#555}</style><rect x="405" y="20" width="190" height="110" rx="4" class="ent"/>
+<rect x="405" y="20" width="190" height="26" rx="4" class="enth"/>
+<text x="500.0" y="38" class="entn">REUNIÃO</text>
+<circle cx="419" cy="60" r="4" class="pk"/>
+<text x="429" y="64" class="atpk">id</text>
+<circle cx="419" cy="78" r="4" class="at"/>
+<text x="429" y="82" class="att">data</text>
+<circle cx="419" cy="96" r="4" class="at"/>
+<text x="429" y="100" class="att">setor</text>
+<circle cx="419" cy="114" r="4" class="at"/>
+<text x="429" y="118" class="att">criado_em</text><rect x="405" y="250" width="190" height="182" rx="4" class="ent"/>
+<rect x="405" y="250" width="190" height="26" rx="4" class="enth"/>
+<text x="500.0" y="268" class="entn">DEMANDA</text>
+<circle cx="419" cy="290" r="4" class="pk"/>
+<text x="429" y="294" class="atpk">id</text>
+<circle cx="419" cy="308" r="4" class="at"/>
+<text x="429" y="312" class="att">descricao</text>
+<circle cx="419" cy="326" r="4" class="at"/>
+<text x="429" y="330" class="att">categoria</text>
+<circle cx="419" cy="344" r="4" class="at"/>
+<text x="429" y="348" class="att">prioridade</text>
+<circle cx="419" cy="362" r="4" class="at"/>
+<text x="429" y="366" class="att">prazo</text>
+<circle cx="419" cy="380" r="4" class="at"/>
+<text x="429" y="384" class="att">estado</text>
+<circle cx="419" cy="398" r="4" class="at"/>
+<text x="429" y="402" class="att">criado_em</text>
+<circle cx="419" cy="416" r="4" class="at"/>
+<text x="429" y="420" class="att">atualizado_em</text><rect x="30" y="250" width="190" height="164" rx="4" class="ent"/>
+<rect x="30" y="250" width="190" height="26" rx="4" class="enth"/>
+<text x="125.0" y="268" class="entn">USUÁRIO</text>
+<circle cx="44" cy="290" r="4" class="pk"/>
+<text x="54" y="294" class="atpk">id</text>
+<circle cx="44" cy="308" r="4" class="at"/>
+<text x="54" y="312" class="att">nome</text>
+<circle cx="44" cy="326" r="4" class="at"/>
+<text x="54" y="330" class="att">email</text>
+<circle cx="44" cy="344" r="4" class="at"/>
+<text x="54" y="348" class="att">senha_hash</text>
+<circle cx="44" cy="362" r="4" class="at"/>
+<text x="54" y="366" class="att">perfil</text>
+<circle cx="44" cy="380" r="4" class="at"/>
+<text x="54" y="384" class="att">ativo</text>
+<circle cx="44" cy="398" r="4" class="at"/>
+<text x="54" y="402" class="att">criado_em</text><rect x="780" y="270" width="190" height="110" rx="4" class="ent"/>
+<rect x="780" y="270" width="190" height="26" rx="4" class="enth"/>
+<text x="875.0" y="288" class="entn">ASSISTIDO</text>
+<circle cx="794" cy="310" r="4" class="pk"/>
+<text x="804" y="314" class="atpk">id</text>
+<circle cx="794" cy="328" r="4" class="at"/>
+<text x="804" y="332" class="att">nome_tratamento</text>
+<circle cx="794" cy="346" r="4" class="at"/>
+<text x="804" y="350" class="att">ativo</text>
+<circle cx="794" cy="364" r="4" class="at"/>
+<text x="804" y="368" class="att">criado_em</text><rect x="600" y="580" width="190" height="128" rx="4" class="ent"/>
+<rect x="600" y="580" width="190" height="26" rx="4" class="enth"/>
+<text x="695.0" y="598" class="entn">EVOLUÇÃO</text>
+<circle cx="614" cy="620" r="4" class="pk"/>
+<text x="624" y="624" class="atpk">id</text>
+<circle cx="614" cy="638" r="4" class="at"/>
+<text x="624" y="642" class="att">data</text>
+<circle cx="614" cy="656" r="4" class="at"/>
+<text x="624" y="660" class="att">area_atuacao</text>
+<circle cx="614" cy="674" r="4" class="at"/>
+<text x="624" y="678" class="att">descricao</text>
+<circle cx="614" cy="692" r="4" class="at"/>
+<text x="624" y="696" class="att">ocorrido_em</text><polyline points="500,130 500,165" class="lig"/><polyline points="500,215 500,250" class="lig"/><polygon points="438.0,190 500,165.0 562.0,190 500,215.0" class="rel"/><text x="500" y="194" class="reln">origina</text><text x="508" y="148" class="card" text-anchor="start">(1,1)</text><text x="508" y="244" class="card" text-anchor="start">(0,N)</text><polyline points="220,300 250,300" class="lig"/><polyline points="374,300 405,300" class="lig"/><polygon points="250.0,300 312,275.0 374.0,300 312,325.0" class="rel"/><text x="312" y="304" class="reln">responde por</text><text x="224" y="292" class="card" text-anchor="start">(1,1)</text><text x="401" y="292" class="card" text-anchor="end">(0,N)</text><polyline points="595,325 625,325" class="lig"/><polyline points="749,325 780,325" class="lig"/><polygon points="625.0,325 687,300.0 749.0,325 687,350.0" class="rel"/><text x="687" y="329" class="reln">refere-se a</text><text x="599" y="317" class="card" text-anchor="start">(0,N)</text><text x="776" y="317" class="card" text-anchor="end">(0,1)</text><polyline points="125,414 125,500 438,500" class="lig"/><polyline points="562,500 875,500 875,380" class="lig"/><polygon points="438.0,500 500,475.0 562.0,500 500,525.0" class="rel"/><text x="500" y="504" class="reln">acompanha</text><polyline points="500,525 500,548" class="lig"/><circle cx="500" cy="552" r="4" class="at"/><text x="510" y="556" class="att">data_inicio</text><text x="131" y="434" class="card" text-anchor="start">(0,N)</text><text x="869" y="398" class="card" text-anchor="end">(0,N)</text><polyline points="930,380 930,619" class="lig"/><polyline points="868,644 790,644" class="lig"/><polygon points="868.0,644 930,619.0 992.0,644 930,669.0" class="rel"/><text x="930" y="648" class="reln">possui</text><text x="936" y="398" class="card" text-anchor="start">(1,1)</text><text x="796" y="636" class="card" text-anchor="start">(0,N)</text><polyline points="70,414 70,644 268,644" class="lig"/><polyline points="392,644 600,644" class="lig"/><polygon points="268.0,644 330,619.0 392.0,644 330,669.0" class="rel"/><text x="330" y="648" class="reln">escreve</text><text x="76" y="434" class="card" text-anchor="start">(1,1)</text><text x="594" y="636" class="card" text-anchor="end">(0,N)</text><polyline points="640,708 640,752 650,752" class="lig"/><polyline points="740,752 750,752 750,708" class="lig"/><polygon points="649.0,752 695,732.0 741.0,752 695,772.0" class="rel"/><text x="695" y="756" class="reln">retifica</text><text x="634" y="728" class="card" text-anchor="end">(0,1)</text><text x="756" y="728" class="card" text-anchor="start">(0,1)</text><text x="634" y="742" class="papel" text-anchor="end">original</text><text x="756" y="742" class="papel">nova versão</text></svg></div>
+<h3>2.1 Relacionamentos e cardinalidades</h3>
+<p>O modelo tem relacionamentos dos três tipos pedidos: <b>1:1</b> (retifica), <b>1:N</b> (origina, é responsável por, refere-se a, possui, escreve) e <b>N:N</b> (acompanha).</p>
+<table class="dic"><thead><tr><th>Relacionamento</th><th>Entidades</th><th>Tipo</th><th>Cardinalidades</th><th>Implementação</th></tr></thead><tbody><tr><td>origina</td><td>Reunião, Demanda</td><td>1:N</td><td>Reunião (1,1) e Demanda (0,N)</td><td>FK reuniao_id em demanda</td></tr><tr><td>é responsável por</td><td>Usuário, Demanda</td><td>1:N</td><td>Usuário (1,1) e Demanda (0,N)</td><td>FK responsavel_id em demanda</td></tr><tr><td>refere-se a</td><td>Assistido, Demanda</td><td>1:N (opcional)</td><td>Assistido (0,1) e Demanda (0,N)</td><td>FK assistido_id em demanda, aceita NULL</td></tr><tr><td>acompanha</td><td>Usuário, Assistido</td><td>N:N</td><td>Usuário (0,N) e Assistido (0,N)</td><td>tabela associativa assistido_profissional, com data_inicio</td></tr><tr><td>possui</td><td>Assistido, Evolução</td><td>1:N</td><td>Assistido (1,1) e Evolução (0,N)</td><td>FK assistido_id em evolucao</td></tr><tr><td>escreve</td><td>Usuário, Evolução</td><td>1:N</td><td>Usuário (1,1) e Evolução (0,N)</td><td>FK profissional_id em evolucao</td></tr><tr><td>retifica</td><td>Evolução, Evolução</td><td>1:1</td><td>Evolução (0,1) e Evolução (0,1)</td><td>FK retifica_id em evolucao com UNIQUE (autorrelacionamento)</td></tr></tbody></table>
+
+<h2 class="quebra">3. Notação textual das tabelas (modelo relacional)</h2>
+<p class="nota">Chave primária sublinhada e em negrito; chave estrangeira em itálico, com a tabela referenciada logo abaixo. Mapeamento pelas regras da Aula 03: cada entidade vira uma tabela; nos relacionamentos 1:N a chave do lado 1 vai como chave estrangeira para o lado N; o N:N vira a tabela associativa com chave primária composta; o 1:1 vira uma chave estrangeira com restrição UNIQUE.</p>
+<p class="rel-txt"><b>Usuario</b> (<u><b>id</b></u>, nome, email, senha_hash, perfil, ativo, criado_em)</p><p class="rel-txt"><b>Assistido</b> (<u><b>id</b></u>, nome_tratamento, ativo, criado_em)</p><p class="rel-txt"><b>AssistidoProfissional</b> (<i><u><b>assistido_id</b></u></i>, <i><u><b>profissional_id</b></u></i>, data_inicio)</p><p class="ref">assistido_id referencia Assistido; profissional_id referencia Usuario</p><p class="rel-txt"><b>Reuniao</b> (<u><b>id</b></u>, data, setor, criado_em)</p><p class="rel-txt"><b>Demanda</b> (<u><b>id</b></u>, descricao, categoria, prioridade, prazo, estado, <i>responsavel_id</i>, <i>reuniao_id</i>, <i>assistido_id</i>, criado_em, atualizado_em)</p><p class="ref">responsavel_id referencia Usuario; reuniao_id referencia Reuniao; assistido_id referencia Assistido (opcional, aceita nulo)</p><p class="rel-txt"><b>Evolucao</b> (<u><b>id</b></u>, <i>assistido_id</i>, <i>profissional_id</i>, data, area_atuacao, descricao, ocorrido_em, <i>retifica_id</i>)</p><p class="ref">assistido_id referencia Assistido; profissional_id referencia Usuario; retifica_id referencia Evolucao (único, o que torna o relacionamento 1:1)</p>
+<h3>3.1 Verificação das formas normais (Aula 09)</h3>
+<p><b>1FN:</b> todos os atributos são atômicos e não há grupos repetidos. Os vários profissionais de um assistido não ficam numa lista dentro de ASSISTIDO: viram linhas da tabela associativa ASSISTIDO_PROFISSIONAL.</p><p><b>2FN:</b> a única chave primária composta é a de ASSISTIDO_PROFISSIONAL (assistido_id, profissional_id), e seu único atributo, data_inicio, depende da chave inteira: é a data em que <i>aquele</i> profissional começou a acompanhar <i>aquele</i> assistido. Nas demais tabelas a chave é simples, então não há dependência parcial.</p><p><b>3FN:</b> não há dependência transitiva. O setor da demanda não é guardado em DEMANDA, porque é determinado pela reunião (reuniao_id determina setor); ele é obtido pela junção, como na consulta Q09. Nome e perfil do responsável ficam só em USUARIO. Não há campos calculados: dias de atraso, idade do acompanhamento e médias são calculados nas consultas.</p>
+
+<h2 class="quebra">4. Dicionário de dados</h2>
+<p>Domínios usados: numérico (INT e BOOLEAN), texto (VARCHAR, TEXT e ENUM, para os domínios fechados de perfil, setor, prioridade e estado), data (DATE) e data e hora (DATETIME).</p>
+<h4>USUARIO</h4><table class="dic"><thead><tr><th>Coluna</th><th>Tipo</th><th>Restrições</th><th>Descrição</th></tr></thead><tbody><tr><td>id</td><td>int</td><td>PK, NOT NULL, AUTO_INCREMENT</td><td>Identificador do usuário</td></tr><tr><td>nome</td><td>varchar(120)</td><td>NOT NULL</td><td>Nome completo</td></tr><tr><td>email</td><td>varchar(254)</td><td>UNIQUE, NOT NULL</td><td>E-mail de acesso, único</td></tr><tr><td>senha_hash</td><td>varchar(255)</td><td>NOT NULL</td><td>Senha cifrada (hash), nunca em texto</td></tr><tr><td>perfil</td><td>enum(direcao,assistente_social,equipe_pedagogica)</td><td>NOT NULL</td><td>Direção, assistente social ou equipe pedagógica</td></tr><tr><td>ativo</td><td>tinyint(1)</td><td>NOT NULL, DEFAULT 1</td><td>Falso quando desativado</td></tr><tr><td>criado_em</td><td>datetime</td><td>NOT NULL, DEFAULT agora</td><td>Data e hora do cadastro</td></tr></tbody></table><h4>ASSISTIDO</h4><table class="dic"><thead><tr><th>Coluna</th><th>Tipo</th><th>Restrições</th><th>Descrição</th></tr></thead><tbody><tr><td>id</td><td>int</td><td>PK, NOT NULL, AUTO_INCREMENT</td><td>Identificador do assistido</td></tr><tr><td>nome_tratamento</td><td>varchar(120)</td><td>NOT NULL</td><td>Nome pelo qual é tratado (fictício)</td></tr><tr><td>ativo</td><td>tinyint(1)</td><td>NOT NULL, DEFAULT 1</td><td>Falso quando o atendimento encerra</td></tr><tr><td>criado_em</td><td>datetime</td><td>NOT NULL, DEFAULT agora</td><td>Data e hora do cadastro</td></tr></tbody></table><h4>ASSISTIDO_PROFISSIONAL</h4><table class="dic"><thead><tr><th>Coluna</th><th>Tipo</th><th>Restrições</th><th>Descrição</th></tr></thead><tbody><tr><td>assistido_id</td><td>int</td><td>PK, FK, NOT NULL</td><td>Assistido acompanhado</td></tr><tr><td>profissional_id</td><td>int</td><td>PK, FK, NOT NULL</td><td>Profissional que acompanha</td></tr><tr><td>data_inicio</td><td>date</td><td>NOT NULL</td><td>Início do acompanhamento</td></tr></tbody></table><h4>REUNIAO</h4><table class="dic"><thead><tr><th>Coluna</th><th>Tipo</th><th>Restrições</th><th>Descrição</th></tr></thead><tbody><tr><td>id</td><td>int</td><td>PK, NOT NULL, AUTO_INCREMENT</td><td>Identificador da reunião</td></tr><tr><td>data</td><td>date</td><td>NOT NULL</td><td>Dia da reunião</td></tr><tr><td>setor</td><td>enum(pedagogico,saude,convivencia)</td><td>NOT NULL</td><td>Setor que realizou a reunião</td></tr><tr><td>criado_em</td><td>datetime</td><td>NOT NULL, DEFAULT agora</td><td>Data e hora do registro</td></tr></tbody></table><h4>DEMANDA</h4><table class="dic"><thead><tr><th>Coluna</th><th>Tipo</th><th>Restrições</th><th>Descrição</th></tr></thead><tbody><tr><td>id</td><td>int</td><td>PK, NOT NULL, AUTO_INCREMENT</td><td>Identificador da demanda</td></tr><tr><td>descricao</td><td>text</td><td>NOT NULL</td><td>Situação que exige articulação</td></tr><tr><td>categoria</td><td>varchar(80)</td><td>NULL</td><td>Classificação em texto curto</td></tr><tr><td>prioridade</td><td>enum(baixa,media,alta)</td><td>NOT NULL</td><td>Baixa, média ou alta</td></tr><tr><td>prazo</td><td>date</td><td>NOT NULL</td><td>Data limite prevista</td></tr><tr><td>estado</td><td>enum(aberta,em_andamento,aguardando_terceiros,concluida,cancelada)</td><td>NOT NULL, DEFAULT aberta</td><td>Situação atual (domínio fechado)</td></tr><tr><td>responsavel_id</td><td>int</td><td>FK, NOT NULL</td><td>Profissional responsável</td></tr><tr><td>reuniao_id</td><td>int</td><td>FK, NOT NULL</td><td>Reunião de origem</td></tr><tr><td>assistido_id</td><td>int</td><td>FK, NULL</td><td>Assistido, quando houver</td></tr><tr><td>criado_em</td><td>datetime</td><td>NOT NULL, DEFAULT agora</td><td>Abertura da demanda</td></tr><tr><td>atualizado_em</td><td>datetime</td><td>NOT NULL, DEFAULT agora</td><td>Última alteração; nas encerradas, o encerramento</td></tr></tbody></table><h4>EVOLUCAO</h4><table class="dic"><thead><tr><th>Coluna</th><th>Tipo</th><th>Restrições</th><th>Descrição</th></tr></thead><tbody><tr><td>id</td><td>int</td><td>PK, NOT NULL, AUTO_INCREMENT</td><td>Identificador da evolução</td></tr><tr><td>assistido_id</td><td>int</td><td>FK, NOT NULL</td><td>Assistido da anotação</td></tr><tr><td>profissional_id</td><td>int</td><td>FK, NOT NULL</td><td>Profissional autor</td></tr><tr><td>data</td><td>date</td><td>NOT NULL</td><td>Dia do atendimento</td></tr><tr><td>area_atuacao</td><td>varchar(80)</td><td>NOT NULL</td><td>Área (pedagógica, saúde...)</td></tr><tr><td>descricao</td><td>text</td><td>NOT NULL</td><td>Texto da anotação</td></tr><tr><td>ocorrido_em</td><td>datetime</td><td>NOT NULL, DEFAULT agora</td><td>Momento do lançamento</td></tr><tr><td>retifica_id</td><td>int</td><td>FK, UNIQUE, NULL</td><td>Versão que esta evolução corrige</td></tr></tbody></table>
+
+<h2 class="quebra">5. Scripts de implementação e carga dos dados</h2>
+<p>O script <code>01_criacao_banco.sql</code> apaga o banco, se existir (<code>DROP DATABASE IF EXISTS</code>), cria o banco (<code>CREATE DATABASE</code>) e as seis tabelas (<code>CREATE TABLE</code>) com chaves primárias, chaves estrangeiras, UNIQUE, NOT NULL, DEFAULT e AUTO_INCREMENT. A chave do autorrelacionamento de evolução é acrescentada depois, com <code>ALTER TABLE ... ADD CONSTRAINT</code>, como visto na Aula 04. O script <code>02_carga_dados.sql</code> popula as tabelas. A carga foi planejada para que cada consulta tenha resultado significativo:</p>
+<table class="dic"><thead><tr><th>Tabela</th><th>Registros</th><th>Diversidade dos dados</th></tr></thead><tbody><tr><td>usuario</td><td>10</td><td>2 da direção, 3 assistentes sociais, 5 da equipe pedagógica; 1 desativado; 1 sem nenhum acompanhamento</td></tr><tr><td>assistido</td><td>12</td><td>11 ativos e 1 desligado; 2 sem nenhuma demanda</td></tr><tr><td>assistido_profissional</td><td>21</td><td>acompanhamentos iniciados entre 2020 e 2026; assistidos com 1 a 3 profissionais</td></tr><tr><td>reuniao</td><td>13</td><td>os três setores, de agosto a novembro de 2026; 2 reuniões sem demandas</td></tr><tr><td>demanda</td><td>29</td><td>os cinco estados, as três prioridades, seis categorias, 5 sem assistido, prazos vencidos, próximos e futuros</td></tr><tr><td>evolucao</td><td>18</td><td>15 lançamentos e 3 retificações, incluindo uma cadeia de duas versões</td></tr></tbody></table>
+<p>As senhas são gravadas com <code>SHA2(..., 256)</code>, de modo que nenhuma senha fica legível no banco. O script completo de criação está a seguir; o de carga está no apêndice e no arquivo .sql.</p>
+<pre class="script">/* =====================================================================
+   PROJETO INTERDISCIPLINAR - BANCO DE DADOS I (ADS, 2º semestre/2026)
+   Sistema de Gestão de Demandas de Articulação - CRIE / Extrema-MG
+   Equipe Cortex: Gabriel Ribeiro de Borba, Henry Claro Maruca,
+   Inácio Fontes Bueno, Miguel Vaz de Souza, Vinícius Fatichi Marrocos
+
+   Script 01: criação do banco e das tabelas (DDL) - MySQL 8
+   Recorte de BD1 com 6 tabelas: usuario, assistido, assistido_profissional,
+   reuniao, demanda e evolucao. Nomes iguais aos do back-end do sistema.
+   ===================================================================== */
+
+-- Apaga o banco, se já existir, para o script poder ser executado do zero
+DROP DATABASE IF EXISTS crie_demandas;
+
+CREATE DATABASE crie_demandas
+  DEFAULT CHARACTER SET utf8mb4
+  DEFAULT COLLATE utf8mb4_0900_ai_ci;
+
+USE crie_demandas;
+
+/* ---------------------------------------------------------------------
+   USUARIO: profissional ou membro da direção que acessa o sistema.
+   Senha guardada somente como hash (RN12). Não é excluído, é desativado (RN11).
+   --------------------------------------------------------------------- */
+CREATE TABLE usuario (
+  id          INT           NOT NULL AUTO_INCREMENT,
+  nome        VARCHAR(120)  NOT NULL,
+  email       VARCHAR(254)  NOT NULL,
+  senha_hash  VARCHAR(255)  NOT NULL,
+  perfil      ENUM(&#x27;direcao&#x27;, &#x27;assistente_social&#x27;, &#x27;equipe_pedagogica&#x27;) NOT NULL,
+  ativo       BOOLEAN       NOT NULL DEFAULT TRUE,
+  criado_em   DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE (email)
+);
+
+/* ---------------------------------------------------------------------
+   ASSISTIDO: pessoa atendida pelo CRIE. Só o nome de tratamento
+   (minimização de dados da LGPD, decisão A3 da equipe).
+   --------------------------------------------------------------------- */
+CREATE TABLE assistido (
+  id               INT           NOT NULL AUTO_INCREMENT,
+  nome_tratamento  VARCHAR(120)  NOT NULL,
+  ativo            BOOLEAN       NOT NULL DEFAULT TRUE,
+  criado_em        DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+);
+
+/* ---------------------------------------------------------------------
+   ASSISTIDO_PROFISSIONAL: tabela associativa do relacionamento N:N
+   &quot;profissional acompanha assistido&quot;, com atributo próprio (data_inicio).
+   --------------------------------------------------------------------- */
+CREATE TABLE assistido_profissional (
+  assistido_id     INT   NOT NULL,
+  profissional_id  INT   NOT NULL,
+  data_inicio      DATE  NOT NULL,
+  PRIMARY KEY (assistido_id, profissional_id),
+  FOREIGN KEY (assistido_id) REFERENCES assistido (id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+  FOREIGN KEY (profissional_id) REFERENCES usuario (id)
+    ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+/* ---------------------------------------------------------------------
+   REUNIAO: reunião semanal de um setor (RN01).
+   O setor é um domínio fechado de três valores.
+   --------------------------------------------------------------------- */
+CREATE TABLE reuniao (
+  id         INT       NOT NULL AUTO_INCREMENT,
+  data       DATE      NOT NULL,
+  setor      ENUM(&#x27;pedagogico&#x27;, &#x27;saude&#x27;, &#x27;convivencia&#x27;) NOT NULL,
+  criado_em  DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+);
+
+/* ---------------------------------------------------------------------
+   DEMANDA: situação levantada em reunião que exige articulação.
+   Estado em domínio fechado (RN05) e sempre nasce &#x27;aberta&#x27; (RN06).
+   --------------------------------------------------------------------- */
+CREATE TABLE demanda (
+  id              INT          NOT NULL AUTO_INCREMENT,
+  descricao       TEXT         NOT NULL,
+  categoria       VARCHAR(80)  NULL,
+  prioridade      ENUM(&#x27;baixa&#x27;, &#x27;media&#x27;, &#x27;alta&#x27;) NOT NULL,
+  prazo           DATE         NOT NULL,
+  estado          ENUM(&#x27;aberta&#x27;, &#x27;em_andamento&#x27;, &#x27;aguardando_terceiros&#x27;, &#x27;concluida&#x27;, &#x27;cancelada&#x27;)
+                  NOT NULL DEFAULT &#x27;aberta&#x27;,
+  responsavel_id  INT          NOT NULL,   -- 1:N com USUARIO (é responsável por)
+  reuniao_id      INT          NOT NULL,   -- 1:N com REUNIAO (origina)
+  assistido_id    INT          NULL,       -- 1:N opcional com ASSISTIDO (RN03)
+  criado_em       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  atualizado_em   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  FOREIGN KEY (responsavel_id) REFERENCES usuario (id)   ON UPDATE CASCADE,
+  FOREIGN KEY (reuniao_id)     REFERENCES reuniao (id)   ON UPDATE CASCADE,
+  FOREIGN KEY (assistido_id)   REFERENCES assistido (id) ON UPDATE CASCADE
+);
+
+/* ---------------------------------------------------------------------
+   EVOLUCAO: anotação de acompanhamento do assistido, feita por um profissional.
+   Não é apagada nem editada: corrigir é lançar uma nova versão que aponta
+   para a original (retifica_id). O UNIQUE em retifica_id faz o
+   autorrelacionamento ser 1:1: cada versão é retificada no máximo uma vez.
+   --------------------------------------------------------------------- */
+CREATE TABLE evolucao (
+  id               INT          NOT NULL AUTO_INCREMENT,
+  assistido_id     INT          NOT NULL,   -- 1:N com ASSISTIDO (possui)
+  profissional_id  INT          NOT NULL,   -- 1:N com USUARIO (escreve)
+  data             DATE         NOT NULL,
+  area_atuacao     VARCHAR(80)  NOT NULL,
+  descricao        TEXT         NOT NULL,
+  ocorrido_em      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  retifica_id      INT          NULL,       -- 1:1 com a própria EVOLUCAO (retifica)
+  PRIMARY KEY (id),
+  FOREIGN KEY (assistido_id)    REFERENCES assistido (id) ON UPDATE CASCADE,
+  FOREIGN KEY (profissional_id) REFERENCES usuario (id)   ON UPDATE CASCADE
+);
+
+-- A chave do autorrelacionamento é acrescentada com ALTER TABLE:
+-- UNIQUE garante o 1:1 e a FOREIGN KEY garante que a versão retificada existe.
+ALTER TABLE evolucao
+  ADD CONSTRAINT uq_evolucao_retifica UNIQUE (retifica_id),
+  ADD CONSTRAINT fk_evolucao_retifica FOREIGN KEY (retifica_id)
+      REFERENCES evolucao (id) ON UPDATE CASCADE;
+
+-- Conferência da estrutura criada
+SHOW TABLES;
+DESCRIBE demanda;
+DESCRIBE evolucao;
+</pre>
+
+<h2 class="quebra">6. Consultas em SQL</h2>
+<p>São 17 consultas, cada uma com propósito e forma diferentes. Juntas, usam seleção com LIKE, IN, BETWEEN e NOT IN; funções de data (CURDATE, DATEDIFF, ADDDATE, DATE_FORMAT, YEAR, MONTH, DATE); funções matemáticas e de agregação (ROUND, FLOOR, cálculo de percentual, COUNT, COUNT DISTINCT, AVG, MIN e MAX); INNER JOIN, LEFT JOIN, RIGHT JOIN e autojunção; GROUP BY com uma e duas colunas; HAVING; e subconsultas que devolvem um valor e uma lista.</p>
+<p class="nota">Ordem lógica em que o banco processa uma consulta: FROM e JOIN, depois WHERE, GROUP BY, HAVING, SELECT e, por fim, ORDER BY. As consultas que usam CURDATE() dependem do dia da execução; os resultados abaixo foram obtidos com a data do seminário, 30/11/2026, no MySQL 8.4.</p>
+<section class="consulta">
+<h3>Q01. Demandas que envolvem o CRAS ou o Conselho Tutelar, da mais urgente (menor prazo) para a menos urgente.</h3>
+<p class="cmd"><b>Comandos:</b> LIKE com %, OR, ORDER BY</p>
+<pre>SELECT id, descricao, estado, prazo
+FROM demanda
+WHERE descricao LIKE &#x27;%CRAS%&#x27;
+   OR descricao LIKE &#x27;%Conselho Tutelar%&#x27;
+ORDER BY prazo;</pre>
+<p class="lbl">Resultado (3 linhas):</p>
+<table class="res"><thead><tr><th>id</th><th>descricao</th><th>estado</th><th>prazo</th></tr></thead><tbody><tr><td>7</td><td>Acionar o Conselho Tutelar sobre suspeita de negligência</td><td>concluida</td><td>2026-08-26</td></tr><tr><td>3</td><td>Verificar se a família está referenciada no CRAS</td><td>concluida</td><td>2026-09-05</td></tr><tr><td>22</td><td>Inscrever em oficina de música do CRAS</td><td>aberta</td><td>2026-12-11</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> O banco lê a tabela <i>demanda</i> (FROM) e, no WHERE, testa cada linha: o padrão <code>%CRAS%</code> aceita qualquer texto antes e depois da palavra. Com OR, basta uma das duas condições ser verdadeira. O SELECT escolhe as colunas e o ORDER BY ordena pelo prazo, do menor para o maior.</p>
+<p class="sis"><b>No sistema:</b> Busca textual na descrição das demandas (RF32), rota <code>GET /api/demandas?busca=</code>, card 19 do back-end.</p>
+</section>
+<section class="consulta">
+<h3>Q02. Reuniões dos setores pedagógico e saúde realizadas em outubro de 2026, com a data no formato brasileiro.</h3>
+<p class="cmd"><b>Comandos:</b> IN, BETWEEN com datas, DATE_FORMAT</p>
+<pre>SELECT id,
+       setor,
+       DATE_FORMAT(data, &#x27;%d/%m/%Y&#x27;) AS data_reuniao
+FROM reuniao
+WHERE setor IN (&#x27;pedagogico&#x27;, &#x27;saude&#x27;)
+  AND data BETWEEN &#x27;2026-10-01&#x27; AND &#x27;2026-10-31&#x27;
+ORDER BY data;</pre>
+<p class="lbl">Resultado (2 linhas):</p>
+<table class="res"><thead><tr><th>id</th><th>setor</th><th>data_reuniao</th></tr></thead><tbody><tr><td>7</td><td>pedagogico</td><td>07/10/2026</td></tr><tr><td>8</td><td>saude</td><td>14/10/2026</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> FROM <i>reuniao</i>; o WHERE mantém só as linhas cujo setor está na lista do IN <b>e</b> cuja data está entre 01/10 e 31/10 (o BETWEEN inclui os dois extremos). O DATE_FORMAT só muda a exibição para dd/mm/aaaa, sem alterar o dado.</p>
+<p class="sis"><b>No sistema:</b> Consulta de reuniões ordenadas por data, com filtro de período (RF07), rota <code>GET /api/reunioes</code>, card 18.</p>
+</section>
+<section class="consulta">
+<h3>Q03. Demandas em aberto com o prazo vencido e há quantos dias estão atrasadas, da mais atrasada para a menos atrasada.</h3>
+<p class="cmd"><b>Comandos:</b> CURDATE, DATEDIFF, NOT IN, ORDER BY DESC</p>
+<pre>SELECT id,
+       descricao,
+       estado,
+       DATE_FORMAT(prazo, &#x27;%d/%m/%Y&#x27;)   AS prazo,
+       DATEDIFF(CURDATE(), prazo)       AS dias_de_atraso
+FROM demanda
+WHERE estado NOT IN (&#x27;concluida&#x27;, &#x27;cancelada&#x27;)
+  AND prazo &lt; CURDATE()
+ORDER BY dias_de_atraso DESC;</pre>
+<p class="lbl">Resultado (6 linhas):</p>
+<table class="res"><thead><tr><th>id</th><th>descricao</th><th>estado</th><th>prazo</th><th>dias_de_atraso</th></tr></thead><tbody><tr><td>5</td><td>Solicitar cadeira de banho adaptada à Secretaria de Saúde</td><td>aguardando_terceiros</td><td>30/09/2026</td><td>61</td></tr><tr><td>13</td><td>Solicitar órtese de membro inferior ao Centro Especializado em Reabilitação</td><td>aguardando_terceiros</td><td>31/10/2026</td><td>30</td></tr><tr><td>15</td><td>Revisar o plano de ensino individualizado (PEI) com a escola</td><td>em_andamento</td><td>07/11/2026</td><td>23</td></tr><tr><td>16</td><td>Solicitar transporte escolar adaptado à Prefeitura</td><td>aguardando_terceiros</td><td>20/11/2026</td><td>10</td></tr><tr><td>23</td><td>Solicitar segunda via de documento de identidade</td><td>em_andamento</td><td>21/11/2026</td><td>9</td></tr><tr><td>26</td><td>Solicitar consulta com ortopedista pelo SUS</td><td>aguardando_terceiros</td><td>25/11/2026</td><td>5</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> O WHERE descarta as demandas encerradas (NOT IN) e as de prazo futuro. Para cada linha que sobra, o SELECT calcula <code>DATEDIFF(CURDATE(), prazo)</code>, a diferença em dias entre hoje e o prazo. O ORDER BY usa o apelido do cálculo, em ordem decrescente.</p>
+<p class="sis"><b>No sistema:</b> Destaque das demandas com prazo vencido no painel (RF30 e RF33), rota <code>GET /api/demandas/painel</code>, card 19.</p>
+</section>
+<section class="consulta">
+<h3>Q04. Demandas em aberto que vencem nos próximos 7 dias (alerta do painel).</h3>
+<p class="cmd"><b>Comandos:</b> ADDDATE com INTERVAL, BETWEEN, CURDATE, DATEDIFF</p>
+<pre>SELECT id,
+       descricao,
+       prioridade,
+       prazo,
+       DATEDIFF(prazo, CURDATE()) AS dias_restantes
+FROM demanda
+WHERE estado NOT IN (&#x27;concluida&#x27;, &#x27;cancelada&#x27;)
+  AND prazo BETWEEN CURDATE() AND ADDDATE(CURDATE(), INTERVAL 7 DAY)
+ORDER BY prazo;</pre>
+<p class="lbl">Resultado (4 linhas):</p>
+<table class="res"><thead><tr><th>id</th><th>descricao</th><th>prioridade</th><th>prazo</th><th>dias_restantes</th></tr></thead><tbody><tr><td>20</td><td>Verificar com a família a vacinação em atraso</td><td>baixa</td><td>2026-12-01</td><td>1</td></tr><tr><td>29</td><td>Reunir a rede para discutir caso de evasão escolar</td><td>alta</td><td>2026-12-03</td><td>3</td></tr><tr><td>17</td><td>Atualizar o cadastro de contatos dos responsáveis legais</td><td>baixa</td><td>2026-12-04</td><td>4</td></tr><tr><td>24</td><td>Planejar a adaptação da rotina escolar após cirurgia</td><td>media</td><td>2026-12-05</td><td>5</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> Com a data do seminário, CURDATE() é 30/11/2026 e <code>ADDDATE(CURDATE(), INTERVAL 7 DAY)</code> é 07/12/2026. O BETWEEN mantém os prazos dentro dessa janela, só das demandas não encerradas, e o DATEDIFF mostra quantos dias faltam.</p>
+<p class="sis"><b>No sistema:</b> Aviso, ao entrar no sistema, das demandas com prazo próximo do vencimento (RF40), card 25.</p>
+</section>
+<section class="consulta">
+<h3>Q05. Demandas de prioridade alta ligadas a um assistido, com o setor e a data da reunião de origem e o nome do responsável.</h3>
+<p class="cmd"><b>Comandos:</b> INNER JOIN entre 4 tabelas, apelidos (AS), DATE_FORMAT</p>
+<pre>SELECT d.id,
+       a.nome_tratamento                     AS assistido,
+       d.descricao,
+       r.setor,
+       DATE_FORMAT(r.data, &#x27;%d/%m/%Y&#x27;)       AS reuniao,
+       u.nome                                AS responsavel,
+       d.estado
+FROM demanda d
+INNER JOIN reuniao   r ON r.id = d.reuniao_id
+INNER JOIN usuario   u ON u.id = d.responsavel_id
+INNER JOIN assistido a ON a.id = d.assistido_id
+WHERE d.prioridade = &#x27;alta&#x27;
+ORDER BY r.data, d.id;</pre>
+<p class="lbl">Resultado (11 linhas):</p>
+<table class="res"><thead><tr><th>id</th><th>assistido</th><th>descricao</th><th>setor</th><th>reuniao</th><th>responsavel</th><th>estado</th></tr></thead><tbody><tr><td>1</td><td>Ana Clara M.</td><td>Solicitar à escola municipal o plano de atendimento educacional especializado (AEE)</td><td>pedagogico</td><td>05/08/2026</td><td>Beatriz Lemos Furtado</td><td>concluida</td></tr><tr><td>4</td><td>Davi L.</td><td>Agendar avaliação com neuropediatra na unidade de saúde</td><td>saude</td><td>12/08/2026</td><td>Daniel Moura Teixeira</td><td>concluida</td></tr><tr><td>7</td><td>Gabriela N.</td><td>Acionar o Conselho Tutelar sobre suspeita de negligência</td><td>convivencia</td><td>19/08/2026</td><td>Juliana Cardoso Neves</td><td>concluida</td></tr><tr><td>11</td><td>Ana Clara M.</td><td>Encaminhar laudo atualizado para a escola regular</td><td>pedagogico</td><td>02/09/2026</td><td>Beatriz Lemos Furtado</td><td>concluida</td></tr><tr><td>13</td><td>Davi L.</td><td>Solicitar órtese de membro inferior ao Centro Especializado em Reabilitação</td><td>saude</td><td>09/09/2026</td><td>Daniel Moura Teixeira</td><td>aguardando_terceiros</td></tr><tr><td>15</td><td>João Pedro M.</td><td>Revisar o plano de ensino individualizado (PEI) com a escola</td><td>pedagogico</td><td>07/10/2026</td><td>Beatriz Lemos Furtado</td><td>em_andamento</td></tr><tr><td>16</td><td>Bruno H.</td><td>Solicitar transporte escolar adaptado à Prefeitura</td><td>pedagogico</td><td>07/10/2026</td><td>Marcos Vieira Salgado</td><td>aguardando_terceiros</td></tr><tr><td>19</td><td>Mateus H.</td><td>Encaminhar para avaliação psicológica</td><td>saude</td><td>14/10/2026</td><td>Daniel Moura Teixeira</td><td>concluida</td></tr><tr><td>21</td><td>Mateus H.</td><td>Mediar conflito familiar relatado pela equipe</td><td>convivencia</td><td>21/10/2026</td><td>Juliana Cardoso Neves</td><td>concluida</td></tr><tr><td>26</td><td>João Pedro M.</td><td>Solicitar consulta com ortopedista pelo SUS</td><td>saude</td><td>11/11/2026</td><td>Daniel Moura Teixeira</td><td>aguardando_terceiros</td></tr><tr><td>29</td><td>Davi L.</td><td>Reunir a rede para discutir caso de evasão escolar</td><td>convivencia</td><td>12/11/2026</td><td>Juliana Cardoso Neves</td><td>aberta</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> Cada INNER JOIN liga a demanda à linha correspondente da outra tabela pela chave estrangeira. Como é INNER, uma demanda sem assistido (assistido_id NULL) não encontra par e fica de fora. Depois da junção, o WHERE filtra a prioridade alta e o ORDER BY ordena pela data da reunião.</p>
+<p class="sis"><b>No sistema:</b> Listagem de demandas com responsável, reunião e assistido (RF10, RF11 e RF31), rota <code>GET /api/demandas</code>, card 19.</p>
+</section>
+<section class="consulta">
+<h3>Q06. Assistidos ativos que ainda não têm nenhuma demanda registrada.</h3>
+<p class="cmd"><b>Comandos:</b> LEFT JOIN, IS NULL (registros &quot;sem par&quot; na outra tabela)</p>
+<pre>SELECT a.id, a.nome_tratamento, DATE(a.criado_em) AS cadastrado_em
+FROM assistido a
+LEFT JOIN demanda d ON d.assistido_id = a.id
+WHERE a.ativo = TRUE
+  AND d.id IS NULL;</pre>
+<p class="lbl">Resultado (2 linhas):</p>
+<table class="res"><thead><tr><th>id</th><th>nome_tratamento</th><th>cadastrado_em</th></tr></thead><tbody><tr><td>8</td><td>Heitor G.</td><td>2026-08-03</td></tr><tr><td>11</td><td>Larissa F.</td><td>2024-01-15</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> O LEFT JOIN mantém <b>todos</b> os assistidos, mesmo sem demanda; nesses casos, as colunas de <i>demanda</i> vêm NULL. O WHERE <code>d.id IS NULL</code> mantém exatamente essas linhas "sem par", e <code>ativo = TRUE</code> exclui os desligados.</p>
+<p class="sis"><b>No sistema:</b> Apoio à ficha do assistido (RF20): mostra quem está cadastrado e ainda não teve nenhuma demanda. Rota <code>GET /api/assistidos</code>, card 20.</p>
+</section>
+<section class="consulta">
+<h3>Q07. Carga de trabalho: quantas demandas em aberto cada profissional ativo tem sob sua responsabilidade, incluindo quem tem zero.</h3>
+<p class="cmd"><b>Comandos:</b> LEFT JOIN com condição no ON, COUNT(coluna), GROUP BY (COUNT(d.id) não conta as linhas sem demanda, que ficam NULL)</p>
+<pre>SELECT u.nome,
+       u.perfil,
+       COUNT(d.id) AS demandas_em_aberto
+FROM usuario u
+LEFT JOIN demanda d
+       ON d.responsavel_id = u.id
+      AND d.estado NOT IN (&#x27;concluida&#x27;, &#x27;cancelada&#x27;)
+WHERE u.ativo = TRUE
+GROUP BY u.id, u.nome, u.perfil
+ORDER BY demandas_em_aberto DESC, u.nome;</pre>
+<p class="lbl">Resultado (9 linhas):</p>
+<table class="res"><thead><tr><th>nome</th><th>perfil</th><th>demandas_em_aberto</th></tr></thead><tbody><tr><td>Daniel Moura Teixeira</td><td>assistente_social</td><td>3</td></tr><tr><td>Marcos Vieira Salgado</td><td>assistente_social</td><td>3</td></tr><tr><td>Beatriz Lemos Furtado</td><td>equipe_pedagogica</td><td>2</td></tr><tr><td>Juliana Cardoso Neves</td><td>assistente_social</td><td>2</td></tr><tr><td>Camila Rocha Vianna</td><td>equipe_pedagogica</td><td>1</td></tr><tr><td>Fernanda Ishikawa Lopes</td><td>equipe_pedagogica</td><td>1</td></tr><tr><td>Helena Duarte Campos</td><td>direcao</td><td>1</td></tr><tr><td>Otávio Brandão Freitas</td><td>equipe_pedagogica</td><td>0</td></tr><tr><td>Rafael Antunes Prado</td><td>direcao</td><td>0</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> A condição de estado está no ON, e não no WHERE: assim o filtro é aplicado na junção, e o profissional que só tem demandas encerradas continua na lista com NULL. O GROUP BY cria um grupo por usuário e <code>COUNT(d.id)</code> conta apenas valores não nulos, então quem não tem nada aparece com 0. Se a condição estivesse no WHERE, essas pessoas sumiriam do resultado.</p>
+<p class="sis"><b>No sistema:</b> Demandas sob responsabilidade de cada usuário (RF34) e indicadores para a direção (RF39), rota <code>GET /api/demandas/minhas</code>, cards 19 e 24.</p>
+</section>
+<section class="consulta">
+<h3>Q08. Tempo médio, em dias, para concluir uma demanda em cada prioridade, mostrando só as prioridades com média acima de 24 dias.</h3>
+<p class="cmd"><b>Comandos:</b> GROUP BY, HAVING, AVG, ROUND, DATEDIFF, MIN, MAX</p>
+<pre>SELECT prioridade,
+       COUNT(*)                                            AS concluidas,
+       ROUND(AVG(DATEDIFF(atualizado_em, criado_em)), 1)   AS media_dias,
+       MIN(DATEDIFF(atualizado_em, criado_em))             AS mais_rapida,
+       MAX(DATEDIFF(atualizado_em, criado_em))             AS mais_lenta
+FROM demanda
+WHERE estado = &#x27;concluida&#x27;
+GROUP BY prioridade
+HAVING AVG(DATEDIFF(atualizado_em, criado_em)) &gt; 24
+ORDER BY media_dias DESC;</pre>
+<p class="lbl">Resultado (2 linhas):</p>
+<table class="res"><thead><tr><th>prioridade</th><th>concluidas</th><th>media_dias</th><th>mais_rapida</th><th>mais_lenta</th></tr></thead><tbody><tr><td>baixa</td><td>1</td><td>29.0</td><td>29</td><td>29</td></tr><tr><td>media</td><td>7</td><td>25.7</td><td>12</td><td>41</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> O WHERE deixa só as concluídas; o GROUP BY separa por prioridade; em cada grupo são calculados COUNT, AVG, MIN e MAX da diferença em dias entre abertura e conclusão. O HAVING filtra os <b>grupos</b> depois do cálculo: a prioridade alta, com média de 23,2 dias, sai do resultado. O WHERE não poderia fazer isso, porque roda antes do agrupamento e não enxerga o AVG. O ROUND deixa a média com uma casa decimal.</p>
+<p class="sis"><b>No sistema:</b> Indicadores consolidados de demandas (RF39), card 24 (relatórios e indicadores).</p>
+</section>
+<section class="consulta">
+<h3>Q09. Distribuição das demandas por setor e por estado, com o percentual de cada grupo sobre o total de demandas.</h3>
+<p class="cmd"><b>Comandos:</b> INNER JOIN, GROUP BY com duas colunas, subconsulta no SELECT, cálculo de percentual e ROUND</p>
+<pre>SELECT r.setor,
+       d.estado,
+       COUNT(*) AS quantidade,
+       ROUND(COUNT(*) * 100 / (SELECT COUNT(*) FROM demanda), 1) AS percentual
+FROM demanda d
+INNER JOIN reuniao r ON r.id = d.reuniao_id
+GROUP BY r.setor, d.estado
+ORDER BY r.setor, quantidade DESC;</pre>
+<p class="lbl">Resultado (12 linhas):</p>
+<table class="res"><thead><tr><th>setor</th><th>estado</th><th>quantidade</th><th>percentual</th></tr></thead><tbody><tr><td>pedagogico</td><td>concluida</td><td>5</td><td>17.2</td></tr><tr><td>pedagogico</td><td>em_andamento</td><td>2</td><td>6.9</td></tr><tr><td>pedagogico</td><td>aberta</td><td>2</td><td>6.9</td></tr><tr><td>pedagogico</td><td>aguardando_terceiros</td><td>1</td><td>3.4</td></tr><tr><td>saude</td><td>concluida</td><td>6</td><td>20.7</td></tr><tr><td>saude</td><td>aguardando_terceiros</td><td>3</td><td>10.3</td></tr><tr><td>saude</td><td>em_andamento</td><td>1</td><td>3.4</td></tr><tr><td>saude</td><td>cancelada</td><td>1</td><td>3.4</td></tr><tr><td>convivencia</td><td>concluida</td><td>3</td><td>10.3</td></tr><tr><td>convivencia</td><td>aberta</td><td>3</td><td>10.3</td></tr><tr><td>convivencia</td><td>cancelada</td><td>1</td><td>3.4</td></tr><tr><td>convivencia</td><td>em_andamento</td><td>1</td><td>3.4</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> A junção traz o setor da reunião para cada demanda. O GROUP BY usa duas colunas, então cada combinação setor e estado vira um grupo. A subconsulta <code>(SELECT COUNT(*) FROM demanda)</code> roda uma vez e devolve o total (29); o percentual é a quantidade do grupo vezes 100, dividida por esse total, arredondada.</p>
+<p class="sis"><b>No sistema:</b> Painel com as demandas organizadas por estado (RF30) e indicadores por setor (RF39), cards 19 e 24.</p>
+</section>
+<section class="consulta">
+<h3>Q10. Quantas demandas foram abertas em cada mês e quantas categorias diferentes apareceram no mês.</h3>
+<p class="cmd"><b>Comandos:</b> YEAR, MONTH, COUNT(DISTINCT), GROUP BY por partes da data</p>
+<pre>SELECT YEAR(criado_em)            AS ano,
+       MONTH(criado_em)           AS mes,
+       COUNT(*)                   AS demandas_abertas,
+       COUNT(DISTINCT categoria)  AS categorias_diferentes
+FROM demanda
+GROUP BY YEAR(criado_em), MONTH(criado_em)
+ORDER BY ano, mes;</pre>
+<p class="lbl">Resultado (4 linhas):</p>
+<table class="res"><thead><tr><th>ano</th><th>mes</th><th>demandas_abertas</th><th>categorias_diferentes</th></tr></thead><tbody><tr><td>2026</td><td>8</td><td>9</td><td>6</td></tr><tr><td>2026</td><td>9</td><td>5</td><td>4</td></tr><tr><td>2026</td><td>10</td><td>9</td><td>6</td></tr><tr><td>2026</td><td>11</td><td>6</td><td>5</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> YEAR() e MONTH() extraem partes da data de criação, e o GROUP BY usa essas partes, formando um grupo por mês. COUNT(*) conta as demandas do mês e <code>COUNT(DISTINCT categoria)</code> conta quantas categorias diferentes apareceram nele.</p>
+<p class="sis"><b>No sistema:</b> Relatório de demandas por período (RF35), rota <code>GET /api/relatorios/demandas</code>, card 24.</p>
+</section>
+<section class="consulta">
+<h3>Q11. A demanda em aberto mais antiga, quem é o responsável e há quantos dias ela foi aberta.</h3>
+<p class="cmd"><b>Comandos:</b> subconsulta que devolve um valor (MIN) comparada com =, JOIN</p>
+<pre>SELECT d.id,
+       d.descricao,
+       u.nome                                AS responsavel,
+       DATE(d.criado_em)                     AS aberta_em,
+       DATEDIFF(CURDATE(), d.criado_em)      AS dias_em_aberto
+FROM demanda d
+INNER JOIN usuario u ON u.id = d.responsavel_id
+WHERE d.estado NOT IN (&#x27;concluida&#x27;, &#x27;cancelada&#x27;)
+  AND d.criado_em = (SELECT MIN(criado_em)
+                     FROM demanda
+                     WHERE estado NOT IN (&#x27;concluida&#x27;, &#x27;cancelada&#x27;));</pre>
+<p class="lbl">Resultado (1 linha):</p>
+<table class="res"><thead><tr><th>id</th><th>descricao</th><th>responsavel</th><th>aberta_em</th><th>dias_em_aberto</th></tr></thead><tbody><tr><td>5</td><td>Solicitar cadeira de banho adaptada à Secretaria de Saúde</td><td>Daniel Moura Teixeira</td><td>2026-08-12</td><td>110</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> A subconsulta roda primeiro e devolve <b>um único valor</b>: a menor data de criação entre as demandas em aberto. A consulta de fora compara cada linha com esse valor usando =, junta o responsável e calcula há quantos dias a demanda está aberta.</p>
+<p class="sis"><b>No sistema:</b> Prioridade de cobrança no painel de demandas em aberto (RF30 e RF33), card 19.</p>
+</section>
+<section class="consulta">
+<h3>Q12. Demandas concluídas que levaram mais dias do que a média de todas as concluídas.</h3>
+<p class="cmd"><b>Comandos:</b> subconsulta com AVG no WHERE, DATEDIFF, ROUND</p>
+<pre>SELECT id,
+       descricao,
+       DATEDIFF(atualizado_em, criado_em) AS dias_para_concluir,
+       (SELECT ROUND(AVG(DATEDIFF(atualizado_em, criado_em)), 1)
+          FROM demanda WHERE estado = &#x27;concluida&#x27;) AS media_geral
+FROM demanda
+WHERE estado = &#x27;concluida&#x27;
+  AND DATEDIFF(atualizado_em, criado_em) &gt;
+      (SELECT AVG(DATEDIFF(atualizado_em, criado_em))
+         FROM demanda
+        WHERE estado = &#x27;concluida&#x27;)
+ORDER BY dias_para_concluir DESC;</pre>
+<p class="lbl">Resultado (7 linhas):</p>
+<table class="res"><thead><tr><th>id</th><th>descricao</th><th>dias_para_concluir</th><th>media_geral</th></tr></thead><tbody><tr><td>4</td><td>Agendar avaliação com neuropediatra na unidade de saúde</td><td>51</td><td>24.9</td></tr><tr><td>3</td><td>Verificar se a família está referenciada no CRAS</td><td>41</td><td>24.9</td></tr><tr><td>14</td><td>Orientar a família sobre o Benefício de Prestação Continuada (BPC)</td><td>41</td><td>24.9</td></tr><tr><td>6</td><td>Revisar o protocolo interno de administração de medicamentos</td><td>29</td><td>24.9</td></tr><tr><td>11</td><td>Encaminhar laudo atualizado para a escola regular</td><td>28</td><td>24.9</td></tr><tr><td>10</td><td>Adaptar material didático com comunicação alternativa</td><td>27</td><td>24.9</td></tr><tr><td>18</td><td>Acompanhar o resultado de exames na unidade básica de saúde</td><td>27</td><td>24.9</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> A subconsulta do WHERE calcula uma vez a média de dias para concluir (24,9) e a consulta de fora mantém as concluídas acima dela. A subconsulta do SELECT repete a média só para exibi-la ao lado, como referência.</p>
+<p class="sis"><b>No sistema:</b> Indicadores de desempenho no atendimento das demandas (RF39), card 24.</p>
+</section>
+<section class="consulta">
+<h3>Q13. Profissionais ativos que não acompanham nenhum assistido (candidatos a receber novos acompanhamentos).</h3>
+<p class="cmd"><b>Comandos:</b> subconsulta que devolve uma lista, NOT IN</p>
+<pre>SELECT id, nome, perfil
+FROM usuario
+WHERE ativo = TRUE
+  AND perfil &lt;&gt; &#x27;direcao&#x27;
+  AND id NOT IN (SELECT profissional_id FROM assistido_profissional);</pre>
+<p class="lbl">Resultado (1 linha):</p>
+<table class="res"><thead><tr><th>id</th><th>nome</th><th>perfil</th></tr></thead><tbody><tr><td>10</td><td>Otávio Brandão Freitas</td><td>equipe_pedagogica</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> A subconsulta devolve uma <b>lista</b> com todos os profissionais que acompanham alguém. O NOT IN mantém os usuários que não estão nessa lista; o WHERE ainda exige usuário ativo e perfil diferente de direção.</p>
+<p class="sis"><b>No sistema:</b> Gestão de usuários e distribuição de acompanhamentos pela direção (RF04), card 23.</p>
+</section>
+<section class="consulta">
+<h3>Q14. Para cada profissional, quantos assistidos acompanha e há quanto tempo, em meses, em média, acompanha cada um (relacionamento N:N).</h3>
+<p class="cmd"><b>Comandos:</b> JOIN pela tabela associativa, AVG, DATEDIFF, FLOOR, ROUND</p>
+<pre>SELECT u.nome,
+       COUNT(ap.assistido_id)                                   AS assistidos,
+       ROUND(AVG(DATEDIFF(CURDATE(), ap.data_inicio)) / 30, 1)  AS media_meses,
+       FLOOR(MAX(DATEDIFF(CURDATE(), ap.data_inicio)) / 365)    AS anos_do_mais_antigo
+FROM usuario u
+INNER JOIN assistido_profissional ap ON ap.profissional_id = u.id
+INNER JOIN assistido a ON a.id = ap.assistido_id
+WHERE a.ativo = TRUE
+GROUP BY u.id, u.nome
+ORDER BY assistidos DESC, media_meses DESC;</pre>
+<p class="lbl">Resultado (6 linhas):</p>
+<table class="res"><thead><tr><th>nome</th><th>assistidos</th><th>media_meses</th><th>anos_do_mais_antigo</th></tr></thead><tbody><tr><td>Camila Rocha Vianna</td><td>5</td><td>18.1</td><td>2</td></tr><tr><td>Marcos Vieira Salgado</td><td>3</td><td>41.8</td><td>5</td></tr><tr><td>Daniel Moura Teixeira</td><td>3</td><td>34.4</td><td>4</td></tr><tr><td>Beatriz Lemos Furtado</td><td>3</td><td>31.5</td><td>3</td></tr><tr><td>Juliana Cardoso Neves</td><td>3</td><td>18.8</td><td>2</td></tr><tr><td>Fernanda Ishikawa Lopes</td><td>3</td><td>10.7</td><td>1</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> A junção passa pela tabela associativa: usuário, depois assistido_profissional, depois assistido. O WHERE ignora assistidos desligados; o GROUP BY agrupa por profissional. COUNT conta os assistidos, AVG dos dias dividido por 30 dá a média em meses (ROUND), e FLOOR do maior tempo dividido por 365 dá os anos completos.</p>
+<p class="sis"><b>No sistema:</b> Vínculo de acompanhamento entre profissionais e assistidos (RF20 e RF05), usado no controle de acesso às evoluções, cards 15 e 20.</p>
+</section>
+<section class="consulta">
+<h3>Q15. Evoluções retificadas: cada versão corrigida ao lado da versão que a corrigiu e quantos dias depois a correção foi feita (1:1).</h3>
+<p class="cmd"><b>Comandos:</b> autojunção (a mesma tabela duas vezes com apelidos), DATEDIFF, DATE_FORMAT com hora e minuto</p>
+<pre>SELECT original.id                                        AS versao_corrigida,
+       nova.id                                            AS versao_nova,
+       a.nome_tratamento                                  AS assistido,
+       original.descricao                                 AS texto_anterior,
+       nova.descricao                                     AS texto_novo,
+       DATE_FORMAT(nova.ocorrido_em, &#x27;%d/%m/%Y %H:%i&#x27;)    AS corrigida_em,
+       DATEDIFF(nova.ocorrido_em, original.ocorrido_em)   AS dias_depois
+FROM evolucao original
+INNER JOIN evolucao nova ON nova.retifica_id = original.id
+INNER JOIN assistido a   ON a.id = original.assistido_id
+ORDER BY original.id;</pre>
+<p class="lbl">Resultado (3 linhas):</p>
+<table class="res"><thead><tr><th>versao_corrigida</th><th>versao_nova</th><th>assistido</th><th>texto_anterior</th><th>texto_novo</th><th>corrigida_em</th><th>dias_depois</th></tr></thead><tbody><tr><td>5</td><td>16</td><td>Carolina D.</td><td>Iniciou a produção de frases de duas palavras.</td><td>Iniciou a produção de frases de duas e três palavras.</td><td>10/10/2026 09:15</td><td>1</td></tr><tr><td>10</td><td>15</td><td>Gabriela N.</td><td>Ausente três dias na semana; família informada.</td><td>Ausente dois dias na semana (correção); família informada.</td><td>09/10/2026 08:40</td><td>1</td></tr><tr><td>16</td><td>17</td><td>Carolina D.</td><td>Iniciou a produção de frases de duas e três palavras.</td><td>Iniciou a produção de frases de duas e três palavras com apoio visual.</td><td>12/10/2026 08:05</td><td>2</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> É uma <b>autojunção</b>: a tabela <i>evolucao</i> aparece duas vezes, com os apelidos <i>original</i> e <i>nova</i>. O ON <code>nova.retifica_id = original.id</code> forma pares "versão corrigida e versão que a corrige". A cadeia 5, 16 e 17 gera duas linhas, porque a 16 corrige a 5 e a 17 corrige a 16.</p>
+<p class="sis"><b>No sistema:</b> Retificação de evolução preservando a versão anterior (RF24 e RF26), rota <code>PATCH /api/evolucoes/&lt;id&gt;</code>, card 21.</p>
+</section>
+<section class="consulta">
+<h3>Q16. Assistidos ativos cuja evolução vigente mais recente tem mais de 20 dias (ou seja, precisam de nova anotação). Versões já retificadas não contam, porque foram substituídas.</h3>
+<p class="cmd"><b>Comandos:</b> subconsulta NOT IN com IS NOT NULL, GROUP BY, MAX, HAVING com DATEDIFF</p>
+<pre>SELECT a.nome_tratamento,
+       COUNT(e.id)                         AS evolucoes_vigentes,
+       DATE_FORMAT(MAX(e.data), &#x27;%d/%m/%Y&#x27;) AS ultima_evolucao,
+       DATEDIFF(CURDATE(), MAX(e.data))    AS dias_sem_evolucao
+FROM assistido a
+INNER JOIN evolucao e ON e.assistido_id = a.id
+WHERE a.ativo = TRUE
+  AND e.id NOT IN (SELECT retifica_id FROM evolucao WHERE retifica_id IS NOT NULL)
+GROUP BY a.id, a.nome_tratamento
+HAVING DATEDIFF(CURDATE(), MAX(e.data)) &gt; 20
+ORDER BY dias_sem_evolucao DESC;</pre>
+<p class="lbl">Resultado (9 linhas):</p>
+<table class="res"><thead><tr><th>nome_tratamento</th><th>evolucoes_vigentes</th><th>ultima_evolucao</th><th>dias_sem_evolucao</th></tr></thead><tbody><tr><td>Bruno H.</td><td>1</td><td>20/08/2026</td><td>102</td></tr><tr><td>Eduarda S.</td><td>1</td><td>03/09/2026</td><td>88</td></tr><tr><td>Ana Clara M.</td><td>2</td><td>14/09/2026</td><td>77</td></tr><tr><td>Felipe A.</td><td>1</td><td>17/09/2026</td><td>74</td></tr><tr><td>Davi L.</td><td>2</td><td>02/10/2026</td><td>59</td></tr><tr><td>Gabriela N.</td><td>1</td><td>08/10/2026</td><td>53</td></tr><tr><td>Carolina D.</td><td>2</td><td>09/10/2026</td><td>52</td></tr><tr><td>João Pedro M.</td><td>1</td><td>15/10/2026</td><td>46</td></tr><tr><td>Mateus H.</td><td>2</td><td>05/11/2026</td><td>25</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> A subconsulta lista as evoluções que já foram retificadas; o NOT IN as descarta, porque foram substituídas por uma versão nova. Depois, a junção com assistido, o GROUP BY por assistido e o MAX(data) dão a última evolução vigente de cada um. O HAVING mantém só os grupos cuja última evolução tem mais de 20 dias.</p>
+<p class="sis"><b>No sistema:</b> Evoluções vigentes de cada assistido em ordem cronológica (RF23), rota <code>GET /api/assistidos/&lt;id&gt;/evolucoes</code>, card 21.</p>
+</section>
+<section class="consulta">
+<h3>Q17. Todas as reuniões, com quantas demandas cada uma originou, incluindo as que não originaram nenhuma.</h3>
+<p class="cmd"><b>Comandos:</b> RIGHT JOIN (todas as linhas da tabela da direita), COUNT(coluna), GROUP BY</p>
+<pre>SELECT r.id                               AS reuniao,
+       r.setor,
+       DATE_FORMAT(r.data, &#x27;%d/%m/%Y&#x27;)    AS data,
+       COUNT(d.id)                        AS demandas_originadas
+FROM demanda d
+RIGHT JOIN reuniao r ON r.id = d.reuniao_id
+GROUP BY r.id, r.setor, r.data
+ORDER BY r.data;</pre>
+<p class="lbl">Resultado (13 linhas):</p>
+<table class="res"><thead><tr><th>reuniao</th><th>setor</th><th>data</th><th>demandas_originadas</th></tr></thead><tbody><tr><td>1</td><td>pedagogico</td><td>05/08/2026</td><td>3</td></tr><tr><td>2</td><td>saude</td><td>12/08/2026</td><td>3</td></tr><tr><td>3</td><td>convivencia</td><td>19/08/2026</td><td>3</td></tr><tr><td>4</td><td>pedagogico</td><td>02/09/2026</td><td>2</td></tr><tr><td>5</td><td>saude</td><td>09/09/2026</td><td>3</td></tr><tr><td>6</td><td>convivencia</td><td>16/09/2026</td><td>0</td></tr><tr><td>7</td><td>pedagogico</td><td>07/10/2026</td><td>3</td></tr><tr><td>8</td><td>saude</td><td>14/10/2026</td><td>3</td></tr><tr><td>9</td><td>convivencia</td><td>21/10/2026</td><td>3</td></tr><tr><td>10</td><td>pedagogico</td><td>04/11/2026</td><td>2</td></tr><tr><td>11</td><td>saude</td><td>11/11/2026</td><td>2</td></tr><tr><td>12</td><td>convivencia</td><td>12/11/2026</td><td>2</td></tr><tr><td>13</td><td>pedagogico</td><td>13/11/2026</td><td>0</td></tr></tbody></table>
+<p><b>Como o banco processa:</b> O RIGHT JOIN mantém todas as linhas da tabela da <b>direita</b> (reuniao), mesmo as que não casam com nenhuma demanda. Nesses casos as colunas de demanda vêm NULL e <code>COUNT(d.id)</code> resulta 0. Escrever <code>reuniao LEFT JOIN demanda</code> daria o mesmo resultado.</p>
+<p class="sis"><b>No sistema:</b> Ficha da reunião com as demandas nela levantadas (RF07 e RF08), rota <code>GET /api/reunioes/&lt;id&gt;</code>, card 18.</p>
+</section>
+
+<h2 class="quebra">7. Manutenção dos dados (INSERT, UPDATE e DELETE)</h2>
+<p>O script <code>04_manutencao_dados.sql</code> mostra as operações do dia a dia, respeitando as regras do minimundo: a demanda nova nasce aberta pelo DEFAULT; a mudança de estado e a reatribuição são UPDATE com WHERE; o usuário é desativado em vez de excluído; e o DELETE só é usado para um vínculo de acompanhamento lançado por engano. O script também mostra a integridade referencial: apagar uma reunião que tem demandas é recusado pelo banco (erro 1451).</p>
+<pre>/* =====================================================================
+   PROJETO INTERDISCIPLINAR - BANCO DE DADOS I
+   Sistema de Gestão de Demandas de Articulação - CRIE / Extrema-MG
+
+   Script 04: manutenção dos dados (INSERT, UPDATE, DELETE)
+   Operações do dia a dia do sistema, respeitando as regras do minimundo:
+   demandas e evoluções nunca são apagadas (RN10), usuários são
+   desativados e não excluídos (RN11). Executar depois dos scripts 01 e 02
+   (e depois do 03, se quiser ver as consultas com os dados originais).
+   ===================================================================== */
+
+USE crie_demandas;
+
+-- 1) INSERT: nova reunião do setor de saúde e uma demanda nascida nela.
+--    A demanda não informa o estado: o DEFAULT &#x27;aberta&#x27; é aplicado (RN06).
+INSERT INTO reuniao (data, setor) VALUES (&#x27;2026-11-18&#x27;, &#x27;saude&#x27;);
+
+INSERT INTO demanda (descricao, categoria, prioridade, prazo, responsavel_id, reuniao_id, assistido_id)
+VALUES (&#x27;Solicitar avaliação de órtese para membro superior&#x27;, &#x27;Saúde&#x27;, &#x27;media&#x27;, &#x27;2026-12-16&#x27;,
+        8, (SELECT MAX(id) FROM reuniao), 8);
+
+SELECT id, descricao, estado, criado_em FROM demanda WHERE assistido_id = 8;
+
+-- 2) UPDATE: mudança de estado da demanda 13 (a órtese chegou e foi entregue).
+--    atualizado_em muda sozinho (ON UPDATE CURRENT_TIMESTAMP).
+UPDATE demanda
+SET estado = &#x27;concluida&#x27;
+WHERE id = 13;
+
+SELECT id, estado, atualizado_em FROM demanda WHERE id = 13;
+
+-- 3) UPDATE: reatribuição do responsável de todas as demandas em aberto de uma
+--    profissional para outra (por exemplo, durante as férias da titular).
+UPDATE demanda
+SET responsavel_id = 6
+WHERE responsavel_id = 7
+  AND estado NOT IN (&#x27;concluida&#x27;, &#x27;cancelada&#x27;);
+
+-- 4) UPDATE no lugar de DELETE: o usuário é desativado, não excluído (RN11),
+--    para preservar a autoria dos registros antigos.
+UPDATE usuario
+SET ativo = FALSE
+WHERE email = &#x27;otavio.freitas@exemplo.test&#x27;;
+
+-- 5) DELETE: um vínculo de acompanhamento lançado por engano é removido.
+--    Apagar o vínculo não apaga o assistido nem o profissional.
+DELETE FROM assistido_profissional
+WHERE assistido_id = 5
+  AND profissional_id = 4;
+
+SELECT COUNT(*) AS profissionais_da_eduarda
+FROM assistido_profissional
+WHERE assistido_id = 5;
+
+-- 6) Integridade referencial: esta exclusão é RECUSADA pelo banco,
+--    porque a reunião 1 tem demandas ligadas a ela (a chave estrangeira
+--    de demanda não tem ON DELETE CASCADE). Resultado esperado: erro 1451.
+-- DELETE FROM reuniao WHERE id = 1;
+</pre>
+
+<h2>8. Arquivos entregues e como executar</h2>
+<table class="dic"><thead><tr><th>Arquivo</th><th>Conteúdo</th></tr></thead><tbody><tr><td>01_criacao_banco.sql</td><td>DROP/CREATE DATABASE, CREATE TABLE das 6 tabelas e ALTER TABLE</td></tr><tr><td>02_carga_dados.sql</td><td>INSERT dos dados fictícios em todas as tabelas</td></tr><tr><td>03_consultas.sql</td><td>as 17 consultas, com o propósito de cada uma comentado</td></tr><tr><td>04_manutencao_dados.sql</td><td>INSERT, UPDATE e DELETE de manutenção</td></tr><tr><td>Documento_BD1_Equipe_Cortex.pdf</td><td>este documento</td></tr></tbody></table>
+<p>Execução no MySQL 8 (Workbench ou linha de comando), nesta ordem: 01, 02, 03 e 04. Os quatro scripts foram executados do zero, sem erro, no MySQL 8.4.</p>
+
+<h2 class="quebra">9. Apêndice: script de carga dos dados</h2>
+<pre class="script">/* =====================================================================
+   PROJETO INTERDISCIPLINAR - BANCO DE DADOS I
+   Sistema de Gestão de Demandas de Articulação - CRIE / Extrema-MG
+
+   Script 02: carga de dados (DML) - executar depois do script 01
+   Todos os dados são FICTÍCIOS (regra do minimundo: o sistema trata dados
+   de saúde de pessoas com deficiência). E-mails usam o domínio reservado
+   exemplo.test, como no seed do back-end.
+   ===================================================================== */
+
+USE crie_demandas;
+
+-- USUARIO: 2 da direção, 7 profissionais (1 desativado). Senhas fictícias, gravadas só como hash.
+INSERT INTO usuario (nome, email, senha_hash, perfil, ativo, criado_em) VALUES
+  (&#x27;Helena Duarte Campos&#x27;,    &#x27;helena.campos@exemplo.test&#x27;,    SHA2(&#x27;ficticia-01&#x27;, 256), &#x27;direcao&#x27;,           TRUE,  &#x27;2025-01-10 09:00:00&#x27;),
+  (&#x27;Rafael Antunes Prado&#x27;,    &#x27;rafael.prado@exemplo.test&#x27;,     SHA2(&#x27;ficticia-02&#x27;, 256), &#x27;direcao&#x27;,           TRUE,  &#x27;2025-01-10 09:05:00&#x27;),
+  (&#x27;Beatriz Lemos Furtado&#x27;,   &#x27;beatriz.furtado@exemplo.test&#x27;,  SHA2(&#x27;ficticia-03&#x27;, 256), &#x27;equipe_pedagogica&#x27;, TRUE,  &#x27;2025-01-15 08:30:00&#x27;),
+  (&#x27;Camila Rocha Vianna&#x27;,     &#x27;camila.vianna@exemplo.test&#x27;,    SHA2(&#x27;ficticia-04&#x27;, 256), &#x27;equipe_pedagogica&#x27;, TRUE,  &#x27;2025-02-03 08:30:00&#x27;),
+  (&#x27;Fernanda Ishikawa Lopes&#x27;, &#x27;fernanda.lopes@exemplo.test&#x27;,   SHA2(&#x27;ficticia-05&#x27;, 256), &#x27;equipe_pedagogica&#x27;, TRUE,  &#x27;2025-03-17 13:00:00&#x27;),
+  (&#x27;Juliana Cardoso Neves&#x27;,   &#x27;juliana.neves@exemplo.test&#x27;,    SHA2(&#x27;ficticia-06&#x27;, 256), &#x27;assistente_social&#x27;, TRUE,  &#x27;2025-01-15 08:45:00&#x27;),
+  (&#x27;Marcos Vieira Salgado&#x27;,   &#x27;marcos.salgado@exemplo.test&#x27;,   SHA2(&#x27;ficticia-07&#x27;, 256), &#x27;assistente_social&#x27;, TRUE,  &#x27;2025-02-03 09:10:00&#x27;),
+  (&#x27;Daniel Moura Teixeira&#x27;,   &#x27;daniel.teixeira@exemplo.test&#x27;,  SHA2(&#x27;ficticia-08&#x27;, 256), &#x27;assistente_social&#x27;, TRUE,  &#x27;2025-06-02 10:00:00&#x27;),
+  (&#x27;Patrícia Gomes Ribeiro&#x27;,  &#x27;patricia.ribeiro@exemplo.test&#x27;, SHA2(&#x27;ficticia-09&#x27;, 256), &#x27;assistente_social&#x27;, FALSE, &#x27;2025-02-03 09:20:00&#x27;),
+  (&#x27;Otávio Brandão Freitas&#x27;,  &#x27;otavio.freitas@exemplo.test&#x27;,   SHA2(&#x27;ficticia-10&#x27;, 256), &#x27;equipe_pedagogica&#x27;, TRUE,  &#x27;2026-07-20 14:00:00&#x27;);
+
+-- ASSISTIDO: somente o nome de tratamento (fictício)
+INSERT INTO assistido (nome_tratamento, ativo, criado_em) VALUES
+  (&#x27;Ana Clara M.&#x27;,  TRUE,  &#x27;2024-02-19 10:00:00&#x27;),
+  (&#x27;Bruno H.&#x27;,      TRUE,  &#x27;2023-03-06 10:00:00&#x27;),
+  (&#x27;Carolina D.&#x27;,   TRUE,  &#x27;2025-05-12 09:30:00&#x27;),
+  (&#x27;Davi L.&#x27;,       TRUE,  &#x27;2022-08-15 14:00:00&#x27;),
+  (&#x27;Eduarda S.&#x27;,    TRUE,  &#x27;2026-02-23 08:30:00&#x27;),
+  (&#x27;Felipe A.&#x27;,     TRUE,  &#x27;2021-04-05 15:00:00&#x27;),
+  (&#x27;Gabriela N.&#x27;,   TRUE,  &#x27;2024-08-05 09:00:00&#x27;),
+  (&#x27;Heitor G.&#x27;,     TRUE,  &#x27;2026-08-03 08:00:00&#x27;),
+  (&#x27;Isabela C.&#x27;,    FALSE, &#x27;2020-03-02 10:30:00&#x27;),
+  (&#x27;João Pedro M.&#x27;, TRUE,  &#x27;2025-09-01 13:30:00&#x27;),
+  (&#x27;Larissa F.&#x27;,    TRUE,  &#x27;2024-01-15 11:00:00&#x27;),
+  (&#x27;Mateus H.&#x27;,     TRUE,  &#x27;2025-11-03 10:00:00&#x27;);
+
+-- ASSISTIDO_PROFISSIONAL (N:N): quem acompanha quem e desde quando
+INSERT INTO assistido_profissional (assistido_id, profissional_id, data_inicio) VALUES
+  (1, 3, &#x27;2024-02-19&#x27;), (1, 4, &#x27;2025-03-10&#x27;), (1, 6, &#x27;2025-08-04&#x27;),
+  (2, 3, &#x27;2023-03-06&#x27;), (2, 7, &#x27;2025-02-17&#x27;),
+  (3, 5, &#x27;2025-05-12&#x27;), (3, 4, &#x27;2025-05-12&#x27;),
+  (4, 8, &#x27;2022-08-15&#x27;), (4, 6, &#x27;2024-09-02&#x27;),
+  (5, 5, &#x27;2026-02-23&#x27;), (5, 4, &#x27;2026-02-23&#x27;),
+  (6, 7, &#x27;2021-04-05&#x27;), (6, 8, &#x27;2023-06-12&#x27;),
+  (7, 4, &#x27;2024-08-05&#x27;),
+  (8, 5, &#x27;2026-08-03&#x27;),
+  (9, 6, &#x27;2020-03-02&#x27;),
+  (10, 3, &#x27;2025-09-01&#x27;), (10, 8, &#x27;2026-03-16&#x27;),
+  (11, 7, &#x27;2024-01-15&#x27;),
+  (12, 6, &#x27;2025-11-03&#x27;), (12, 4, &#x27;2025-11-03&#x27;);
+
+-- REUNIAO: reuniões semanais dos três setores (ids em ordem cronológica)
+INSERT INTO reuniao (data, setor, criado_em) VALUES
+  (&#x27;2026-08-05&#x27;, &#x27;pedagogico&#x27;,  &#x27;2026-08-05 17:30:00&#x27;),
+  (&#x27;2026-08-12&#x27;, &#x27;saude&#x27;,       &#x27;2026-08-12 17:30:00&#x27;),
+  (&#x27;2026-08-19&#x27;, &#x27;convivencia&#x27;, &#x27;2026-08-19 17:30:00&#x27;),
+  (&#x27;2026-09-02&#x27;, &#x27;pedagogico&#x27;,  &#x27;2026-09-02 17:30:00&#x27;),
+  (&#x27;2026-09-09&#x27;, &#x27;saude&#x27;,       &#x27;2026-09-09 17:30:00&#x27;),
+  (&#x27;2026-09-16&#x27;, &#x27;convivencia&#x27;, &#x27;2026-09-16 17:30:00&#x27;),   -- não gerou demandas
+  (&#x27;2026-10-07&#x27;, &#x27;pedagogico&#x27;,  &#x27;2026-10-07 17:30:00&#x27;),
+  (&#x27;2026-10-14&#x27;, &#x27;saude&#x27;,       &#x27;2026-10-14 17:30:00&#x27;),
+  (&#x27;2026-10-21&#x27;, &#x27;convivencia&#x27;, &#x27;2026-10-21 17:30:00&#x27;),
+  (&#x27;2026-11-04&#x27;, &#x27;pedagogico&#x27;,  &#x27;2026-11-04 17:30:00&#x27;),
+  (&#x27;2026-11-11&#x27;, &#x27;saude&#x27;,       &#x27;2026-11-11 17:30:00&#x27;),
+  (&#x27;2026-11-12&#x27;, &#x27;convivencia&#x27;, &#x27;2026-11-12 17:30:00&#x27;),
+  (&#x27;2026-11-13&#x27;, &#x27;pedagogico&#x27;,  &#x27;2026-11-13 17:30:00&#x27;);   -- não gerou demandas
+
+-- DEMANDA: criada no dia da reunião de origem (RN02).
+-- atualizado_em = última mudança; nas concluídas e canceladas, é o dia do encerramento.
+INSERT INTO demanda (descricao, categoria, prioridade, prazo, estado, responsavel_id, reuniao_id, assistido_id, criado_em, atualizado_em) VALUES
+  (&#x27;Solicitar à escola municipal o plano de atendimento educacional especializado (AEE)&#x27;, &#x27;Educação&#x27;,           &#x27;alta&#x27;,  &#x27;2026-08-26&#x27;, &#x27;concluida&#x27;,            3,  1, 1,    &#x27;2026-08-05 18:00:00&#x27;, &#x27;2026-08-24 10:15:00&#x27;),
+  (&#x27;Convocar a família para reunião sobre faltas recorrentes&#x27;,                           &#x27;Família&#x27;,            &#x27;media&#x27;, &#x27;2026-08-19&#x27;, &#x27;concluida&#x27;,            4,  1, 2,    &#x27;2026-08-05 18:05:00&#x27;, &#x27;2026-08-18 14:00:00&#x27;),
+  (&#x27;Verificar se a família está referenciada no CRAS&#x27;,                                   &#x27;Assistência social&#x27;, &#x27;media&#x27;, &#x27;2026-09-05&#x27;, &#x27;concluida&#x27;,            6,  1, 10,   &#x27;2026-08-05 18:10:00&#x27;, &#x27;2026-09-15 09:30:00&#x27;),
+  (&#x27;Agendar avaliação com neuropediatra na unidade de saúde&#x27;,                            &#x27;Saúde&#x27;,              &#x27;alta&#x27;,  &#x27;2026-09-12&#x27;, &#x27;concluida&#x27;,            8,  2, 4,    &#x27;2026-08-12 18:00:00&#x27;, &#x27;2026-10-02 16:50:00&#x27;),
+  (&#x27;Solicitar cadeira de banho adaptada à Secretaria de Saúde&#x27;,                          &#x27;Saúde&#x27;,              &#x27;media&#x27;, &#x27;2026-09-30&#x27;, &#x27;aguardando_terceiros&#x27;, 8,  2, 6,    &#x27;2026-08-12 18:05:00&#x27;, &#x27;2026-09-03 11:00:00&#x27;),
+  (&#x27;Revisar o protocolo interno de administração de medicamentos&#x27;,                       &#x27;Saúde&#x27;,              &#x27;baixa&#x27;, &#x27;2026-09-15&#x27;, &#x27;concluida&#x27;,            8,  2, NULL, &#x27;2026-08-12 18:10:00&#x27;, &#x27;2026-09-10 15:20:00&#x27;),
+  (&#x27;Acionar o Conselho Tutelar sobre suspeita de negligência&#x27;,                           &#x27;Assistência social&#x27;, &#x27;alta&#x27;,  &#x27;2026-08-26&#x27;, &#x27;concluida&#x27;,            6,  3, 7,    &#x27;2026-08-19 18:00:00&#x27;, &#x27;2026-08-25 17:00:00&#x27;),
+  (&#x27;Encerrar o atendimento e transferir o prontuário ao serviço adulto&#x27;,                 &#x27;Documentação&#x27;,       &#x27;media&#x27;, &#x27;2026-09-02&#x27;, &#x27;concluida&#x27;,            6,  3, 9,    &#x27;2026-08-19 18:05:00&#x27;, &#x27;2026-08-31 10:00:00&#x27;),
+  (&#x27;Organizar transporte para as atividades do serviço de convivência&#x27;,                  &#x27;Transporte&#x27;,         &#x27;media&#x27;, &#x27;2026-09-19&#x27;, &#x27;cancelada&#x27;,            7,  3, NULL, &#x27;2026-08-19 18:10:00&#x27;, &#x27;2026-09-25 08:45:00&#x27;),
+  (&#x27;Adaptar material didático com comunicação alternativa&#x27;,                              &#x27;Educação&#x27;,           &#x27;media&#x27;, &#x27;2026-10-02&#x27;, &#x27;concluida&#x27;,            4,  4, 3,    &#x27;2026-09-02 18:00:00&#x27;, &#x27;2026-09-29 13:30:00&#x27;),
+  (&#x27;Encaminhar laudo atualizado para a escola regular&#x27;,                                  &#x27;Documentação&#x27;,       &#x27;alta&#x27;,  &#x27;2026-09-16&#x27;, &#x27;concluida&#x27;,            3,  4, 1,    &#x27;2026-09-02 18:05:00&#x27;, &#x27;2026-09-30 09:00:00&#x27;),
+  (&#x27;Agendar terapia fonoaudiológica semanal&#x27;,                                            &#x27;Saúde&#x27;,              &#x27;media&#x27;, &#x27;2026-09-30&#x27;, &#x27;concluida&#x27;,            5,  5, 3,    &#x27;2026-09-09 18:00:00&#x27;, &#x27;2026-09-28 14:40:00&#x27;),
+  (&#x27;Solicitar órtese de membro inferior ao Centro Especializado em Reabilitação&#x27;,        &#x27;Saúde&#x27;,              &#x27;alta&#x27;,  &#x27;2026-10-31&#x27;, &#x27;aguardando_terceiros&#x27;, 8,  5, 4,    &#x27;2026-09-09 18:05:00&#x27;, &#x27;2026-09-22 10:10:00&#x27;),
+  (&#x27;Orientar a família sobre o Benefício de Prestação Continuada (BPC)&#x27;,                 &#x27;Assistência social&#x27;, &#x27;media&#x27;, &#x27;2026-10-09&#x27;, &#x27;concluida&#x27;,            6,  5, 5,    &#x27;2026-09-09 18:10:00&#x27;, &#x27;2026-10-20 11:30:00&#x27;),
+  (&#x27;Revisar o plano de ensino individualizado (PEI) com a escola&#x27;,                       &#x27;Educação&#x27;,           &#x27;alta&#x27;,  &#x27;2026-11-07&#x27;, &#x27;em_andamento&#x27;,         3,  7, 10,   &#x27;2026-10-07 18:00:00&#x27;, &#x27;2026-10-15 17:20:00&#x27;),
+  (&#x27;Solicitar transporte escolar adaptado à Prefeitura&#x27;,                                 &#x27;Transporte&#x27;,         &#x27;alta&#x27;,  &#x27;2026-11-20&#x27;, &#x27;aguardando_terceiros&#x27;, 7,  7, 2,    &#x27;2026-10-07 18:05:00&#x27;, &#x27;2026-10-28 09:40:00&#x27;),
+  (&#x27;Atualizar o cadastro de contatos dos responsáveis legais&#x27;,                           &#x27;Documentação&#x27;,       &#x27;baixa&#x27;, &#x27;2026-12-04&#x27;, &#x27;aberta&#x27;,               1,  7, NULL, &#x27;2026-10-07 18:10:00&#x27;, &#x27;2026-10-07 18:10:00&#x27;),
+  (&#x27;Acompanhar o resultado de exames na unidade básica de saúde&#x27;,                        &#x27;Saúde&#x27;,              &#x27;media&#x27;, &#x27;2026-11-14&#x27;, &#x27;concluida&#x27;,            5,  8, 5,    &#x27;2026-10-14 18:00:00&#x27;, &#x27;2026-11-10 15:00:00&#x27;),
+  (&#x27;Encaminhar para avaliação psicológica&#x27;,                                              &#x27;Saúde&#x27;,              &#x27;alta&#x27;,  &#x27;2026-10-28&#x27;, &#x27;concluida&#x27;,            8,  8, 12,   &#x27;2026-10-14 18:05:00&#x27;, &#x27;2026-10-27 16:30:00&#x27;),
+  (&#x27;Verificar com a família a vacinação em atraso&#x27;,                                      &#x27;Saúde&#x27;,              &#x27;baixa&#x27;, &#x27;2026-12-01&#x27;, &#x27;em_andamento&#x27;,         5,  8, 7,    &#x27;2026-10-14 18:10:00&#x27;, &#x27;2026-10-30 10:00:00&#x27;),
+  (&#x27;Mediar conflito familiar relatado pela equipe&#x27;,                                      &#x27;Família&#x27;,            &#x27;alta&#x27;,  &#x27;2026-11-04&#x27;, &#x27;concluida&#x27;,            6,  9, 12,   &#x27;2026-10-21 18:00:00&#x27;, &#x27;2026-11-12 10:30:00&#x27;),
+  (&#x27;Inscrever em oficina de música do CRAS&#x27;,                                             &#x27;Assistência social&#x27;, &#x27;baixa&#x27;, &#x27;2026-12-11&#x27;, &#x27;aberta&#x27;,               7,  9, 6,    &#x27;2026-10-21 18:05:00&#x27;, &#x27;2026-10-21 18:05:00&#x27;),
+  (&#x27;Solicitar segunda via de documento de identidade&#x27;,                                   &#x27;Documentação&#x27;,       &#x27;media&#x27;, &#x27;2026-11-21&#x27;, &#x27;em_andamento&#x27;,         7,  9, 2,    &#x27;2026-10-21 18:10:00&#x27;, &#x27;2026-11-03 14:15:00&#x27;),
+  (&#x27;Planejar a adaptação da rotina escolar após cirurgia&#x27;,                               &#x27;Educação&#x27;,           &#x27;media&#x27;, &#x27;2026-12-05&#x27;, &#x27;em_andamento&#x27;,         4, 10, 7,    &#x27;2026-11-04 18:00:00&#x27;, &#x27;2026-11-06 09:00:00&#x27;),
+  (&#x27;Convocar a família para a devolutiva semestral&#x27;,                                     &#x27;Família&#x27;,            &#x27;baixa&#x27;, &#x27;2026-12-18&#x27;, &#x27;aberta&#x27;,               3, 10, 1,    &#x27;2026-11-04 18:05:00&#x27;, &#x27;2026-11-04 18:05:00&#x27;),
+  (&#x27;Solicitar consulta com ortopedista pelo SUS&#x27;,                                        &#x27;Saúde&#x27;,              &#x27;alta&#x27;,  &#x27;2026-11-25&#x27;, &#x27;aguardando_terceiros&#x27;, 8, 11, 10,   &#x27;2026-11-11 18:00:00&#x27;, &#x27;2026-11-12 10:20:00&#x27;),
+  (&#x27;Cancelar pedido duplicado de transporte sanitário&#x27;,                                  &#x27;Transporte&#x27;,         &#x27;baixa&#x27;, &#x27;2026-11-18&#x27;, &#x27;cancelada&#x27;,            8, 11, NULL, &#x27;2026-11-11 18:05:00&#x27;, &#x27;2026-11-12 08:10:00&#x27;),
+  (&#x27;Articular vaga em curso de qualificação profissional&#x27;,                               &#x27;Assistência social&#x27;, &#x27;media&#x27;, &#x27;2026-12-12&#x27;, &#x27;aberta&#x27;,               6, 12, 6,    &#x27;2026-11-12 18:00:00&#x27;, &#x27;2026-11-12 18:00:00&#x27;),
+  (&#x27;Reunir a rede para discutir caso de evasão escolar&#x27;,                                 &#x27;Educação&#x27;,           &#x27;alta&#x27;,  &#x27;2026-12-03&#x27;, &#x27;aberta&#x27;,               6, 12, 4,    &#x27;2026-11-12 18:05:00&#x27;, &#x27;2026-11-12 18:05:00&#x27;);
+
+-- EVOLUCAO: 14 lançamentos originais e 3 retificações (15, 16 e 17).
+-- A 16 retifica a 5, e a 17 retifica a 16: uma cadeia de versões (1:1).
+INSERT INTO evolucao (assistido_id, profissional_id, data, area_atuacao, descricao, ocorrido_em, retifica_id) VALUES
+  (1,  3, &#x27;2026-08-10&#x27;, &#x27;Pedagógica&#x27;,     &#x27;Participou da atividade de leitura com apoio de pictogramas.&#x27;,              &#x27;2026-08-10 16:20:00&#x27;, NULL),
+  (1,  4, &#x27;2026-09-14&#x27;, &#x27;Pedagógica&#x27;,     &#x27;Concluiu a sequência de atividades de coordenação motora fina.&#x27;,             &#x27;2026-09-14 15:05:00&#x27;, NULL),
+  (2,  7, &#x27;2026-08-20&#x27;, &#x27;Serviço social&#x27;, &#x27;Família compareceu e assinou o termo de acompanhamento.&#x27;,                   &#x27;2026-08-20 10:40:00&#x27;, NULL),
+  (3,  5, &#x27;2026-09-11&#x27;, &#x27;Fonoaudiologia&#x27;, &#x27;Ampliou o uso da prancha de comunicação em sala.&#x27;,                          &#x27;2026-09-11 14:00:00&#x27;, NULL),
+  (3,  5, &#x27;2026-10-09&#x27;, &#x27;Fonoaudiologia&#x27;, &#x27;Iniciou a produção de frases de duas palavras.&#x27;,                            &#x27;2026-10-09 14:10:00&#x27;, NULL),
+  (4,  8, &#x27;2026-08-13&#x27;, &#x27;Saúde&#x27;,          &#x27;Aguardando retorno da consulta com o neuropediatra.&#x27;,                       &#x27;2026-08-13 11:30:00&#x27;, NULL),
+  (4,  8, &#x27;2026-10-02&#x27;, &#x27;Saúde&#x27;,          &#x27;Consulta realizada; orientações repassadas à família.&#x27;,                     &#x27;2026-10-02 16:45:00&#x27;, NULL),
+  (5,  4, &#x27;2026-09-03&#x27;, &#x27;Pedagógica&#x27;,     &#x27;Adaptação inicial à rotina da sala concluída.&#x27;,                             &#x27;2026-09-03 13:50:00&#x27;, NULL),
+  (6,  7, &#x27;2026-09-17&#x27;, &#x27;Convivência&#x27;,    &#x27;Participou da oficina de música com boa interação.&#x27;,                        &#x27;2026-09-17 15:30:00&#x27;, NULL),
+  (7,  4, &#x27;2026-10-08&#x27;, &#x27;Pedagógica&#x27;,     &#x27;Ausente três dias na semana; família informada.&#x27;,                           &#x27;2026-10-08 12:00:00&#x27;, NULL),
+  (10, 3, &#x27;2026-10-15&#x27;, &#x27;Pedagógica&#x27;,     &#x27;Revisão das metas do plano de ensino com a escola.&#x27;,                        &#x27;2026-10-15 17:10:00&#x27;, NULL),
+  (12, 6, &#x27;2026-10-22&#x27;, &#x27;Serviço social&#x27;, &#x27;Escuta da família sobre conflito no ambiente doméstico.&#x27;,                   &#x27;2026-10-22 09:30:00&#x27;, NULL),
+  (12, 6, &#x27;2026-11-05&#x27;, &#x27;Serviço social&#x27;, &#x27;Mediação realizada; combinados registrados com a família.&#x27;,                 &#x27;2026-11-05 10:15:00&#x27;, NULL),
+  (9,  6, &#x27;2026-08-21&#x27;, &#x27;Serviço social&#x27;, &#x27;Atendimento encerrado e prontuário transferido.&#x27;,                           &#x27;2026-08-21 11:00:00&#x27;, NULL),
+  (7,  4, &#x27;2026-10-08&#x27;, &#x27;Pedagógica&#x27;,     &#x27;Ausente dois dias na semana (correção); família informada.&#x27;,                &#x27;2026-10-09 08:40:00&#x27;, 10),
+  (3,  5, &#x27;2026-10-09&#x27;, &#x27;Fonoaudiologia&#x27;, &#x27;Iniciou a produção de frases de duas e três palavras.&#x27;,                     &#x27;2026-10-10 09:15:00&#x27;, 5),
+  (3,  5, &#x27;2026-10-09&#x27;, &#x27;Fonoaudiologia&#x27;, &#x27;Iniciou a produção de frases de duas e três palavras com apoio visual.&#x27;,     &#x27;2026-10-12 08:05:00&#x27;, 16),
+  (11, 7, &#x27;2026-11-10&#x27;, &#x27;Convivência&#x27;,    &#x27;Primeira participação no grupo de convivência de adultos.&#x27;,                 &#x27;2026-11-10 15:00:00&#x27;, NULL);
+
+-- Conferência: quantidade de registros em cada tabela
+SELECT COUNT(*) AS usuarios       FROM usuario;
+SELECT COUNT(*) AS assistidos     FROM assistido;
+SELECT COUNT(*) AS acompanhamentos FROM assistido_profissional;
+SELECT COUNT(*) AS reunioes       FROM reuniao;
+SELECT COUNT(*) AS demandas       FROM demanda;
+SELECT COUNT(*) AS evolucoes      FROM evolucao;
+</pre>
+
+<h2>Referências</h2>
+<p>HEUSER, Carlos Alberto. <i>Projeto de banco de dados</i>. 3. ed. Porto Alegre: Sagra Luzzatto, 2000.</p>
+<p>ELMASRI, Ramez; NAVATHE, Shamkant B. <i>Sistemas de banco de dados: fundamentos e aplicações</i>. 3. ed. Rio de Janeiro: LTC, 2002.</p>
+<p>EQUIPE CORTEX. <i>Especificação do minimundo: Sistema de Gestão de Demandas de Articulação</i>, versão 1.0. Bragança Paulista: IFSP, 2026.</p>
+</body></html>
