@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import cliente from '../api/cliente'
+import Carregando from '../components/Carregando'
 import CabecalhoDemandas from '../components/CabecalhoDemandas'
 import ErroConsulta from '../components/ErroConsulta'
 import ListaDemandas from '../components/ListaDemandas'
@@ -32,7 +33,7 @@ export default function MinhasDemandas() {
     <>
       <CabecalhoDemandas titulo="Minhas demandas">Demandas em aberto sob sua responsabilidade, por ordem de prazo.</CabecalhoDemandas>
       {erro && <ErroConsulta mensagem={erro} tentarNovamente={tentarNovamente} />}
-      {!erro && !demandas && <p role="status">Carregando suas demandas…</p>}
+      {!erro && !demandas && <Carregando>Carregando suas demandas…</Carregando>}
       {demandas && <ListaDemandas demandas={demandas} titulo="Minhas demandas" mensagemVazia="Você não tem demandas em aberto." />}
     </>
   )

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import cliente from '../api/cliente'
+import Carregando from '../components/Carregando'
 import CabecalhoDemandas from '../components/CabecalhoDemandas'
 import CartaoDemanda from '../components/CartaoDemanda'
 import ErroConsulta from '../components/ErroConsulta'
@@ -73,7 +74,7 @@ export default function Painel() {
         </section>
       )}
       {erro && <ErroConsulta mensagem={erro} tentarNovamente={tentarNovamente} />}
-      {!painel && !erro && <p role="status">Carregando painel…</p>}
+      {!painel && !erro && <Carregando>Carregando painel…</Carregando>}
       {painel && (
         <dl className={styles.resumo} aria-label="Totais por estado e prazo">
           {indicadores.map(({ chave, nome }) => (

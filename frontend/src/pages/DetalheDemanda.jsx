@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import cliente from '../api/cliente'
+import Carregando from '../components/Carregando'
 import { estados, setores, dataCurta, dataHora } from '../dominio'
 import AvisoSucesso from '../components/AvisoSucesso'
 import Confirmacao from '../components/Confirmacao'
@@ -170,7 +171,7 @@ export default function DetalheDemanda() {
       <h1>Demanda nº {id}</h1>
       <AvisoSucesso>{sucesso}</AvisoSucesso>
       {erroFicha ? <div className="aviso-erro" role="alert">{erroFicha} <button className="botao botao-secundario" onClick={tentarNovamente}>Tentar de novo</button></div> :
-        !demanda && <p role="status">Carregando demanda…</p>}
+        !demanda && <Carregando>Carregando demanda…</Carregando>}
       {demanda && <>
         <section className={styles.ficha} aria-label="Dados da demanda">
           <p className={styles.descricao}>{demanda.descricao}</p>
@@ -215,7 +216,7 @@ export default function DetalheDemanda() {
               {acao === 'texto' && <CampoDemanda nome={acao} rotulo="Anotação" erro={erroCampo}><textarea {...atributos} rows="3" /></CampoDemanda>}
               {acao === 'responsavel_id' && <>
                 {erroUsuarios ? <div className="aviso-erro" role="alert">{erroUsuarios} <button type="button" className="botao botao-secundario" onClick={tentarNovamente}>Tentar de novo</button></div> :
-                  !usuarios && <p role="status">Carregando responsáveis…</p>}
+                  !usuarios && <Carregando>Carregando responsáveis…</Carregando>}
                 <CampoDemanda nome={acao} rotulo="Novo responsável" erro={erroCampo}>
                   <select {...atributos} disabled={!outrosUsuarios?.length}><option value="">{usuarios && !outrosUsuarios.length ? 'Nenhum outro responsável ativo' : 'Selecione o novo responsável'}</option>
                     {outrosUsuarios?.map(item => <option key={item.id} value={item.id}>{item.nome}</option>)}

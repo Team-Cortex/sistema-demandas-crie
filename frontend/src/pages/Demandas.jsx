@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import cliente from '../api/cliente'
+import Carregando from '../components/Carregando'
 import CabecalhoDemandas from '../components/CabecalhoDemandas'
 import ErroConsulta from '../components/ErroConsulta'
 import ListaDemandas from '../components/ListaDemandas'
@@ -119,7 +120,7 @@ export default function Demandas() {
           </button>
         </div>
         <div id="mais-filtros" hidden={!maisFiltros}>
-          {!opcoes && !erroOpcoes && <p role="status">Carregando responsáveis e assistidos…</p>}
+          {!opcoes && !erroOpcoes && <Carregando>Carregando responsáveis e assistidos…</Carregando>}
           {erroOpcoes && <ErroConsulta mensagem={erroOpcoes} tentarNovamente={tentarOpcoes} />}
           <div className={styles.campos}>
             <label htmlFor="filtro-responsavel">Responsável
@@ -154,7 +155,7 @@ export default function Demandas() {
         </div>
       </form>
       {erro && <ErroConsulta mensagem={erro} tentarNovamente={tentarNovamente} />}
-      {!erro && !demandas && <p role="status">Carregando demandas…</p>}
+      {!erro && !demandas && <Carregando>Carregando demandas…</Carregando>}
       {demandas && (
         <section>
           <h2 className={styles.tituloResultados}>Resultado da busca ({demandas.length})</h2>

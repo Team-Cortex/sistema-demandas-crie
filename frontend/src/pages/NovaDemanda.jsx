@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import cliente from '../api/cliente'
+import Carregando from '../components/Carregando'
 import CampoDemanda from '../components/CampoDemanda'
 import Confirmacao from '../components/Confirmacao'
 import { prioridades, setores, dataCurta } from '../dominio'
@@ -114,7 +115,7 @@ export default function NovaDemanda() {
       <h1>Registrar demanda</h1>
       <form onSubmit={revisarDemanda} noValidate className={styles.ficha}>
         {erroListas ? <div role="alert" className="aviso-erro">{erroListas} <button type="button" className="botao botao-secundario" onClick={tentarNovamente}>Tentar de novo</button></div> :
-          !opcoes && <p role="status">Carregando responsáveis, reuniões e assistidos…</p>}
+          !opcoes && <Carregando>Carregando responsáveis, reuniões e assistidos…</Carregando>}
         <fieldset disabled={enviando} className={styles.campos}>
           <div className={styles.inteira}>
             <CampoDemanda nome="descricao" rotulo="Descrição" erro={erros.descricao}>
