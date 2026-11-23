@@ -6,12 +6,6 @@ def test_usuario_autenticado_entrega_bearer(usuario_autenticado):
     assert usuario_autenticado["Authorization"].startswith("Bearer ")
 
 
-def test_rota_de_teste_responde_hello_world(client):
-    resposta = client.get("/api/teste")
-    assert resposta.status_code == 200
-    assert resposta.get_data(as_text=True) == "Hello World"
-
-
 def test_saude_publica_so_com_ok_e_status(client):
     resposta = client.get("/api/saude")
     assert resposta.status_code == 200

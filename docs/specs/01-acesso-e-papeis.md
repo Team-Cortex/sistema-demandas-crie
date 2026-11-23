@@ -77,7 +77,7 @@ Herança prevista: `Usuario` → `Direcao` e `Profissional`; `Profissional` → 
 
 As permissões só da direção seguem o mesmo desenho: `pode_gerir_usuarios`, `pode_emitir_relatorio` e `pode_consultar_auditoria` respondem verdadeiro na `Direcao` ativa e falso no `Profissional`. A rota declara a permissão com o decorador `exige_permissao("pode_gerir_usuarios", "mensagem do 403")` e não compara o texto do perfil.
 
-Toda rota que não seja `POST /api/auth/login`, `GET /api/saude` e `GET /api/teste` (o Hello World de fumaça) exige token válido e conta ativa. A verificação fica no blueprint, antes de qualquer rota dele: rota nova já nasce protegida. Esconder botão no cliente não conta como permissão.
+Toda rota que não seja `POST /api/auth/login` e `GET /api/saude` exige token válido e conta ativa. A verificação fica no blueprint, antes de qualquer rota dele: rota nova já nasce protegida. Esconder botão no cliente não conta como permissão.
 
 ---
 

@@ -42,7 +42,6 @@ A mensagem de login é sempre **E-mail ou senha inválidos.** O servidor não re
 | Método | Caminho | Auth | Resposta |
 | --- | --- | --- | --- |
 | GET | `/api/saude` | não | `{"ok": true, "status": "ok"}` ou `"degradado"` |
-| GET | `/api/teste` | não | `Hello World` |
 | POST | `/api/auth/login` | não | 200 `token`, `perfil`, `usuario` (`id`, `nome`, `perfil`), `avisos` (demandas vencidas ou perto do prazo, só `id`, `prazo`, `estado`, `vencida`; spec 09); 401 credencial recusada; 422 corpo incompleto; 429 na sexta falha em 60 s do mesmo IP e e-mail |
 | POST | `/api/auth/logout` | sim | 200 `{"ok": true}`; o token deixa de valer (401 no uso seguinte) |
 | POST | `/api/usuarios` | direção | 201 `id`, `nome`, `email`, `perfil`, `ativo`, `criado_em`; 400 e-mail repetido; 403 outro perfil; 422 campo inválido |
