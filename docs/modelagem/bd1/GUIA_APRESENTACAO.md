@@ -8,12 +8,21 @@ Critério que mais pesa na fala: o enunciado diz que "os estudantes deverão exp
 
 | Tempo | Quem | Slides | Conteúdo |
 |---|---|---|---|
-| 0:00 a 2:00 | Vinícius | 1 a 3 | Abertura, o problema do CRIE, recorte de 6 tabelas |
-| 2:00 a 5:30 | Henry | 4 a 7 | DER, os três tipos de relacionamento, notação textual e 3FN, scripts |
-| 5:30 a 9:30 | Inácio | 8 a 12 | Q01 a Q05 (seleção, datas, INNER JOIN) |
-| 9:30 a 13:30 | Gabriel | 13 a 18 | Q06 a Q11 (LEFT JOIN, GROUP BY, HAVING, subconsulta) |
-| 13:30 a 18:30 | Miguel | 19 a 26 | Q12 a Q17, manutenção e ligação com o back-end |
-| 18:30 a 20:00 | Todos | 27 | Perguntas |
+| 0:00 a 2:00 | Vinícius | 1 a 5 | Capa, roteiro, o CRIE e o problema, regras que viram restrições, recorte de 6 tabelas |
+| 2:00 a 5:30 | Henry | 6 a 13 | DER, os 7 relacionamentos, notação textual, 3FN, dicionário, scripts 01 e 02 |
+| 5:30 a 9:30 | Inácio | 14 a 21 | Mapa das 17 consultas, ordem de processamento, Q01 a Q05 (seleção, datas, INNER JOIN) |
+| 9:30 a 13:30 | Gabriel | 22 a 28 | Q06 a Q11 (LEFT JOIN, GROUP BY, HAVING, subconsulta) |
+| 13:30 a 18:30 | Miguel | 29 a 38 | Q12 a Q17, script 04 (manutenção), do banco ao sistema, critérios do enunciado |
+| 18:30 a 20:00 | Todos | 39 | Perguntas |
+
+Os slides 6, 14, 22 e 29 são de passagem: mostram quem fala e o tempo do bloco.
+
+## Como usar o deck
+
+- Abrir `deck/index.html` no navegador. Funciona sem internet: fontes, logos e imagem estão dentro do arquivo.
+- **F** tela cheia · **seta direita, espaço ou clique** avança · **seta esquerda** volta · **Home/End** primeiro e último · **N** mostra as notas de quem fala (o enunciado completo de cada consulta e a explicação).
+- Em cada consulta, o número colorido ao lado de cada cláusula é a etapa em que o MySQL a processa (1 FROM, 2 JOIN, 3 WHERE, 4 GROUP BY, 5 HAVING, 6 SELECT, 7 ORDER BY). É a deixa para a fala.
+- Reserva: `deck/Seminario_BD1_Equipe_Cortex.pdf`, com os mesmos 39 slides.
 
 Se a professora pedir para rodar ao vivo: abrir o MySQL Workbench, executar `01`, `02` e depois a consulta pedida do `03`. As consultas com `CURDATE()` dão números diferentes conforme o dia; para reproduzir os do documento, rodar antes `SET TIMESTAMP = UNIX_TIMESTAMP('2026-11-30 19:00:00');`.
 
