@@ -41,6 +41,7 @@ Cada tela tem: objetivo, quem vê, conteúdo, componentes, ação principal, est
   - 401 e 429: "E-mail ou senha inválidos." (o servidor não diz qual).
   - Sem resposta: "Não foi possível falar com o servidor. Confira a internet e tente de novo."
   - Vindo de sessão encerrada: aviso no topo "Sua sessão terminou. Entre de novo."
+  - Depois de 15 minutos sem clique, tecla ou movimento (RF02, RNF05): aviso no topo "Sua sessão foi encerrada por inatividade. Entre de novo." O que estava sendo digitado continua guardado para a mesma conta (RNF16).
 - **Depois de entrar:** vai para o Painel, ou de volta para a tela em que estava quando a sessão terminou.
 
 ## 2. Painel — `/`
