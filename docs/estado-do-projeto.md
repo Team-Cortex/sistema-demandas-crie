@@ -1,6 +1,6 @@
 # Estado do projeto
 
-Mapa geral do sistema, para quem abre o repositório sem a conversa anterior. Atualizado em 16/11/2026.
+Mapa geral do sistema, para quem abre o repositório sem a conversa anterior. Atualizado em 17/11/2026.
 
 Quem mantém este arquivo é a frente de back-end. A atualização acompanha os commits dessa frente quando um fato daqui muda. Não é diário de commits e não é obrigação das outras frentes manterem este texto em tempo real.
 
@@ -88,3 +88,5 @@ Fora das specs atuais: serviço da rede, retorno de acompanhamento, notificaçã
 ## 5. Como rodar
 
 Está no [`README.md`](../README.md); a instalação do servidor do zero está em [`backend/README.md`](../backend/README.md). Servidor em `backend/` (`flask run`, porta 5000). Cliente em `frontend/` (`npm run dev`, porta 5173). Banco local com `docker compose up -d`.
+
+Primeiro acesso, sem carga fictícia: `flask criar-primeira-direcao --nome "..." --email "..."`, em `backend/`, depois das migrações. Só funciona sem nenhum usuário; senha em prompt oculto, sem endpoint público. O roteiro e as evidências estão em [`validacao-primeiro-acesso.md`](validacao-primeiro-acesso.md). A criação no banco publicado ainda depende da identidade confirmada e do acesso administrativo ao ambiente.

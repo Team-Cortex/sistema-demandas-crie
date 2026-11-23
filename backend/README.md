@@ -121,6 +121,23 @@ flask db upgrade
 
 ## Dados fictícios (seed)
 
+### Primeiro acesso sem carga de demonstração
+
+Num banco já migrado e **sem nenhum usuário**, o comando administrativo cria somente a primeira direção:
+
+```bash
+cd backend
+flask criar-primeira-direcao --nome "Direção Fictícia" --email "direcao@exemplo.test"
+```
+
+O nome e o e-mail acima servem para validação fictícia. No ambiente publicado, confirme a identidade com o responsável. A senha é solicitada duas vezes em prompt oculto; não a coloque em argumentos, commits ou relatórios. O comando usa as mesmas validações e o hash do cadastro pela API.
+
+Se já houver qualquer usuário, inclusive inativo, o comando recusa sem alterar nada. Não cria tabelas nem dados de assistidos, reuniões ou demandas. As próximas contas são criadas pela direção em `POST /api/usuarios`. O `seed.py` abaixo continua proibido em produção.
+
+Antes de operar o banco publicado, confira o projeto e o ambiente selecionados, as migrações e a liberação operacional. Não copie credenciais de produção para o `.env` de desenvolvimento. Roteiro e limites da validação: [`docs/validacao-primeiro-acesso.md`](../docs/validacao-primeiro-acesso.md).
+
+### Carga fictícia de desenvolvimento
+
 Para desenvolvimento e demonstração. **Nunca com dado real do CRIE.**
 
 1. No `.env`, preencha `SEED_DIRECAO_SENHA` e `SEED_SENHA_PADRAO` com senhas suas, de pelo menos 8 caracteres. Nome e e-mail da direção já vêm no `.env.example`.

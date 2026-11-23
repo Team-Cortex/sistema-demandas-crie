@@ -1,0 +1,58 @@
+# Cria a PRIMEIRA direção no banco de produção, uma vez só, com o comando
+# `flask criar-primeira-direcao` (spec 01 §3.1). O comando recusa se já houver
+# qualquer usuário. A senha vem de um segredo do repositório e nunca aparece no log.
+#
+# Antes de rodar (só quem administra o repositório):
+#   gh secret set DATABASE_URL --repo Team-Cortex/sistema-demandas-crie
+#   gh secret set SENHA_PRIMEIRA_DIRECAO --repo Team-Cortex/sistema-demandas-crie
+# Depois: Actions > "Criar primeira direção (produção)" > Run workflow.
+name: Criar primeira direção (produção)
+
+on:
+  workflow_dispatch:
+    inputs:
+      nome:
+        description: "Nome da primeira direção"
+        required: true
+      email:
+        description: "E-mail do primeiro acesso"
+        required: true
+
+jobs:
+  criar:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      FLASK_APP: "app:create_app"
+      FLASK_ENV: production
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+      - name: Conferir os segredos
+        env:
+          SENHA: ${{ secrets.SENHA_PRIMEIRA_DIRECAO }}
+        run: |
+          test -n "$DATABASE_URL" || { echo "Falta o segredo DATABASE_URL."; exit 1; }
+          test -n "$SENHA" || { echo "Falta o segredo SENHA_PRIMEIRA_DIRECAO."; exit 1; }
+      - name: Versão do banco (só leitura)
+        run: |
+          export SECRET_KEY="$(openssl rand -hex 32)" JWT_SECRET_KEY="$(openssl rand -hex 32)"
+          flask db current
+      - name: Criar a primeira direção
+        env:
+          SENHA: ${{ secrets.SENHA_PRIMEIRA_DIRECAO }}
+          NOME: ${{ inputs.nome }}
+          EMAIL: ${{ inputs.email }}
+        run: |
+          # As chaves de sessão não são usadas pelo comando; a aplicação só exige que existam.
+          export SECRET_KEY="$(openssl rand -hex 32)" JWT_SECRET_KEY="$(openssl rand -hex 32)"
+          printf '%s\n%s\n' "$SENHA" "$SENHA" | flask criar-primeira-direcao --nome "$NOME" --email "$EMAIL"

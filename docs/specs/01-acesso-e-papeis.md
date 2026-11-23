@@ -65,7 +65,7 @@ A direção não altera o próprio `perfil` nem o próprio `ativo` → 400, `{"e
 
 Só `direcao`. Marca `ativo: false` e devolve o usuário. Desativar quem já está inativo devolve 200 sem mudar nada. A própria conta → 400, mesma mensagem acima. Não existe `DELETE`.
 
-Não há autocadastro. Quem cria a primeira conta `direcao` é o comando de semente, abaixo.
+Não há autocadastro. A primeira conta `direcao` é criada pelo comando administrativo do §3.1; a semente do §3 continua exclusiva de desenvolvimento.
 
 ---
 
@@ -87,6 +87,22 @@ Quando o script de criação do Henry existir, o comando `python seed.py` (a par
 
 ---
 
+### 3.1 Primeira direção no banco publicado
+
+Solicitado em 17/11/2026 para viabilizar o primeiro acesso na fase atual, ainda sem interface integrada. `flask criar-primeira-direcao --nome "..." --email "..."` cria **somente uma direção ativa** num banco sem usuários. Não carrega demonstração, não cria tabelas e não altera contas existentes. O `seed.py` continua recusando produção.
+
+Regras, na ordem:
+
+1. Sem banco configurado, recusa com mensagem legível.
+2. Nome, e-mail e senha seguem a validação do cadastro HTTP. O perfil é sempre `direcao`; senha recebida em prompt oculto, com confirmação, nunca por argumento de linha de comando.
+3. No PostgreSQL, bloqueia a tabela `usuario` na mesma transação da consulta e criação, impedindo dois primeiros cadastros simultâneos.
+4. Qualquer usuário existente, mesmo profissional ou inativo, impede o comando. Repetir não muda senha, perfil ou ativação.
+5. Reutiliza o cadastro do servidor e seu hash de senha. Confirma apenas o id criado; falha do banco desfaz a transação e não imprime SQL, credenciais ou detalhes de conexão.
+
+Não existe endpoint de bootstrap nem senha padrão. As próximas contas são cadastradas pela direção em `POST /api/usuarios`.
+
+A identidade da primeira direção no ambiente publicado permanece **aberta** até confirmação do responsável. Na validação isolada, usam-se somente nome fictício e e-mail `@exemplo.test`. A criação e a validação autenticada no ambiente de produção dependem da liberação operacional desse ambiente; o roteiro e as evidências ficam em `docs/validacao-primeiro-acesso.md`.
+
 ## 4. Testes que provam esta spec
 
 - Login certo devolve token; login errado, e-mail inexistente e senha vazia devolvem a mesma mensagem.
@@ -98,6 +114,8 @@ Quando o script de criação do Henry existir, o comando `python seed.py` (a par
 - Logout impede reutilizar o token.
 - Desativar não apaga a linha e derruba a sessão aberta do desativado.
 - A direção não desativa a própria conta.
+- O comando cria só uma direção, permite login e acesso protegido, e o logout invalida o token.
+- O comando recusa qualquer usuário prévio, entrada inválida e falha do banco, sem revelar senha ou detalhes internos.
 
 ---
 
