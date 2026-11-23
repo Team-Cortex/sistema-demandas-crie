@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import cliente, { guardarRascunho, lerRascunho, mensagemDeErro } from '../api/cliente'
+import cliente from '../api/cliente'
 import { estados, prioridades, setores, dataCurta, dataHora } from '../dominio'
 import AvisoSucesso from '../components/AvisoSucesso'
 import Confirmacao from '../components/Confirmacao'
@@ -17,7 +17,7 @@ export default function DetalheDemanda() {
   const local = useLocation()
   const chave = 'demanda-' + id
   const caminho = '/api/demandas/' + id
-  const [rascunho, setRascunho] = useState({ ...inicial, ...lerRascunho(chave) })
+  const [rascunho, setRascunho] = useState({ ...inicial, ...cliente.lerRascunho(chave) })
   const [demanda, setDemanda] = useState(null)
   const [reuniao, setReuniao] = useState(null)
   const [assistido, setAssistido] = useState(null)
@@ -37,7 +37,7 @@ export default function DetalheDemanda() {
         const resposta = await cliente.get(caminho)
         setDemanda(resposta.data)
       } catch (falha) {
-        setErroFicha(mensagemDeErro(falha))
+        setErroFicha(cliente.mensagemDeErro(falha))
       }
     }
     buscarDemanda()
@@ -76,7 +76,7 @@ export default function DetalheDemanda() {
         const resposta = await cliente.get('/api/usuarios', { params: { ativo: true } })
         setUsuarios(resposta.data)
       } catch (falha) {
-        setErroUsuarios(mensagemDeErro(falha))
+        setErroUsuarios(cliente.mensagemDeErro(falha))
       }
     }
     buscarUsuarios()
@@ -94,7 +94,7 @@ export default function DetalheDemanda() {
 
   function guardar(valores) {
     setRascunho(valores)
-    guardarRascunho(chave, valores)
+    cliente.guardarRascunho(chave, valores)
     setErroCampo('')
     setErroServidor('')
   }
@@ -153,7 +153,7 @@ export default function DetalheDemanda() {
       }
       guardar({ ...rascunho, [acao]: '' })
     } catch (falha) {
-      setErroServidor(mensagemDeErro(falha))
+      setErroServidor(cliente.mensagemDeErro(falha))
     } finally {
       setEnviando(false)
     }

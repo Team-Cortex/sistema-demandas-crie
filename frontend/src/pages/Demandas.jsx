@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../api/cliente'
+import cliente from '../api/cliente'
 import CabecalhoDemandas from '../components/CabecalhoDemandas'
 import ErroConsulta from '../components/ErroConsulta'
 import ListaDemandas from '../components/ListaDemandas'
@@ -19,7 +19,7 @@ function preenchidos(filtros) {
 
 export default function Demandas() {
   // Os filtros ficam no rascunho para voltarem depois que a sessão é renovada.
-  const [filtros, setFiltros] = useState(lerRascunho('filtros-demandas') || filtrosVazios)
+  const [filtros, setFiltros] = useState(cliente.lerRascunho('filtros-demandas') || filtrosVazios)
   const [consulta, setConsulta] = useState(preenchidos(filtros))
   const [demandas, setDemandas] = useState(null)
   const [erro, setErro] = useState('')
@@ -37,7 +37,7 @@ export default function Demandas() {
         const assistidos = await cliente.get('/api/assistidos')
         setOpcoes({ usuarios: usuarios.data, assistidos: assistidos.data })
       } catch (falha) {
-        setErroOpcoes(mensagemDeErro(falha))
+        setErroOpcoes(cliente.mensagemDeErro(falha))
       }
     }
     buscarOpcoes()
@@ -50,7 +50,7 @@ export default function Demandas() {
         const resposta = await cliente.get('/api/demandas', { params: consulta })
         setDemandas(resposta.data)
       } catch (falha) {
-        setErro(mensagemDeErro(falha))
+        setErro(cliente.mensagemDeErro(falha))
       }
     }
     buscarDemandas()
@@ -74,13 +74,13 @@ export default function Demandas() {
       setErroPeriodo('Escolha uma data final igual ou posterior à inicial.')
       return
     }
-    guardarRascunho('filtros-demandas', filtros)
+    cliente.guardarRascunho('filtros-demandas', filtros)
     consultar(preenchidos(filtros))
   }
 
   function limparFiltros() {
     setFiltros(filtrosVazios)
-    apagarRascunho('filtros-demandas')
+    cliente.apagarRascunho('filtros-demandas')
     setErroPeriodo('')
     consultar({})
   }

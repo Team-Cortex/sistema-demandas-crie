@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import Carregando from '../../components/Carregando'
 import ErroConsulta from '../../components/ErroConsulta'
 import { dataCurta, dataHora } from '../../dominio'
@@ -20,7 +20,7 @@ function preenchidos(campos) {
 export default function EvolucoesAssistido({ assistidoId, iniciais }) {
   // Os filtros aplicados ficam no rascunho para voltarem depois que a sessão é renovada.
   const chave = 'evolucoes-' + assistidoId
-  const [campos, setCampos] = useState(lerRascunho(chave) || vazio)
+  const [campos, setCampos] = useState(cliente.lerRascunho(chave) || vazio)
   const [consulta, setConsulta] = useState(preenchidos(campos))
   const [resultados, setResultados] = useState(null)
   const [erro, setErro] = useState('')
@@ -33,7 +33,7 @@ export default function EvolucoesAssistido({ assistidoId, iniciais }) {
         const resposta = await cliente.get('/api/assistidos/' + assistidoId + '/evolucoes', { params: consulta })
         setResultados(resposta.data)
       } catch (falha) {
-        setErro(mensagemDeErro(falha))
+        setErro(cliente.mensagemDeErro(falha))
       }
     }
     if (consulta) buscarEvolucoes()
@@ -54,11 +54,11 @@ export default function EvolucoesAssistido({ assistidoId, iniciais }) {
     setErro('')
     setResultados(null)
     setConsulta(preenchidos(campos))
-    guardarRascunho(chave, campos)
+    cliente.guardarRascunho(chave, campos)
   }
 
   function limpar() {
-    apagarRascunho(chave)
+    cliente.apagarRascunho(chave)
     setConsulta(null)
     setCampos(vazio)
     setErroPeriodo('')

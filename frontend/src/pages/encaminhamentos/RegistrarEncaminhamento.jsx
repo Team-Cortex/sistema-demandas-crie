@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import { hojeCrie } from '../../dominio'
 import CampoDemanda from '../../components/CampoDemanda'
 import styles from './Encaminhamentos.module.css'
@@ -13,7 +13,7 @@ export default function RegistrarEncaminhamento() {
   const assistido = parametros.get('assistido_id')
   const origem = demanda ? '/demandas/' + demanda : '/assistidos/' + assistido
   const chave = 'encaminhar:' + origem
-  const [campos, setCampos] = useState(lerRascunho(chave) || { destino: '', data: hojeCrie(), observacao: '' })
+  const [campos, setCampos] = useState(cliente.lerRascunho(chave) || { destino: '', data: hojeCrie(), observacao: '' })
   const [erros, setErros] = useState({})
   const [erro, setErro] = useState('')
   const [enviando, setEnviando] = useState(false)
@@ -22,7 +22,7 @@ export default function RegistrarEncaminhamento() {
     const { name, value } = evento.target
     const valores = { ...campos, [name]: value }
     setCampos(valores)
-    guardarRascunho(chave, valores)
+    cliente.guardarRascunho(chave, valores)
     setErros({ ...erros, [name]: '' })
     setErro('')
   }
@@ -45,10 +45,10 @@ export default function RegistrarEncaminhamento() {
       if (demanda) dados.demanda_id = Number(demanda)
       if (assistido) dados.assistido_id = Number(assistido)
       await cliente.post('/api/encaminhamentos', dados)
-      apagarRascunho(chave)
+      cliente.apagarRascunho(chave)
       navegar('/encaminhamentos', { replace: true, state: { mensagem: 'Encaminhamento registrado.' } })
     } catch (falha) {
-      setErro(mensagemDeErro(falha))
+      setErro(cliente.mensagemDeErro(falha))
     } finally {
       setEnviando(false)
     }

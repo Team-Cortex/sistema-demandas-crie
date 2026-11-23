@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import CampoDemanda from '../../components/CampoDemanda'
 import Carregando from '../../components/Carregando'
 import ErroConsulta from '../../components/ErroConsulta'
@@ -12,7 +12,7 @@ export default function FormularioReuniao() {
   const navegar = useNavigate()
   const chave = 'reuniao-' + (id || 'nova')
   const voltar = id ? '/reunioes/' + id : '/reunioes'
-  const [rascunho, setRascunho] = useState(lerRascunho(chave) || {})
+  const [rascunho, setRascunho] = useState(cliente.lerRascunho(chave) || {})
   const [opcoes, setOpcoes] = useState(null)
   const [erro, setErro] = useState('')
   const [tentativa, setTentativa] = useState(0)
@@ -28,7 +28,7 @@ export default function FormularioReuniao() {
         const ficha = id ? await cliente.get('/api/reunioes/' + id) : null
         setOpcoes({ usuarios: usuarios.data, reuniao: ficha?.data })
       } catch (falha) {
-        setErro(mensagemDeErro(falha))
+        setErro(cliente.mensagemDeErro(falha))
       }
     }
     buscarDados()
@@ -50,7 +50,7 @@ export default function FormularioReuniao() {
   function guardar(campo, valor) {
     const atualizado = { ...rascunho, [campo]: valor }
     setRascunho(atualizado)
-    guardarRascunho(chave, atualizado)
+    cliente.guardarRascunho(chave, atualizado)
     setErros({ ...erros, [campo]: '' })
     setErroServidor('')
   }
@@ -87,10 +87,10 @@ export default function FormularioReuniao() {
     setErroServidor('')
     try {
       const resposta = id ? await cliente.patch('/api/reunioes/' + id, corpo) : await cliente.post('/api/reunioes', corpo)
-      apagarRascunho(chave)
+      cliente.apagarRascunho(chave)
       navegar('/reunioes/' + resposta.data.id, { replace: true, state: { mensagem: id ? 'Reunião atualizada.' : 'Reunião registrada.' } })
     } catch (falha) {
-      setErroServidor(mensagemDeErro(falha))
+      setErroServidor(cliente.mensagemDeErro(falha))
       setEnviando(false)
     }
   }

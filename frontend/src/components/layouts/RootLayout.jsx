@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import cliente, { apagarSessao, lerSessao } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import { perfis } from '../../dominio'
 import styles from './RootLayout.module.css'
 
@@ -17,7 +17,7 @@ const navegacao = [
 ]
 
 export default function RootLayout() {
-  const { usuario, token } = lerSessao()
+  const { usuario, token } = cliente.lerSessao()
   const { pathname, search } = useLocation()
   const navegar = useNavigate()
   const [menuAberto, setMenuAberto] = useState(false)
@@ -36,7 +36,7 @@ export default function RootLayout() {
         aviso = 'Você saiu deste navegador. O servidor não confirmou o encerramento da sessão.'
       }
     }
-    apagarSessao()
+    cliente.apagarSessao()
     navegar('/entrar', { replace: true, state: { aviso } })
   }
 

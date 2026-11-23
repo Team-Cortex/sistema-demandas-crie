@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import Carregando from '../../components/Carregando'
 import ErroConsulta from '../../components/ErroConsulta'
 import styles from './Assistidos.module.css'
 
 export default function Assistidos() {
   // A busca fica no rascunho para voltar depois que a sessão é renovada.
-  const [busca, setBusca] = useState(lerRascunho('busca-assistidos') || '')
+  const [busca, setBusca] = useState(cliente.lerRascunho('busca-assistidos') || '')
   const [consulta, setConsulta] = useState(busca.trim() ? { busca: busca.trim() } : {})
   const [assistidos, setAssistidos] = useState(null)
   const [erro, setErro] = useState('')
@@ -19,7 +19,7 @@ export default function Assistidos() {
         const resposta = await cliente.get('/api/assistidos', { params: consulta })
         setAssistidos(resposta.data)
       } catch (falha) {
-        setErro(mensagemDeErro(falha))
+        setErro(cliente.mensagemDeErro(falha))
       }
     }
     buscarAssistidos()
@@ -33,12 +33,12 @@ export default function Assistidos() {
 
   function buscar(evento) {
     evento.preventDefault()
-    guardarRascunho('busca-assistidos', busca)
+    cliente.guardarRascunho('busca-assistidos', busca)
     consultar(busca.trim())
   }
 
   function limpar() {
-    apagarRascunho('busca-assistidos')
+    cliente.apagarRascunho('busca-assistidos')
     setBusca('')
     consultar('')
   }

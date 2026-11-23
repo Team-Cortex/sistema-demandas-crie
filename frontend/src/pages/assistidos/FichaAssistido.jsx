@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import cliente, { mensagemDeErro } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import { dataCurta } from '../../dominio'
 import AvisoSucesso from '../../components/AvisoSucesso'
 import Carregando from '../../components/Carregando'
@@ -22,7 +22,7 @@ export default function FichaAssistido() {
         const resposta = await cliente.get('/api/assistidos/' + id + '/ficha')
         setFicha(resposta.data)
       } catch (falha) {
-        setErro(mensagemDeErro(falha))
+        setErro(cliente.mensagemDeErro(falha))
       }
     }
     buscarFicha()

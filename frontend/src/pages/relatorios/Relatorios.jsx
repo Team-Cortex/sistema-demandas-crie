@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import cliente, { guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import { estados } from '../../dominio'
 import ErroConsulta from '../../components/ErroConsulta'
 import Carregando from '../../components/Carregando'
@@ -10,7 +10,7 @@ import styles from './Relatorios.module.css'
 const inicial = { tipo: 'demandas', de: '', ate: '', estado: '', categoria: '', responsavel_id: '', assistido_id: '' }
 
 export default function Relatorios() {
-  const [campos, setCampos] = useState({ ...inicial, ...lerRascunho('relatorios') })
+  const [campos, setCampos] = useState({ ...inicial, ...cliente.lerRascunho('relatorios') })
   const [opcoes, setOpcoes] = useState(null)
   const [erroOpcoes, setErroOpcoes] = useState('')
   const [tentativa, setTentativa] = useState(0)
@@ -26,7 +26,7 @@ export default function Relatorios() {
         const assistidos = await cliente.get('/api/assistidos')
         setOpcoes({ usuarios: usuarios.data, assistidos: assistidos.data })
       } catch (falha) {
-        setErroOpcoes(mensagemDeErro(falha))
+        setErroOpcoes(cliente.mensagemDeErro(falha))
       }
     }
     buscarOpcoes()
@@ -40,7 +40,7 @@ export default function Relatorios() {
   function alterarCampo(evento) {
     const valores = { ...campos, [evento.target.name]: evento.target.value }
     setCampos(valores)
-    guardarRascunho('relatorios', valores)
+    cliente.guardarRascunho('relatorios', valores)
     setErro('')
     setErrosCampos({})
     setRelatorio(null)
@@ -75,7 +75,7 @@ export default function Relatorios() {
       const resposta = await cliente.get(caminho, { params })
       setRelatorio(resposta.data)
     } catch (falha) {
-      setErro(mensagemDeErro(falha))
+      setErro(cliente.mensagemDeErro(falha))
     } finally {
       setEmitindo(false)
     }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import cliente, { lerSessao, mensagemDeErro } from '../api/cliente'
+import cliente from '../api/cliente'
 import CabecalhoDemandas from '../components/CabecalhoDemandas'
 import CartaoDemanda from '../components/CartaoDemanda'
 import ErroConsulta from '../components/ErroConsulta'
@@ -19,7 +19,7 @@ export default function Painel() {
   const [painel, setPainel] = useState(null)
   const [erro, setErro] = useState('')
   const [tentativa, setTentativa] = useState(0)
-  const { avisos } = lerSessao()
+  const { avisos } = cliente.lerSessao()
 
   // Busca de novo quando a pessoa clica em "Tentar de novo" (tentativa muda).
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function Painel() {
         const resposta = await cliente.get('/api/demandas/painel')
         setPainel(resposta.data)
       } catch (falha) {
-        setErro(mensagemDeErro(falha))
+        setErro(cliente.mensagemDeErro(falha))
       }
     }
     buscarPainel()

@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { lerSessao } from '../../api/cliente'
+import cliente from '../../api/cliente'
 
 const permissoes = {
   usuarios: 'Só a direção gerencia usuários.',
@@ -9,7 +9,7 @@ const permissoes = {
 
 export default function SomenteDirecao() {
   const { pathname } = useLocation()
-  if (lerSessao().usuario?.perfil === 'direcao') return <Outlet />
+  if (cliente.lerSessao().usuario?.perfil === 'direcao') return <Outlet />
   return (
     <section>
       <h1>Acesso restrito</h1>

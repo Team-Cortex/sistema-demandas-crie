@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import { dataCurta } from '../../dominio'
 import CampoDemanda from '../../components/CampoDemanda'
 import Confirmacao from '../../components/Confirmacao'
@@ -14,7 +14,7 @@ export default function RegistrarDesfecho() {
   const caminho = '/api/encaminhamentos/' + id
   const chave = 'desfecho:' + id
   const [item, setItem] = useState(null)
-  const [texto, setTexto] = useState(lerRascunho(chave)?.texto || '')
+  const [texto, setTexto] = useState(cliente.lerRascunho(chave)?.texto || '')
   const [erroCarga, setErroCarga] = useState('')
   const [erroCampo, setErroCampo] = useState('')
   const [erro, setErro] = useState('')
@@ -28,7 +28,7 @@ export default function RegistrarDesfecho() {
         const resposta = await cliente.get(caminho)
         setItem(resposta.data)
       } catch (falha) {
-        setErroCarga(mensagemDeErro(falha))
+        setErroCarga(cliente.mensagemDeErro(falha))
       }
     }
     buscarEncaminhamento()
@@ -42,7 +42,7 @@ export default function RegistrarDesfecho() {
 
   function alterarTexto(evento) {
     setTexto(evento.target.value)
-    guardarRascunho(chave, { texto: evento.target.value })
+    cliente.guardarRascunho(chave, { texto: evento.target.value })
     setErroCampo('')
     setErro('')
   }
@@ -67,10 +67,10 @@ export default function RegistrarDesfecho() {
     setErro('')
     try {
       await cliente.patch(caminho + '/desfecho', { desfecho: texto.trim() })
-      apagarRascunho(chave)
+      cliente.apagarRascunho(chave)
       navegar('/encaminhamentos?lista=todos', { replace: true, state: { mensagem: 'Desfecho registrado.' } })
     } catch (falha) {
-      setErro(mensagemDeErro(falha))
+      setErro(cliente.mensagemDeErro(falha))
       // 400: o desfecho já foi registrado; recarrega para mostrar o que ficou gravado.
       if (falha.response?.status === 400) tentarNovamente()
     } finally {

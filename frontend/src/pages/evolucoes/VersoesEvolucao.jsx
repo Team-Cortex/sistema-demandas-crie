@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import cliente, { mensagemDeErro } from '../../api/cliente'
+import cliente from '../../api/cliente'
 import AvisoSucesso from '../../components/AvisoSucesso'
 import Carregando from '../../components/Carregando'
 import ErroConsulta from '../../components/ErroConsulta'
@@ -20,7 +20,7 @@ export default function VersoesEvolucao() {
         const resposta = await cliente.get('/api/evolucoes/' + id)
         setEvolucao(resposta.data)
       } catch (falha) {
-        setErro(mensagemDeErro(falha))
+        setErro(cliente.mensagemDeErro(falha))
       }
     }
     buscarEvolucao()

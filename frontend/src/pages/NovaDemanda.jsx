@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../api/cliente'
+import cliente from '../api/cliente'
 import CampoDemanda from '../components/CampoDemanda'
 import Confirmacao from '../components/Confirmacao'
 import { prioridades, setores, dataCurta } from '../dominio'
@@ -18,7 +18,7 @@ export default function NovaDemanda() {
   const [parametros] = useSearchParams()
   const reuniaoDeOrigem = parametros.get('reuniao_id') || ''
   const chave = 'nova-demanda-' + reuniaoDeOrigem
-  const [rascunho, setRascunho] = useState({ ...vazio, reuniao_id: reuniaoDeOrigem, ...lerRascunho(chave) })
+  const [rascunho, setRascunho] = useState({ ...vazio, reuniao_id: reuniaoDeOrigem, ...cliente.lerRascunho(chave) })
   const [opcoes, setOpcoes] = useState(null)
   const [erroListas, setErroListas] = useState('')
   const [tentativa, setTentativa] = useState(0)
@@ -35,7 +35,7 @@ export default function NovaDemanda() {
         const assistidos = await cliente.get('/api/assistidos')
         setOpcoes({ usuarios: usuarios.data, reunioes: reunioes.data, assistidos: assistidos.data })
       } catch (falha) {
-        setErroListas(mensagemDeErro(falha))
+        setErroListas(cliente.mensagemDeErro(falha))
       }
     }
     buscarOpcoes()
@@ -53,7 +53,7 @@ export default function NovaDemanda() {
     const { name, value } = evento.target
     const valores = { ...rascunho, [name]: value }
     setRascunho(valores)
-    guardarRascunho(chave, valores)
+    cliente.guardarRascunho(chave, valores)
     setErros({ ...erros, [name]: '' })
     setErroServidor('')
   }
@@ -95,10 +95,10 @@ export default function NovaDemanda() {
         assistido_id: campos.assistido_id ? Number(campos.assistido_id) : null,
         categoria: campos.categoria.trim() || null,
       })
-      apagarRascunho(chave)
+      cliente.apagarRascunho(chave)
       navegar('/demandas/' + resposta.data.id, { replace: true, state: { mensagem: 'Demanda registrada com sucesso.' } })
     } catch (falha) {
-      setErroServidor(mensagemDeErro(falha))
+      setErroServidor(cliente.mensagemDeErro(falha))
       setEnviando(false)
     }
   }
