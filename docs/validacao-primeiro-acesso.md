@@ -67,3 +67,14 @@ As recusas cobrem contas prévias de todos os perfis, ativas e inativas; repeti�
 ## Limites
 
 Não houve criação de conta nem login autenticado no banco publicado nesta execução. A suíte SQLite não prova a exclusão mútua do bloqueio PostgreSQL nem as variáveis do ambiente publicado. A interface ainda não oferece o fluxo autenticado.
+
+## Como executar em produção (GitHub Actions) — 23/11/2026
+
+O Python deste computador não carrega a biblioteca do banco (política de controle de aplicativos do Windows). Por isso o comando roda no GitHub Actions, pelo workflow manual `.github/workflows/primeira-direcao.yml`:
+
+1. Quem administra o repositório cria os dois segredos (o valor é digitado no terminal e não aparece em log):
+   - `gh secret set DATABASE_URL --repo Team-Cortex/sistema-demandas-crie` (a URL do Neon, a mesma da Vercel);
+   - `gh secret set SENHA_PRIMEIRA_DIRECAO --repo Team-Cortex/sistema-demandas-crie`.
+2. Com o workflow já na `main`, em Actions > "Criar primeira direção (produção)" > Run workflow, informe nome e e-mail da direção.
+3. O passo "Versão do banco" mostra a revisão atual (esperado `3f00c11df825`). O comando cria a direção só se não houver nenhum usuário; numa segunda execução ele recusa.
+4. Depois de criado o acesso, apague o segredo da senha: `gh secret delete SENHA_PRIMEIRA_DIRECAO --repo Team-Cortex/sistema-demandas-crie`.
