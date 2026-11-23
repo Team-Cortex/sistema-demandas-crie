@@ -117,7 +117,18 @@ Serviço da rede, retorno de acompanhamento, e-mail (RF41) e exportação para i
 
 ## 4. O que o cliente faz
 
-Quando o React passar a chamar a API, um único módulo concentra a URL base, o header `Authorization`, o tratamento de `{"erro": "..."}` e o descarte do token quando a resposta for 401. Nenhuma tela chama a API por fora desse módulo. O endereço base vem de variável de ambiente pública só com a origem (`http://localhost:5000` em desenvolvimento). Segredo nenhum usa prefixo `VITE_`. Esse módulo é da frente de front-end e ainda não está neste repositório.
+O cliente existe: `frontend/src/api/cliente.js`, com a classe `ClienteApi` e um único objeto `cliente`, que todas as telas importam. Nenhuma tela chama `fetch` nem `axios` por fora dele.
+
+| Combinação do §1 | Como o cliente cumpre |
+| --- | --- |
+| URL base | o construtor recebe `VITE_API_URL`, só com a origem (`http://localhost:5000` em `frontend/.env.development`); sem a variável, usa a mesma origem da interface, como na Vercel. Segredo nenhum usa prefixo `VITE_` |
+| `Authorization: Bearer <token>` | `guardarSessao` grava a sessão do login em `sessionStorage` e põe o cabeçalho; `apagarSessao` (Sair) e `esquecerSessao` (401 ou inatividade) tiram |
+| Erro `{"erro": "..."}` | `mensagemDeErro(erro)` devolve o texto do servidor; sem resposta, uma mensagem de conexão (RNF16); 403 sem texto, "Seu perfil não tem acesso a esta operação." |
+| 401 | fora de `/api/auth/`, o interceptador guarda a página atual, tira a sessão (o rascunho fica) e leva a Entrar com "Sua sessão terminou. Entre de novo." |
+| Inatividade (RF02, RNF05) | o layout encerra a sessão depois de 15 minutos sem clique, tecla ou movimento: pede `POST /api/auth/logout` e tira a sessão da aba |
+| Aviso de prazo (spec 09) | o campo `avisos` do login fica na sessão e aparece aberto no topo do Painel |
+
+O cliente só faz `GET`, `POST` e `PATCH`; nenhuma tela oferece exclusão.
 
 ---
 
