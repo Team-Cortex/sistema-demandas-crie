@@ -20,6 +20,7 @@ export default function Painel() {
   const [painel, setPainel] = useState(null)
   const [erro, setErro] = useState('')
   const [tentativa, setTentativa] = useState(0)
+  const [avisoAberto, setAvisoAberto] = useState(true)
   const { avisos } = cliente.lerSessao()
   // O aviso do login traz só id, prazo, estado e vencida (spec 09); cada item vira um objeto Demanda.
   const pendencias = avisos ? avisos.demandas.map(dados => new Demanda(dados)) : []
@@ -42,9 +43,35 @@ export default function Painel() {
     setTentativa(tentativa + 1)
   }
 
+  function fecharAviso() {
+    setAvisoAberto(false)
+    // O botão some com o aviso; o foco volta ao começo do conteúdo para o teclado não se perder.
+    document.getElementById('conteudo').focus()
+  }
+
   return (
     <>
       <CabecalhoDemandas titulo="Painel de demandas" />
+      {/* RF40: o aviso do login aparece aberto, no topo, logo depois de entrar. */}
+      {pendencias.length > 0 && avisoAberto && (
+        <section className={styles.avisos} aria-label="Aviso de prazo">
+          <div className={styles.avisoTopo}>
+            <p>
+              <strong>
+                Você tem {avisos.vencidas} {avisos.vencidas === 1 ? 'demanda vencida' : 'demandas vencidas'} e {avisos.perto_do_prazo} perto do prazo.
+              </strong>
+            </p>
+            <button type="button" className="botao botao-secundario" onClick={fecharAviso}>Fechar aviso</button>
+          </div>
+          <ul>
+            {pendencias.map(demanda => (
+              <li key={demanda.id}>
+                <Link to={`/demandas/${demanda.id}`}>Demanda nº {demanda.id}</Link>, prazo {demanda.prazoFormatado()} ({demanda.estaVencida() ? 'vencida' : 'perto do prazo'})
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {erro && <ErroConsulta mensagem={erro} tentarNovamente={tentarNovamente} />}
       {!painel && !erro && <p role="status">Carregando painel…</p>}
       {painel && (
@@ -56,20 +83,6 @@ export default function Painel() {
             </div>
           ))}
         </dl>
-      )}
-      {pendencias.length > 0 && (
-        <details className={styles.avisos}>
-          <summary>
-            Você tem {avisos.vencidas} {avisos.vencidas === 1 ? 'demanda vencida' : 'demandas vencidas'} e {avisos.perto_do_prazo} perto do prazo
-          </summary>
-          <ul>
-            {pendencias.map(demanda => (
-              <li key={demanda.id}>
-                <Link to={`/demandas/${demanda.id}`}>Demanda nº {demanda.id}</Link>, prazo {demanda.prazoFormatado()} ({demanda.estaVencida() ? 'vencida' : 'perto do prazo'})
-              </li>
-            ))}
-          </ul>
-        </details>
       )}
       {painel && (
         <section aria-labelledby="quadro-demandas">
