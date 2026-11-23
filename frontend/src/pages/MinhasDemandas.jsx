@@ -33,7 +33,7 @@ export default function MinhasDemandas() {
       <CabecalhoDemandas titulo="Minhas demandas">Demandas em aberto sob sua responsabilidade, por ordem de prazo.</CabecalhoDemandas>
       {erro && <ErroConsulta mensagem={erro} tentarNovamente={tentarNovamente} />}
       {!erro && !demandas && <p role="status">Carregando suas demandas…</p>}
-      {demandas && <ListaDemandas demandas={demandas} titulo="Minhas demandas" mensagemVazia="Nenhuma demanda em aberto sob sua responsabilidade." />}
+      {demandas && <ListaDemandas demandas={demandas} titulo="Minhas demandas" mensagemVazia="Você não tem demandas em aberto." />}
     </>
   )
 }
