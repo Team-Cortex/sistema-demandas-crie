@@ -134,11 +134,11 @@ Sair pelo menu apaga a sessão e os rascunhos da aba. A API valida o token e as 
 
 | Pacote | Versão instalada | Licença | Uso |
 | --- | --- | --- | --- |
-| vite, @vitejs/plugin-react | 8.3.2, 6.1.1 | MIT | Servidor local, atualização durante a edição e build |
-| @babel/core, @rolldown/plugin-babel, babel-plugin-react-compiler | 7.29.7, 0.2.4, 1.0.0 | MIT | Compilação dos componentes no Vite com React Compiler |
+| vite, @vitejs/plugin-react | 8.3.2, 6.1.1 | MIT | Servidor local, atualização durante a edição e build do JSX |
 | eslint, @eslint/js, globals | 10.11.0, 10.0.1, 17.13.0 | MIT | Análise estática e reconhecimento das APIs do navegador |
 | eslint-plugin-react-hooks, eslint-plugin-react-refresh | 7.1.1, 0.5.7 | MIT | Verificação dos hooks e das exportações de componentes |
-| @types/react, @types/react-dom | 19.3.0, 19.3.0 | MIT | Definições do ambiente React para apoio do editor ao JSX |
+
+O projeto é JavaScript puro (sem TypeScript) e não usa o React Compiler: o Vite só transforma o JSX, como nas aulas.
 
 As origens do logotipo e da tipografia estão nos [créditos da interface](docs/CREDITOS-UI.md).
 
