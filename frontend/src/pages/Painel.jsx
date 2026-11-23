@@ -87,6 +87,11 @@ export default function Painel() {
       {painel && (
         <section aria-labelledby="quadro-demandas">
           <h2 id="quadro-demandas" className={styles.tituloQuadro}>Demandas por estado ({painel.total} no total)</h2>
+          {painel.total === 0 && (
+            <p className={styles.semDemandas} role="status">
+              Nenhuma demanda em aberto. Quando a equipe registrar uma demanda, ela aparece aqui.
+            </p>
+          )}
           <div className={styles.quadro}>
             {colunas.map(estado => (
               <section className={styles.coluna} key={estado} aria-label={estados[estado]}>
