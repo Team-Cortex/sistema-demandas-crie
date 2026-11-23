@@ -1,8 +1,7 @@
 .pagina { display: grid; gap: 1.25rem; }
 .cabecalho, .acoes { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; }
 .acoes { justify-content: flex-start; }
-.voltar, .link { justify-self: start; display: inline-flex; align-items: center; gap: .4rem; min-height: 44px; }
-.voltar { font-weight: 600; text-decoration: none; color: var(--texto-secundario); }
+.link { justify-self: start; display: inline-flex; align-items: center; min-height: 44px; }
 .painel, .formulario { min-width: 0; background: var(--superficie); border: 1px solid var(--borda); border-radius: var(--raio); padding: clamp(1rem, 2.5vw, 1.5rem); display: grid; gap: 1rem; }
 .formulario { max-width: 44rem; }
 .campos { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: 1rem; }
@@ -12,8 +11,7 @@
 .lista { list-style: none; margin: 0; padding: 0; }
 .lista li { padding: .75rem 0; border-bottom: 1px solid var(--borda); overflow-wrap: anywhere; }
 .lista li:first-child { padding-top: 0; } .lista li:last-child { padding-bottom: 0; border: 0; }
-.linhaNome { display: flex; align-items: center; justify-content: space-between; min-height: 44px; gap: .65rem; font-weight: 600; text-decoration: none; }
-.linhaNome > svg { flex-shrink: 0; }
+.linhaNome { display: flex; align-items: center; min-height: 44px; font-weight: 600; }
 .secundario { color: var(--texto-secundario); }
 .texto { white-space: pre-wrap; overflow-wrap: anywhere; }
 .erro { color: var(--erro); }

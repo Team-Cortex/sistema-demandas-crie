@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
 import CampoDemanda from '../../components/CampoDemanda'
@@ -98,7 +97,7 @@ export default function FormularioReuniao() {
 
   return (
     <div className={styles.pagina}>
-      <Link to={voltar} className={styles.voltar}><ArrowLeft size={17} aria-hidden="true" />{id ? 'Reunião' : 'Reuniões'}</Link>
+      <Link to={voltar} className="voltar">{id ? 'Voltar para a reunião' : 'Voltar para reuniões'}</Link>
       <h1>{id ? 'Editar reunião' : 'Registrar reunião'}</h1>
       {erro ? <ErroConsulta mensagem={erro} tentarNovamente={tentarNovamente} /> :
         !opcoes ? <Carregando>Carregando dados da reunião…</Carregando> :

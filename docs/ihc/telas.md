@@ -9,8 +9,8 @@ Cada tela tem: objetivo, quem vê, conteúdo, componentes, ação principal, est
 ## 0. Regras para todas as telas
 
 **Layout base** (todas, menos Entrar):
-- Menu lateral à esquerda, com o logo do CRIE no topo, os itens na ordem do sitemap e o item atual marcado (cor + barra + `aria-current="page"`).
-- No topo do conteúdo: saudação "Olá, *primeiro nome*", o perfil por extenso e o botão **Sair**.
+- Menu lateral à esquerda, só com texto: o logo do CRIE no topo, os itens na ordem do sitemap e o item atual em negrito, com fundo cinza claro e `aria-current="page"`.
+- No topo do conteúdo: o nome da pessoa, o perfil entre parênteses e o botão **Sair**.
 - No celular (até ~768 px): o menu vira um painel recolhível aberto pelo botão **Menu**, que empurra o conteúdo para baixo; Esc ou a escolha de um item fecham, e o foco volta ao botão.
 - Título `h1` da página igual ao rótulo do menu.
 
@@ -18,23 +18,14 @@ Cada tela tem: objetivo, quem vê, conteúdo, componentes, ação principal, est
 
 | Estado | O que aparece |
 | --- | --- |
-| Carregando | Esqueleto (blocos cinza com o formato do conteúdo) e texto para leitor de tela "Carregando..." |
+| Carregando | Texto "Carregando..." (por exemplo, "Carregando demandas..."), anunciado ao leitor de tela |
 | Vazio | Frase que explica e diz o que fazer, com a ação principal quando fizer sentido |
 | Erro | A mensagem do servidor (já em português) ou a de conexão, e o botão **Tentar de novo** |
 | Sucesso (depois de salvar) | Aviso curto no topo, "Demanda registrada.", anunciado ao leitor de tela; fica até a próxima ação, sem tempo para sumir (WCAG 2.2.1) |
 
-**Selo de estado** (texto + cor, nunca só cor):
+**Estado da demanda:** texto simples, sem selo colorido: Aberta, Em andamento, Aguardando terceiros, Concluída, Cancelada. Quando `vencida: true`, o prazo ganha "(vencida)" em vermelho; a palavra está sempre escrita, então a cor não é a única pista.
 
-| Estado | Rótulo | Cor de apoio |
-| --- | --- | --- |
-| `aberta` | Aberta | azul |
-| `em_andamento` | Em andamento | roxo (cor de destaque) |
-| `aguardando_terceiros` | Aguardando terceiros | âmbar |
-| `concluida` | Concluída | verde |
-| `cancelada` | Cancelada | cinza |
-| `vencida: true` | **Vencida** (selo extra, ao lado do estado) | vermelho |
-
-**Prioridade:** Baixa, Média, Alta (texto; Alta com marcador visual).
+**Prioridade:** Baixa, Média, Alta (texto).
 **Datas:** `dd/mm/aaaa`; data e hora no histórico `dd/mm/aaaa às hh:mm`.
 **Acessibilidade:** contraste ≥ 4,5:1; foco visível; Tab em ordem lógica; Esc fecha diálogos; todo campo com rótulo; erro ligado ao campo; alvos de clique ≥ 44 px; texto base 16 px.
 
@@ -58,9 +49,9 @@ Cada tela tem: objetivo, quem vê, conteúdo, componentes, ação principal, est
 - **Quem vê:** todos.
 - **API:** `GET /api/demandas/painel`.
 - **Conteúdo, de cima para baixo:**
-  1. **Aviso de prazo** (RF40), só se o login trouxe pendências: "Você tem **2 demandas vencidas** e **1 perto do prazo**." e um link por demanda ("Demanda nº 7 — prazo 14/11/2026 — Vencida"). Sem descrição (spec 09). Botão **Fechar aviso**.
+  1. **Aviso de prazo** (RF40), só se o login trouxe pendências: "Você tem **2 demandas vencidas** e **1 perto do prazo**." e um link por demanda ("Demanda nº 7, prazo 14/11/2026 (vencida)"). Sem descrição (spec 09). Botão **Fechar aviso**.
   2. **Indicadores**: Em aberto (total), Vencidas, e um por estado (Aberta, Em andamento, Aguardando terceiros). Números grandes com rótulo; o de Vencidas em destaque quando > 0.
-  3. **Três colunas** por estado. Cada cartão: descrição (até 2 linhas), responsável, prazo, prioridade, selo Vencida quando for o caso. Vencidas no topo (o servidor já ordena pelo prazo).
+  3. **Três colunas** por estado. Cada cartão: número, descrição, prioridade, responsável e prazo, com "(vencida)" quando for o caso. Vencidas no topo (o servidor já ordena pelo prazo).
 - **Ação principal:** **Registrar demanda**.
 - **Vazio:** "Nenhuma demanda em aberto. Quando a equipe registrar uma demanda, ela aparece aqui." Por coluna: "Nenhuma demanda neste estado."
 - **No celular:** as colunas viram seções empilhadas.
@@ -111,9 +102,9 @@ Cada tela tem: objetivo, quem vê, conteúdo, componentes, ação principal, est
 - **Objetivo:** ver tudo de uma demanda e atualizar (RF12 a RF17).
 - **API:** `GET /api/demandas/<id>`; `PATCH .../estado`; `POST .../anotacoes`; `PATCH .../responsavel`.
 - **Conteúdo:**
-  - Cabeçalho: descrição (título), selo de estado, selo Vencida, prioridade.
-  - Dados: responsável, prazo, reunião de origem (link), assistido (link, se houver), categoria, registrada em.
-  - **Histórico** em linha do tempo, do mais antigo para o mais novo: "Bruna Fictícia mudou de Aberta para Em andamento — 18/11/2026 às 14:30"; anotações com o texto.
+  - Descrição no topo da ficha.
+  - Dados: estado, responsável, prazo (com "(vencida)" quando for o caso), prioridade, reunião de origem (link), assistido (link, se houver), categoria, registrada em, último movimento.
+  - **Histórico** em lista numerada, do mais antigo para o mais novo: "Mudança de estado. De Aberta para Em andamento. Bruna Fictícia, 18/11/2026 às 14:30"; anotações com o texto.
   - Campo **Anotar** com botão **Salvar anotação**.
 - **Ações:** **Mudar estado** (principal; some quando concluída ou cancelada), **Trocar responsável**, **Encaminhar**.
 - **Diálogo Mudar estado:** título "Mudar o estado da demanda"; só as opções válidas (spec 02); texto de apoio quando a opção é Cancelada: "A demanda continua no histórico e pode ser encontrada pela busca."; botões **Confirmar** e **Voltar**. Esc fecha. Foco vai para o diálogo ao abrir e volta ao botão ao fechar.

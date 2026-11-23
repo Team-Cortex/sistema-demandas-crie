@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronRight, Plus, Search } from 'lucide-react'
 import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
 import Carregando from '../../components/Carregando'
 import ErroConsulta from '../../components/ErroConsulta'
@@ -56,12 +55,12 @@ export default function Assistidos() {
   return (
     <div className={styles.pagina}>
       <header className={styles.cabecalho}><h1>Assistidos</h1>
-        <Link className="botao-primario" to="/assistidos/novo"><Plus size={18} aria-hidden="true" />Cadastrar assistido</Link>
+        <Link className="botao-primario" to="/assistidos/novo">Cadastrar assistido</Link>
       </header>
       <form className={styles.painel} onSubmit={buscar}>
         <div className={styles.pesquisa}>
           <label>Buscar pelo nome de tratamento<input type="search" value={busca} onChange={preencherBusca} /></label>
-          <button className="botao-secundario"><Search size={18} aria-hidden="true" />Buscar</button>
+          <button className="botao-secundario">Buscar</button>
           {(busca || consulta.busca) && <button type="button" className="botao-secundario" onClick={limpar}>Limpar busca</button>}
         </div>
       </form>
@@ -69,7 +68,7 @@ export default function Assistidos() {
         <section className={styles.painel} aria-label="Lista de assistidos">
           {!assistidos.length ? <p>{consulta.busca ? 'Nenhum assistido encontrado. Tente outro nome de tratamento.' : 'Nenhum assistido cadastrado. Use Cadastrar assistido para começar.'}</p> :
             <ul className={styles.lista}>{assistidos.map(item => <li key={item.id}>
-              <Link to={'/assistidos/' + item.id} className={styles.linhaNome}>{item.nome_tratamento}<ChevronRight size={18} aria-hidden="true" /></Link>
+              <Link to={'/assistidos/' + item.id} className={styles.linhaNome}>{item.nome_tratamento}</Link>
             </li>)}</ul>}
         </section>}
     </div>

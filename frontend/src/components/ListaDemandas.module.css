@@ -11,16 +11,16 @@
   font-size: .9rem;
 }
 .tabela th, .tabela td { padding: 10px 14px; }
-.tabela thead { background: #f0f1f4; color: var(--texto-secundario); font-size: .84rem; }
+.tabela thead { color: var(--texto-secundario); font-size: .85rem; }
 .tabela thead th:first-child { width: 35%; }
 .tabela thead th:nth-child(4) { width: 12%; }
 .tabela tbody th, .tabela tbody td { border-top: 1px solid var(--borda); }
 .tabela tbody th a { display: grid; align-content: center; min-height: 44px; line-height: 1.45; }
-.tabela tbody small { font-weight: 500; color: var(--texto-secundario); }
+.tabela tbody small { color: var(--texto-secundario); }
 .tabela time { white-space: nowrap; }
-.vencida { display: table; margin-top: 4px; background: var(--erro-suave); color: var(--erro); font-size: .76rem; padding: 2px 7px; border-radius: 4px; }
+.vencida { display: block; color: var(--erro); font-size: .85rem; }
 .cartoes { display: none; list-style: none; margin: 0; padding: 0; }
-.vazia { background: var(--superficie); border: 1px dashed var(--borda); border-radius: var(--raio); padding: 24px; color: var(--texto-secundario); }
+.vazia { color: var(--texto-secundario); }
 @media (max-width: 960px) {
   .tabela { display: none; }
   .cartoes { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }

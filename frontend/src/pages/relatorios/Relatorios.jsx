@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { FileText } from 'lucide-react'
 import cliente, { guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
 import { estados } from '../../dominio'
 import ErroConsulta from '../../components/ErroConsulta'
@@ -125,7 +124,7 @@ export default function Relatorios() {
         {campos.tipo === 'assistido' && opcoes?.assistidos.length === 0 && <p role="status">Nenhum assistido cadastrado.</p>}
         {erro && <p role="alert" className="aviso-erro">{erro}</p>}
         <button className="botao-primario" disabled={emitindo || !opcoes || (campos.tipo === 'assistido' && !opcoes.assistidos.length)}>
-          <FileText size={18} aria-hidden="true" />{emitindo ? 'Emitindo…' : erro ? 'Tentar de novo' : 'Emitir relatório'}
+          {emitindo ? 'Emitindo…' : erro ? 'Tentar de novo' : 'Emitir relatório'}
         </button>
       </form>
       {emitindo && <Carregando>Preparando o relatório…</Carregando>}

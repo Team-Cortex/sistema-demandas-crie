@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
 import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
 import CampoDemanda from '../../components/CampoDemanda'
 import Carregando from '../../components/Carregando'
@@ -70,7 +69,7 @@ export default function FormAssistido() {
 
   return (
     <div className={styles.pagina}>
-      <Link className={styles.voltar} to={voltar}><ArrowLeft size={17} aria-hidden="true" />{id ? 'Ficha do assistido' : 'Assistidos'}</Link>
+      <Link className="voltar" to={voltar}>{id ? 'Voltar para a ficha do assistido' : 'Voltar para assistidos'}</Link>
       <h1>{titulo}</h1>
       {erroConsulta ? <ErroConsulta mensagem={erroConsulta} tentarNovamente={tentarNovamente} /> : id && !assistido ? <Carregando /> :
         <form noValidate className={styles.formulario} onSubmit={salvarAssistido}>

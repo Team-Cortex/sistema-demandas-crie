@@ -6,7 +6,6 @@
 .acoes, .paginacao { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .paginacao { justify-content: space-between; color: var(--texto-secundario); }
 .erroCampo { color: var(--erro); font-size: .9rem; }
-.painel h2 small { font-size: .88rem; font-weight: 550; background: var(--fundo); color: var(--texto-secundario); padding: 3px 8px; border-radius: 6px; }
 .tabela { width: 100%; text-align: left; border-collapse: collapse; font-size: .9rem; overflow-wrap: anywhere; }
 .tabela thead { color: var(--texto-secundario); background: var(--fundo); }
 .tabela th, .tabela td { padding: 12px 8px; border-bottom: 1px solid var(--borda); }

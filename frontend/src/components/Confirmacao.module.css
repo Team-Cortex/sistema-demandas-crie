@@ -7,9 +7,8 @@
   border: 1px solid var(--borda);
   border-radius: var(--raio);
   overflow-wrap: anywhere;
-  box-shadow: 0 20px 64px #271b3433;
 }
 
-.dialogo::backdrop { background: #21172e77; }
+.dialogo::backdrop { background: rgb(0 0 0 / 40%); }
 .dialogo h2 { margin: 0 0 1rem; }
 .acoes { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: .65rem; margin-top: 1.5rem; }

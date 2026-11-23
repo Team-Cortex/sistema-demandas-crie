@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
 import cliente, { mensagemDeErro } from '../../api/cliente'
 import AvisoSucesso from '../../components/AvisoSucesso'
 import Carregando from '../../components/Carregando'
@@ -34,7 +33,7 @@ export default function VersoesEvolucao() {
 
   return (
     <div className={styles.pagina}>
-      <Link className={styles.voltar} to={evolucao ? '/assistidos/' + evolucao.assistido_id : '/assistidos'}><ArrowLeft size={17} aria-hidden="true" />{evolucao ? 'Ficha do assistido' : 'Assistidos'}</Link>
+      <Link className="voltar" to={evolucao ? '/assistidos/' + evolucao.assistido_id : '/assistidos'}>{evolucao ? 'Voltar para a ficha do assistido' : 'Voltar para assistidos'}</Link>
       <header className={styles.cabecalho}><h1>Versões da evolução</h1>
         {evolucao?.vigente && <Link className="botao-primario" to={'/evolucoes/' + id + '/retificar'}>Retificar</Link>}
       </header>
@@ -43,7 +42,7 @@ export default function VersoesEvolucao() {
         {evolucao.retificada_por_id && <Link className={styles.link} to={'/evolucoes/' + evolucao.retificada_por_id}>Ver versão seguinte</Link>}
         {[evolucao, ...evolucao.versoes_anteriores].map(item => <article key={item.id} className={styles.painel}>
           <h2>{item.vigente ? 'Versão vigente' : 'Versão anterior'}</h2>
-          <p><strong>{item.area_atuacao}</strong> · {dataCurta(item.data)}</p>
+          <p><strong>{item.area_atuacao}</strong>, {dataCurta(item.data)}</p>
           <p className={styles.texto}>{item.descricao}</p>
           <p className={styles.secundario}>Registrada por {item.autor_nome} em {dataHora(item.ocorrido_em)}</p>
         </article>)}

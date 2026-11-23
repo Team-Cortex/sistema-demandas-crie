@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
 import cliente, { apagarRascunho, guardarRascunho, lerRascunho, mensagemDeErro } from '../../api/cliente'
 import CampoDemanda from '../../components/CampoDemanda'
 import Carregando from '../../components/Carregando'
@@ -96,7 +95,7 @@ export default function FormEvolucao() {
 
   return (
     <div className={styles.pagina}>
-      <Link className={styles.voltar} to={id ? '/evolucoes/' + id : '/assistidos/' + assistidoId}><ArrowLeft size={17} aria-hidden="true" />{id ? 'Versões da evolução' : 'Ficha do assistido'}</Link>
+      <Link className="voltar" to={id ? '/evolucoes/' + id : '/assistidos/' + assistidoId}>{id ? 'Voltar para as versões da evolução' : 'Voltar para a ficha do assistido'}</Link>
       <h1>{id ? 'Retificar evolução' : 'Lançar evolução'}</h1>
       {erroConsulta ? <ErroConsulta mensagem={erroConsulta} tentarNovamente={tentarNovamente} /> : !origem ? <Carregando /> :
         id && !origem.vigente ? <p className={styles.painel}>Esta versão já foi retificada. <Link className={styles.link} to={'/evolucoes/' + origem.retificada_por_id}>Ver versão seguinte</Link></p> :

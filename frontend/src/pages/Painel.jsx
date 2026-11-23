@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Bell, Circle, CircleAlert, CircleDot, Clock3, Columns3 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import cliente, { lerSessao, mensagemDeErro } from '../api/cliente'
 import CabecalhoDemandas from '../components/CabecalhoDemandas'
@@ -10,10 +9,10 @@ import styles from './Painel.module.css'
 
 const colunas = ['aberta', 'em_andamento', 'aguardando_terceiros']
 const indicadores = [
-  { chave: 'aberta', nome: 'Abertas', Icone: Circle },
-  { chave: 'em_andamento', nome: 'Em andamento', Icone: CircleDot },
-  { chave: 'aguardando_terceiros', nome: 'Aguardando terceiros', Icone: Clock3 },
-  { chave: 'vencidas', nome: 'Vencidas', Icone: CircleAlert },
+  { chave: 'aberta', nome: 'Abertas' },
+  { chave: 'em_andamento', nome: 'Em andamento' },
+  { chave: 'aguardando_terceiros', nome: 'Aguardando terceiros' },
+  { chave: 'vencidas', nome: 'Vencidas' },
 ]
 
 export default function Painel() {
@@ -47,9 +46,9 @@ export default function Painel() {
       {!painel && !erro && <p role="status">Carregando painel…</p>}
       {painel && (
         <dl className={styles.resumo} aria-label="Totais por estado e prazo">
-          {indicadores.map(({ chave, nome, Icone }) => (
-            <div key={chave} data-indicador={chave}>
-              <dt><Icone size={17} aria-hidden="true" />{nome}</dt>
+          {indicadores.map(({ chave, nome }) => (
+            <div key={chave} className={chave === 'vencidas' && painel.vencidas > 0 ? styles.vencidas : undefined}>
+              <dt>{nome}</dt>
               <dd>{chave === 'vencidas' ? painel.vencidas : painel.totais[chave]}</dd>
             </div>
           ))}
@@ -58,13 +57,12 @@ export default function Painel() {
       {avisos?.demandas.length > 0 && (
         <details className={styles.avisos}>
           <summary>
-            <Bell size={18} aria-hidden="true" />
-            <span>Você tem {avisos.vencidas} {avisos.vencidas === 1 ? 'demanda vencida' : 'demandas vencidas'} e {avisos.perto_do_prazo} perto do prazo</span>
+            Você tem {avisos.vencidas} {avisos.vencidas === 1 ? 'demanda vencida' : 'demandas vencidas'} e {avisos.perto_do_prazo} perto do prazo
           </summary>
           <ul>
             {avisos.demandas.map(demanda => (
               <li key={demanda.id}>
-                <Link to={`/demandas/${demanda.id}`}>Demanda nº {demanda.id} · {dataCurta(demanda.prazo)} · {demanda.vencida ? 'Vencida' : 'Perto do prazo'}</Link>
+                <Link to={`/demandas/${demanda.id}`}>Demanda nº {demanda.id}</Link>, prazo {dataCurta(demanda.prazo)} ({demanda.vencida ? 'vencida' : 'perto do prazo'})
               </li>
             ))}
           </ul>
@@ -72,15 +70,11 @@ export default function Painel() {
       )}
       {painel && (
         <section aria-labelledby="quadro-demandas">
-          <div className={styles.cabecalhoQuadro}>
-            <Columns3 size={20} aria-hidden="true" />
-            <h2 id="quadro-demandas">Demandas por estado</h2>
-            <span>{painel.total} no total</span>
-          </div>
+          <h2 id="quadro-demandas" className={styles.tituloQuadro}>Demandas por estado ({painel.total} no total)</h2>
           <div className={styles.quadro}>
             {colunas.map(estado => (
-              <section className={styles.coluna} key={estado} data-estado={estado} aria-label={estados[estado]}>
-                <h3>{estados[estado]} <span>{painel.totais[estado]}</span></h3>
+              <section className={styles.coluna} key={estado} aria-label={estados[estado]}>
+                <h3>{estados[estado]} ({painel.totais[estado]})</h3>
                 {painel.por_estado[estado].length ? (
                   <ul>
                     {painel.por_estado[estado].map(demanda => <li key={demanda.id}><CartaoDemanda demanda={demanda} /></li>)}
