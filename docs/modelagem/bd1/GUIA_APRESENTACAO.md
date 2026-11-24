@@ -8,21 +8,28 @@ Critério que mais pesa na fala: o enunciado diz que "os estudantes deverão exp
 
 | Tempo | Quem | Slides | Conteúdo |
 |---|---|---|---|
-| 0:00 a 2:00 | Vinícius | 1 a 5 | Capa, roteiro, o CRIE e o problema, regras que viram restrições, recorte de 6 tabelas |
-| 2:00 a 5:30 | Henry | 6 a 13 | DER, os 7 relacionamentos, notação textual, 3FN, dicionário, scripts 01 e 02 |
-| 5:30 a 9:30 | Inácio | 14 a 21 | Mapa das 17 consultas, ordem de processamento, Q01 a Q05 (seleção, datas, INNER JOIN) |
-| 9:30 a 13:30 | Gabriel | 22 a 28 | Q06 a Q11 (LEFT JOIN, GROUP BY, HAVING, subconsulta) |
-| 13:30 a 18:30 | Miguel | 29 a 38 | Q12 a Q17, script 04 (manutenção), do banco ao sistema, critérios do enunciado |
-| 18:30 a 20:00 | Todos | 39 | Perguntas |
+| 0:00 a 2:00 | Vinícius | 1 a 5 | Capa, roteiro, o CRIE e o problema, regras que viram restrições, recorte (13 entidades no DER, 6 tabelas) |
+| 2:00 a 5:00 | Henry | 6 a 13 | DER, os 7 relacionamentos, notação textual, 3FN, dicionário, scripts 01 e 02 |
+| 5:00 a 6:00 | Gabriel | 14 a 16 | Abertura das consultas: mapa das 17 e ordem de processamento |
+| 6:00 a 8:00 | Vinícius | 17 a 19 | Q01 a Q03 |
+| 8:00 a 10:00 | Henry | 20 a 22 | Q04 a Q06 |
+| 10:00 a 12:40 | Inácio | 23 a 26 | Q07 a Q10 |
+| 12:40 a 15:20 | Gabriel | 27 a 30 | Q11 a Q14 |
+| 15:20 a 17:00 | Miguel | 31 a 33 | Q15 a Q17 |
+| 17:00 a 18:30 | Miguel | 34 a 37 | Script 04 (manutenção), do banco ao sistema, critérios do enunciado |
+| 18:30 a 20:00 | Todos | 38 | Perguntas |
 
-Os slides 6, 14, 22 e 29 são de passagem: mostram a parte e o tempo do bloco. Os slides não trazem nomes (nem da equipe nem da professora): cada um se apresenta ao começar a sua parte.
+Todos explicam consultas: cada integrante fica com 3 ou 4, porque é a parte da nota que vale 5,0.
+
+Os slides 6, 14 e 34 são de passagem: mostram a parte e o tempo. Os slides não trazem nomes (nem da equipe nem da professora): cada um se apresenta ao começar a sua parte. No rodapé de cada consulta aparece o bloco (por exemplo, "Parte 3 · Q07 a Q10"): é a deixa para trocar quem fala.
 
 ## Como usar o deck
 
 - Abrir `deck/index.html` no navegador. Funciona sem internet: fontes, logos e imagem estão dentro do arquivo.
-- **F** tela cheia · **seta direita, espaço ou clique** avança · **seta esquerda** volta · **Home/End** primeiro e último · **N** mostra as notas de quem fala (o enunciado completo de cada consulta e a explicação).
-- Em cada consulta, o número colorido ao lado de cada cláusula é a etapa em que o MySQL a processa (1 FROM, 2 JOIN, 3 WHERE, 4 GROUP BY, 5 HAVING, 6 SELECT, 7 ORDER BY). É a deixa para a fala.
-- Reserva: `deck/Seminario_BD1_Equipe_Cortex.pdf`, com os mesmos 39 slides.
+- **F** tela cheia · **seta direita, espaço ou clique** avança · **seta esquerda** volta · **Home/End** primeiro e último · **N** abre e fecha as notas de quem fala.
+- Em cada consulta, o número colorido ao lado de cada cláusula é a etapa em que o MySQL a processa (1 FROM e JOIN, 2 WHERE, 3 GROUP BY, 4 HAVING, 5 SELECT, 6 ORDER BY). É a deixa para a fala.
+- As notas (tecla N) aparecem num painel embaixo e o slide sobe, sem ficar coberto. Em cada slide: o que falar, os conceitos da matéria (por exemplo, o que é 1FN, 2FN e 3FN) e respostas para perguntas prováveis. Nas consultas, também o enunciado completo, o passo a passo na ordem em que o banco processa e o resultado. **Seta para baixo e para cima** rolam as notas. Elas aparecem na tela que estiver projetando: para ler sem a turma ver, aperte **P**: abre a janela do apresentador, com as notas e um cronômetro, que acompanha os slides da janela projetada. Leve essa janela para a tela do notebook.
+- Reserva: `deck/Seminario_BD1_Equipe_Cortex.pdf`, com os mesmos 38 slides.
 
 Se a professora pedir para rodar ao vivo: abrir o MySQL Workbench, executar `01`, `02` e depois a consulta pedida do `03`. As consultas com `CURDATE()` dão números diferentes conforme o dia; para reproduzir os do documento, rodar antes `SET TIMESTAMP = UNIX_TIMESTAMP('2026-11-30 19:00:00');`.
 
@@ -58,10 +65,11 @@ Se a professora pedir para rodar ao vivo: abrir o MySQL Workbench, executar `01`
 
 | Pergunta | Resposta curta |
 |---|---|
+| Como se lê o (1,1) e o (0,N) do DER? | Como na Figura 7.15 da Aula 02: o par junto a cada entidade diz de quantas ocorrências do relacionamento cada ocorrência dela participa. Em origina, Demanda (1,1): cada demanda nasce em uma reunião; Reunião (0,N): uma reunião origina nenhuma ou várias. |
 | Onde está o 1:1? | Evolução retifica evolução. `retifica_id` é FK para a própria tabela, com UNIQUE: cada versão só pode ser corrigida uma vez. Sem o UNIQUE seria 1:N. |
 | E o N:N? | Profissional acompanha assistido. Virou a tabela `assistido_profissional`, com PK composta e o atributo `data_inicio`. |
 | Por que a FK do 1:1 foi criada com ALTER TABLE? | Porque ela aponta para a própria tabela: criamos a tabela e depois acrescentamos a restrição, como na Aula 04. |
-| Por que só 6 tabelas, se o DER da equipe tem 12 entidades? | O enunciado de BD1 pede de 4 a 6. Implementamos o recorte central; encaminhamento, histórico e auditoria ficaram fora. |
+| Por que só 6 tabelas, se o DER da equipe tem 13 entidades? | O enunciado de BD1 pede de 4 a 6. São 5 entidades (usuário, assistido, reunião, demanda, evolução) mais a associativa do N:N acompanha. Setor e Categoria viraram colunas; Serviço da Rede, Encaminhamento, Ação, Retorno, Histórico e Auditoria ficaram fora. |
 | Por que ENUM no estado? | O estado é um domínio fechado (regra do minimundo): o banco recusa qualquer valor fora da lista. |
 | Diferença entre WHERE e HAVING? | WHERE filtra linhas antes do agrupamento; HAVING filtra grupos depois, por isso pode usar AVG e COUNT. (Q08 e Q16) |
 | Diferença entre INNER e LEFT JOIN? | INNER só traz o que casa nas duas tabelas; LEFT traz tudo da esquerda e completa com NULL. (Q05 e Q06) |

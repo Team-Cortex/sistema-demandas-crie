@@ -11,8 +11,8 @@ Sistema de Gestão de Demandas de Articulação do CRIE / APAE de Extrema-MG. Pa
 | `docs/modelagem/sql/03_consultas.sql` | 17 consultas comentadas |
 | `docs/modelagem/sql/04_manutencao_dados.sql` | INSERT, UPDATE e DELETE de manutenção |
 | `docs/modelagem/bd1/Documento_BD1_Equipe_Cortex.pdf` | Documento único: capa, universo de discurso, DER, notação textual, 3FN, dicionário, scripts e consultas com resultado |
-| `docs/modelagem/bd1/DER_recorte_BD1.svg` | DER do recorte (notação de Heuser) |
-| `docs/modelagem/bd1/deck/index.html` | Deck do seminário: 39 slides na identidade do CRIE, abre offline no navegador (F tela cheia, N notas) |
+| `docs/modelagem/bd1/DER_recorte_BD1.svg` | DER do recorte (notação (mín, máx) da Aula 02) |
+| `docs/modelagem/bd1/deck/index.html` | Deck do seminário: 38 slides na identidade do CRIE, abre offline no navegador (F tela cheia, N notas, P janela do apresentador) |
 | `docs/modelagem/bd1/deck/Seminario_BD1_Equipe_Cortex.pdf` | O mesmo deck em PDF, para reserva |
 | `docs/modelagem/bd1/deck/LEIA-ME.md` | Como gerar de novo, o que a checagem confere e a origem de cada coisa |
 | `docs/modelagem/bd1/Slides_Seminario_BD1_Equipe_Cortex.pdf` | Versão anterior dos slides (27), substituída pelo deck |

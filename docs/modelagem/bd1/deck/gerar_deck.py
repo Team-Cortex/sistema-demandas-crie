@@ -23,6 +23,8 @@ ENTREGA = next((p for p in (os.path.join(RAIZ, 'entrega'), os.path.join(RAIZ, '.
                 if os.path.exists(os.path.join(p, '01_criacao_banco.sql'))), os.path.join(RAIZ, 'entrega'))
 sys.path.insert(0, FERR)
 from conteudo import RELACIONAMENTOS  # noqa: E402
+sys.path.insert(0, AQUI)
+import notas  # noqa: E402
 
 EDGE = r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
 e = html.escape
@@ -59,16 +61,19 @@ CARGA = [('usuario', 10), ('assistido', 12), ('assistido_profissional', 21), ('r
 COR_TABELA = {'usuario': ROXO, 'assistido': MAGENTA, 'assistido_profissional': AMARELO,
               'reuniao': CIANO, 'demanda': VERDE, 'evolucao': TINTA8}
 
-# Roteiro do GUIA_APRESENTACAO.md: quem fala, quando e o quê.
-PESSOAS = {'Vinícius': AMARELO, 'Henry': VERDE, 'Inácio': CIANO, 'Gabriel': MAGENTA, 'Miguel': ROXO, 'Todos': TINTA8}
+# Quem fala em cada parte e em cada bloco de consultas está no GUIA_APRESENTACAO.md; os slides mostram só partes e blocos.
 PARTES = [
-    (1, 'Vinícius', '0:00', '2:00', 'Abertura', 'O CRIE, as regras do minimundo e o recorte'),
-    (2, 'Henry', '2:00', '5:30', 'Modelagem', 'DER, relacionamentos, notação textual, 3FN e scripts'),
-    (3, 'Inácio', '5:30', '9:30', 'Consultas I', 'Q01 a Q05: filtros, datas e INNER JOIN'),
-    (4, 'Gabriel', '9:30', '13:30', 'Consultas II', 'Q06 a Q11: LEFT JOIN, agregação e subconsultas'),
-    (5, 'Miguel', '13:30', '18:30', 'Consultas III e o sistema', 'Q12 a Q17, manutenção dos dados e o banco no sistema'),
-    (6, 'Todos', '18:30', '20:00', 'Perguntas', 'Toda a equipe'),
+    (1, AMARELO, '0:00', '2:00', 'Abertura', 'O CRIE, as regras do minimundo e o recorte'),
+    (2, VERDE, '2:00', '5:00', 'Modelagem', 'DER, relacionamentos, notação textual, 3FN e scripts'),
+    (3, MAGENTA, '5:00', '17:00', 'Consultas', 'As 17 consultas: cada integrante explica 3 ou 4'),
+    (4, ROXO, '17:00', '18:30', 'Manutenção e sistema', 'Script 04, o banco no sistema e os critérios'),
+    (5, TINTA8, '18:30', '20:00', 'Perguntas', 'Toda a equipe'),
 ]
+COR_PARTE = {n: c for n, c, *_ in PARTES}
+# Cada integrante explica um bloco de consultas (a ordem de quem fala está no guia).
+BLOCOS = [('Q01', 'Q03', AMARELO, '6:00', '8:00'), ('Q04', 'Q06', VERDE, '8:00', '10:00'),
+          ('Q07', 'Q10', CIANO, '10:00', '12:40'), ('Q11', 'Q14', MAGENTA, '12:40', '15:20'),
+          ('Q15', 'Q17', ROXO, '15:20', '17:00')]
 
 # Títulos curtos (o enunciado completo fica nas notas do apresentador).
 TITULO_Q = {
@@ -114,12 +119,15 @@ CHIPS_Q = {
 QUEBRAS = {'Q16': ('NOT IN (SELECT retifica_id FROM evolucao WHERE', 'NOT IN (SELECT retifica_id FROM evolucao\n{ind}WHERE')}
 
 
-PARTE_DE = {quem: n for n, quem, *_ in PARTES}  # os slides mostram a parte, não o nome de quem fala
+notas._PARTES_TXT = {n: oque for n, _c, _i, _f, _n, oque in PARTES}
 
 
-def quem_apresenta(num):
+def bloco_da_consulta(num):
     n = int(num[1:])
-    return 'Inácio' if n <= 5 else 'Gabriel' if n <= 11 else 'Miguel'
+    for a, b, cor, _ini, _fim in BLOCOS:
+        if int(a[1:]) <= n <= int(b[1:]):
+            return f'{a} a {b}', cor
+    raise ValueError(num)
 
 
 # ------------------------------------------------------------------ SQL
@@ -179,9 +187,9 @@ def compactar(sql, num=None):
     return linhas
 
 
-ORDEM = [('FROM', 1), ('LEFT JOIN', 2), ('RIGHT JOIN', 2), ('INNER JOIN', 2), ('JOIN', 2), ('WHERE', 3),
-         ('GROUP BY', 4), ('HAVING', 5), ('SELECT', 6), ('ORDER BY', 7), ('LIMIT', 8)]
-COR_ETAPA = {1: CIANO, 2: CIANO, 3: AMARELO, 4: VERDE, 5: VERDE, 6: MAGENTA, 7: ROXO, 8: ROXO}
+ORDEM = [('FROM', 1), ('LEFT JOIN', 1), ('RIGHT JOIN', 1), ('INNER JOIN', 1), ('JOIN', 1), ('WHERE', 2),
+         ('GROUP BY', 3), ('HAVING', 4), ('SELECT', 5), ('ORDER BY', 6)]
+COR_ETAPA = {1: CIANO, 2: AMARELO, 3: VERDE, 4: VERDE, 5: MAGENTA, 6: ROXO}
 
 
 def etapa(n):
@@ -395,6 +403,33 @@ def plano_consulta(q, s):
     return html_, mostra == min(total, 9) and altura <= ALTURA_CORPO, altura
 
 
+def passos_da_consulta(q):
+    """As cláusulas do SELECT externo, na ordem em que o MySQL as processa."""
+    blocos, prof = [], 0
+    for linha in compactar(q['sql'], q['num']):
+        topo = linha.strip().upper()
+        achou = None
+        if prof == 0:
+            for chave, k in ORDEM:
+                if topo.startswith(chave + ' ') or topo == chave:
+                    achou = (k, chave)
+                    break
+        if achou:
+            blocos.append([achou[0], achou[1], linha.strip()])
+        elif blocos:
+            blocos[-1][2] += ' ' + linha.strip()
+        prof += linha.count('(') - linha.count(')')
+    saida = [(n, k, re.sub(r'\s+', ' ', txt[len(k):]).strip().rstrip(';')) for n, k, txt in blocos]
+    return sorted(saida, key=lambda x: x[0])
+
+
+def dados_da_consulta(q):
+    n = len(q['linhas'])
+    prim = ', '.join(f'{c} = {v}' for c, v in list(zip(q['colunas'], q['linhas'][0]))[:6]) if n else ''
+    res = (f'{n} linha{"s" if n > 1 else ""} (dados fictícios, data de 30/11/2026). Primeira linha: {prim}.' if n else 'Nenhuma linha.')
+    return {'enunciado': q['enunciado'], 'passos': passos_da_consulta(q), 'resultado': res, 'chips': CHIPS_Q[q['num']]}
+
+
 def slide_consulta(q):
     num = q['num']
     for s in (30, 28, 26, 24):
@@ -403,8 +438,9 @@ def slide_consulta(q):
             break
     else:
         corpo, _, _ = plano_consulta(q, 24)
-    notas = f'{q["enunciado"]} Como o banco processa: {RESUMO[num]} Recursos: {q["comandos"]}.'
-    slide(titulo(e(TITULO_Q[num]), num) + corpo, 'q', 'Consultas', quem_apresenta(num), notas, ident=num.lower(), rotulo=f'{num}: {TITULO_Q[num]}')
+    notas = ''
+    slide(titulo(e(TITULO_Q[num]), num) + corpo, 'q', 'Consultas', None, notas, ident=num.lower(), rotulo=f'{num}: {TITULO_Q[num]}')
+    SLIDES[-1]['q'] = q
 
 
 # ------------------------------------------------------------------ DER para o telão (atributos ficam na notação e no dicionário)
@@ -434,13 +470,13 @@ def der_deck():
         caixa(n)
     # origina: Reunião (1,1) e Demanda (0,N)
     linha((864, 88), (864, 300)); losango(864, 194, 'origina', 200, 84)
-    card(880, 128, '(1,1)'); card(880, 284, '(0,N)')
+    card(880, 128, '(0,N)'); card(880, 284, '(1,1)')
     # responde por: Usuário (1,1) e Demanda (0,N)
     linha((280, 344), (724, 344)); losango(502, 344, 'responde por', 250, 88)
-    card(290, 330, '(1,1)'); card(714, 330, '(0,N)', 'end')
+    card(290, 330, '(0,N)'); card(714, 330, '(1,1)', 'end')
     # refere-se a: Assistido (0,1) e Demanda (0,N)
     linha((1004, 344), (1448, 344)); losango(1226, 344, 'refere-se a', 236, 88)
-    card(1014, 330, '(0,N)'); card(1438, 330, '(0,1)', 'end')
+    card(1014, 330, '(0,1)'); card(1438, 330, '(0,N)', 'end')
     # acompanha: Usuário (0,N) e Assistido (0,N), com data_inicio
     linha((180, 388), (180, 500), (1548, 500), (1548, 388)); losango(864, 500, 'acompanha', 236, 88)
     linha((864, 544), (864, 566))
@@ -448,10 +484,10 @@ def der_deck():
     card(194, 428, '(0,N)'); card(1534, 428, '(0,N)', 'end')
     # possui: Assistido (1,1) e Evolução (0,N)
     linha((1690, 388), (1690, 644), (1290, 644)); losango(1500, 644, 'possui', 190, 80)
-    card(1676, 428, '(1,1)', 'end'); card(1300, 630, '(0,N)')
+    card(1676, 428, '(0,N)', 'end'); card(1300, 630, '(1,1)')
     # escreve: Usuário (1,1) e Evolução (0,N)
     linha((60, 388), (60, 644), (1010, 644)); losango(560, 644, 'escreve', 190, 80)
-    card(74, 428, '(1,1)'); card(1000, 630, '(0,N)', 'end')
+    card(74, 428, '(0,N)'); card(1000, 630, '(1,1)', 'end')
     # retifica: Evolução (0,1) e Evolução (0,1), autorrelacionamento 1:1
     linha((1060, 688), (1060, 744), (1065, 744)); linha((1235, 744), (1240, 744), (1240, 688))
     losango(1150, 744, 'retifica', 170, 76)
@@ -484,13 +520,20 @@ def montar():
         m, s = t.split(':')
         return int(m) * 60 + int(s)
     blocos = ''
-    for n, quem, ini, fim, nome, oque in PARTES:
-        cor = PESSOAS[quem]
+    for n, cor, ini, fim, nome, oque in PARTES:
+        if n == 3:  # a parte das consultas mostra os blocos de cada integrante
+            faixa = (f'<span style="flex:60;background:{MAGENTA};color:#fff">Mapa</span>' +
+                     ''.join(f'<span style="flex:{seg(f) - seg(i)};background:{c};color:{TEXTO_SOBRE[c]}">{a} a {b[1:]}</span>'
+                             for a, b, c, i, f in BLOCOS))
+            blocos += (f'<div class="bloco p3" style="flex:{seg(fim) - seg(ini)}"><div class="p3-cab"><span class="b-t">{ini}</span>'
+                       f'<b>{n:02d}</b><span class="b-o">{e(nome)}</span></div><div class="p3-faixa">{faixa}</div></div>')
+            continue
         blocos += (f'<div class="bloco" style="flex:{seg(fim) - seg(ini)};background:{cor};color:{TEXTO_SOBRE[cor]}">'
                    f'<span class="b-t">{ini}</span><b>{n:02d}</b><span class="b-o">{e(nome)}</span></div>')
-    itens = ''.join(f'<li><span class="r-cor" style="background:{PESSOAS[q]}"></span><b>{n:02d} · {e(nome)}</b><span>{e(o)}</span><em>{ini} a {fim}</em></li>'
-                    for n, q, ini, fim, nome, o in PARTES)
-    slide(titulo('Roteiro: 20 minutos em cinco partes') + f'<div class="linha-tempo">{blocos}</div><ul class="roteiro">{itens}</ul>',
+    itens = ''.join(f'<li><span class="r-cor" style="background:{c}"></span><b>{n:02d} · {e(nome)}</b><span>{e(o)}</span><em>{ini} a {fim}</em></li>'
+                    for n, c, ini, fim, nome, o in PARTES)
+    slide(titulo('Roteiro: 20 minutos, cinco partes') + f'<div class="linha-tempo">{blocos}</div><ul class="roteiro">{itens}</ul>'
+          '<p class="nota-baixo">Na parte 3, cada integrante explica 3 ou 4 consultas: Q01 a 03, Q04 a 06, Q07 a 10, Q11 a 14 e Q15 a 17.</p>',
           '', 'Abertura', 'Vinícius', 'Cada integrante apresenta um bloco e explica o processamento das próprias consultas, como pede o enunciado.',
           ident='roteiro', rotulo='Roteiro')
 
@@ -524,27 +567,30 @@ def montar():
 
     # 5. Recorte
     chips = ''.join(f'<span class="tab-chip" style="--c:{COR_TABELA[n]}">{n}</span>' for n, _ in CARGA)
-    fora = ''.join(f'<li>{e(x)}</li>' for x in ('encaminhamento', 'retorno de acompanhamento', 'histórico da demanda', 'registro de auditoria', 'participantes da reunião'))
-    slide(titulo('O recorte: 6 das 12 entidades do sistema') + f'''<div class="recorte">
-<div class="num-grande"><div><span>12</span><small>entidades no DER<br>do sistema completo</small></div>{seta(MAGENTA)}
+    fora = ''.join(f'<li>{e(x)}</li>' for x in ('Serviço da Rede', 'Encaminhamento', 'Ação', 'Retorno de Acompanhamento', 'Histórico de Demanda', 'Registro de Auditoria'))
+    slide(titulo('O recorte: 13 entidades no DER, 6 tabelas no banco') + f'''<div class="recorte">
+<div class="rec-esq"><div class="num-grande"><div><span>13</span><small>entidades no DER<br>do sistema (v2.0)</small></div>{seta(MAGENTA)}
 <div><span class="seis">6</span><small>tabelas nesta disciplina<br>(o enunciado pede de 4 a 6)</small></div></div>
-<div class="rec-dir"><h3>No recorte</h3><div class="chips-tab">{chips}</div><h3>Ficaram fora</h3><ul class="fora">{fora}</ul>
-<p class="nota">Tabelas e colunas com os mesmos nomes do back-end do sistema (Flask e SQLAlchemy).</p></div></div>''',
+<p class="conta"><b>5</b> viraram tabelas · <b>2</b> viraram colunas · <b>6</b> ficaram fora</p></div>
+<div class="rec-dir"><h3>Viraram tabelas: 5 entidades e a associativa do N:N</h3><div class="chips-tab">{chips}</div>
+<h3>Viraram colunas</h3><ul class="fora"><li>Setor: <code>reuniao.setor</code> (ENUM)</li><li>Categoria de Demanda: <code>demanda.categoria</code></li></ul>
+<h3>Ficaram fora</h3><ul class="fora duas-col">{fora}</ul></div></div>''',
           '', 'Universo de discurso', 'Vinícius', 'Escolhemos o núcleo do sistema. O resto do DER continua no sistema, fora desta entrega.',
           ident='recorte', rotulo='Recorte')
 
     def divisor(parte):
-        n, quem, ini, fim, nome, oque = parte
-        cor = PESSOAS[quem]
+        n, cor, ini, fim, nome, oque = parte
         slide(f'''{barra4()}<div class="div-corpo"><span class="div-num" style="color:{NO_ESCURO.get(cor, cor)}">0{n}</span>
 <div><h2>{e(nome)}</h2><p>{e(oque)}</p><div class="div-pessoa"><i style="background:{cor}"></i><b>Parte {n}</b><em>{ini} a {fim}</em></div></div></div>''',
-              'divisor escuro', nome, quem, f'Passagem para a parte {n}: {nome}.', ident=f'parte{n}', rotulo=f'Parte {n}: {nome}')
+              'divisor escuro', nome, None, '', ident=f'parte{n}', rotulo=f'Parte {n}: {nome}')
+        SLIDES[-1]['parte_n'] = n
 
     divisor(PARTES[1])
 
     # DER
-    slide(titulo('DER do recorte (notação de Heuser)') + f'<div class="der">{der_deck()}</div>'
-          '<p class="nota-baixo">Atributos de cada entidade: notação textual e dicionário de dados, nos próximos slides.</p>',
+    slide(titulo('DER do recorte') + f'<div class="der">{der_deck()}<div class="der-leitura"><b>Como ler (Aula 02)</b>'
+          '<p>O par (mín, máx) junto a cada entidade diz de quantas ocorrências do relacionamento cada ocorrência dela participa.</p>'
+          '<p>Em origina: DEMANDA (1,1), cada demanda nasce em uma só reunião; REUNIÃO (0,N), uma reunião origina nenhuma ou várias.</p></div></div>',
           'der-slide', 'Modelagem', 'Henry', 'Ler pelos verbos: reunião origina demanda; usuário responde por demanda; usuário acompanha assistido (N:N, com data_inicio); evolução retifica evolução (1:1).',
           ident='der', rotulo='DER')
 
@@ -662,17 +708,17 @@ ALTER TABLE evolucao
             tem = f(s)
             totais[i] += tem
             cels += f'<td class="{"sim" if tem else ""}">{"<i></i>" if tem else ""}</td>'
-        corpo_m += f'<tr><th style="--c:{PESSOAS[quem_apresenta(q["num"])]}">{q["num"]}</th>{cels}</tr>'
+        corpo_m += f'<tr><th style="--c:{bloco_da_consulta(q["num"])[1]}">{q["num"]}</th>{cels}</tr>'
     tot = ''.join(f'<td class="tot">{t}</td>' for t in totais)
     slide(titulo('17 consultas, cada uma com um recurso diferente') +
           f'<table class="mapa"><thead><tr><th></th>{cab}</tr></thead><tbody>{corpo_m}<tr class="t"><th>total</th>{tot}</tr></tbody></table>',
-          'denso', 'Consultas', 'Inácio', 'O enunciado pede no mínimo 12 consultas diferentes, com funções de data ou matemáticas, junção e GROUP BY. A contagem foi feita no próprio SQL. A cor de cada linha é a da parte em que a consulta é apresentada.',
+          'denso', 'Consultas', 'Inácio', 'O enunciado pede no mínimo 12 consultas diferentes, com funções de data ou matemáticas, junção e GROUP BY. A contagem foi feita no próprio SQL. A cor de cada linha é a do bloco de quem apresenta a consulta.',
           ident='mapa', rotulo='Mapa das consultas')
 
     # Ordem de processamento
-    etapas = [(1, 'FROM', 'lê a tabela'), (2, 'JOIN', 'liga as linhas pelas chaves'), (3, 'WHERE', 'filtra linha a linha'),
-              (4, 'GROUP BY', 'junta em grupos'), (5, 'HAVING', 'filtra os grupos'), (6, 'SELECT', 'calcula as colunas'),
-              (7, 'ORDER BY', 'ordena'), (8, 'LIMIT', 'corta')]
+    etapas = [(1, 'FROM e JOIN', 'lê as tabelas e liga as linhas pelas chaves'), (2, 'WHERE', 'filtra linha a linha'),
+              (3, 'GROUP BY', 'junta em grupos'), (4, 'HAVING', 'filtra os grupos'), (5, 'SELECT', 'calcula as colunas'),
+              (6, 'ORDER BY', 'ordena o resultado')]
     pipe = ''.join(f'<div class="passo" style="--c:{COR_ETAPA[n]}">{etapa(n)}<b>{k}</b><span>{t}</span></div>' for n, k, t in etapas)
     slide(titulo('A ordem em que o MySQL processa um SELECT') + f'''<div class="pipeline">{pipe}</div>
 <p class="frase">Escrevemos SELECT primeiro, mas o banco começa pelo FROM: monta as linhas, filtra, agrupa, calcula e só então ordena.</p>
@@ -680,14 +726,9 @@ ALTER TABLE evolucao
           '', 'Consultas', 'Inácio', 'Frase que serve para qualquer consulta: o FROM e os JOIN montam as linhas; o WHERE filtra linha a linha; o GROUP BY junta em grupos; o HAVING filtra os grupos; o SELECT calcula as colunas; o ORDER BY ordena.',
           ident='ordem', rotulo='Ordem de processamento')
 
-    for q in CONSULTAS[:5]:
+    for q in CONSULTAS:
         slide_consulta(q)
     divisor(PARTES[3])
-    for q in CONSULTAS[5:11]:
-        slide_consulta(q)
-    divisor(PARTES[4])
-    for q in CONSULTAS[11:]:
-        slide_consulta(q)
 
     # Script 04
     ops = [('INSERT', VERDE, "Nova reunião e uma demanda sem estado: o DEFAULT a faz nascer 'aberta'."),
@@ -708,16 +749,16 @@ ALTER TABLE evolucao
                 ('Q15 · Q16', 'Retificação e evoluções'), ('Q02 · Q17', 'Reuniões e o que originaram'),
                 ('Q08 a Q10 · Q12', 'Relatórios da direção')]
     linhas_s = ''.join(f'<li><code>{e(a)}</code><span>{e(b)}</span></li>' for a, b in mapa_sis)
-    img = base64.b64encode(open(os.path.join(AQUI, 'assets', 'telas', 'painel-direcao-prototipo.jpg'), 'rb').read()).decode()
+    img = base64.b64encode(open(os.path.join(AQUI, 'assets', 'telas', 'painel-direcao-prototipo-recorte.jpg'), 'rb').read()).decode()
     slide(titulo('Do banco ao sistema') + f'''<div class="sistema"><ul class="mapa-sis">{linhas_s}</ul>
-<figure class="tela"><img src="data:image/jpeg;base64,{img}" width="1200" height="750" alt="Painel de demandas da direção no protótipo do sistema, com dados fictícios">
-<figcaption>Painel da direção no protótipo do sistema (dados fictícios). As tabelas e colunas são as mesmas do back-end em Flask.</figcaption></figure></div>''',
+<figure class="tela"><img src="data:image/jpeg;base64,{img}" width="1000" height="703" alt="Painel de demandas da direção no protótipo do sistema, com dados fictícios">
+<figcaption>Trecho do painel da direção no protótipo do sistema (dados fictícios): vencidas e demandas por estado.</figcaption></figure></div>''',
           '', 'Integração', 'Miguel', 'As consultas não são só exercício: cada uma responde à pergunta de uma tela do sistema da equipe.',
           ident='sistema', rotulo='Do banco ao sistema')
 
     # Critérios
-    crit = [('Apresentação', '1,0', 'roteiro em 5 blocos; cada um explica as próprias consultas', '{{roteiro}} e {{q01}} a {{q17}}'),
-            ('Universo de discurso, DER e notação textual', '1,0', 'minimundo, regras, DER de Heuser, notação, 3FN e dicionário', '{{crie}} a {{dic}}'),
+    crit = [('Apresentação', '1,0', '5 partes; cada integrante explica 3 ou 4 consultas', '{{roteiro}} e {{q01}} a {{q17}}'),
+            ('Universo de discurso, DER e notação textual', '1,0', 'minimundo, regras, DER (mín, máx), notação, 3FN e dicionário', '{{crie}} a {{dic}}'),
             ('Scripts e carga com diversidade', '1,0', 'DROP e CREATE DATABASE, CREATE e ALTER TABLE, 103 registros, manutenção', '{{s01}}, {{s02}} e {{s04}}'),
             ('Mínimo de 12 consultas', '5,0', '17 consultas com datas, cálculo, junções, GROUP BY, HAVING e subconsultas', '{{mapa}} a {{q17}}'),
             ('Regras do modelo', 'requisito', '6 tabelas; tipos numérico, texto e data; 1:1, 1:N e N:N', '{{recorte}}, {{rel}} e {{dic}}')]
@@ -729,10 +770,11 @@ ALTER TABLE evolucao
           ident='criterios', rotulo='Critérios do enunciado')
 
     # Encerramento
-    slide(f'''{barra4()}<div class="fim"><div class="placa">{logo}</div><h2>Obrigado.</h2><p class="fim-sub">Perguntas?</p>
+    slide(f'''<div class="capa-topo"><div class="lockup">{logo}<span>Centro de Integração<br>Especial</span></div>{ifsp}</div>
+<div class="fim">{barra4()}<h2>Obrigado.</h2><p class="fim-sub">Perguntas?</p>
 <p class="fim-equipe">Equipe Cortex</p>
 <p class="capa-rod">Documento ABNT, scripts .sql e este deck no repositório da equipe Cortex · todos os dados são fictícios</p></div>''',
-          'fim-slide escuro', 'Perguntas', 'Todos', 'Perguntas. Respostas prontas no GUIA_APRESENTACAO.md.', ident='fim', rotulo='Encerramento')
+          'capa fim-slide escuro', 'Perguntas', None, '', ident='fim', rotulo='Encerramento')
 
 
 # ------------------------------------------------------------------ página
@@ -801,7 +843,9 @@ h3{font:600 28px/1.2 'Archivo',sans-serif;color:var(--t8);margin:0 0 20px}
 .schemas{display:grid;grid-template-columns:1.12fr 1fr 1fr;gap:24px 28px;align-items:start}
 
 /* roteiro */
-.linha-tempo{display:flex;height:220px;gap:6px;margin-bottom:48px}
+.linha-tempo{display:flex;height:250px;gap:6px;margin-bottom:44px}
+.bloco.p3{background:var(--t8);color:#fff;padding:0;gap:0}.p3-cab{padding:22px 20px 12px;display:flex;flex-direction:column;gap:6px}
+.p3-faixa{display:flex;gap:3px;flex:1;padding:0 3px 3px}.p3-faixa span{display:grid;place-items:center;font:600 24px 'IBM Plex Mono',monospace;min-width:0;white-space:nowrap}
 .bloco{padding:22px 20px;display:flex;flex-direction:column;gap:6px;min-width:0}
 .bloco .b-t{font:500 24px 'IBM Plex Mono',monospace}.bloco b{font:800 34px/1.05 'Bricolage Grotesque',sans-serif}.bloco .b-o{font-size:24px;line-height:1.2}
 .roteiro{list-style:none;padding:0;margin:0;display:grid;gap:14px}
@@ -819,11 +863,13 @@ h3{font:600 28px/1.2 'Archivo',sans-serif;color:var(--t8);margin:0 0 20px}
 .gars{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .gar{border-top:4px solid var(--t8);padding-top:14px}.gar b{display:block;font:800 36px 'Bricolage Grotesque',sans-serif;color:var(--t8);margin-bottom:8px}.gar span{font-size:28px;line-height:1.35}
 .regras{display:grid;gap:0}
-.regra{display:grid;grid-template-columns:1fr 56px 860px;align-items:center;gap:32px;padding:20px 0;border-bottom:1px solid var(--linha)}
+.regra{display:grid;grid-template-columns:1fr 56px 860px;align-items:center;gap:32px;padding:30px 0;border-bottom:1px solid var(--linha)}
 .regra:first-child{border-top:2px solid var(--t8)}.regra:last-child{border-bottom:2px solid var(--t8)}
-.regra p{font-size:30px;font-weight:600;color:var(--t8)}
-.regra code{font-size:26px;background:var(--t8);color:var(--papel);padding:14px 20px;white-space:pre}
-.recorte{display:grid;grid-template-columns:1fr 1fr;gap:80px}
+.regra p{font-size:33px;font-weight:600;color:var(--t8)}
+.regra code{font-size:28px;background:var(--t8);color:var(--papel);padding:14px 20px;white-space:pre}
+.recorte{display:grid;grid-template-columns:.9fr 1.1fr;gap:72px}
+.conta{font-size:30px;color:var(--t8);margin-top:44px;border-top:2px solid var(--t8);padding-top:18px}.conta b{font:800 40px 'Bricolage Grotesque',sans-serif}
+.fora.duas-col{columns:2;column-gap:40px}.fora code{font-size:26px;color:var(--rox)}.rec-dir h3{margin-top:30px}.rec-dir h3:first-child{margin-top:0}
 .num-grande{display:flex;align-items:center;gap:40px}
 .num-grande span{display:block;font:800 240px/.9 'Bricolage Grotesque',sans-serif;color:var(--t8);letter-spacing:-.04em}.num-grande .seis{color:var(--rox)}
 .num-grande small{display:block;font-size:26px;line-height:1.3;margin-top:16px}
@@ -842,7 +888,9 @@ h3{font:600 28px/1.2 'Archivo',sans-serif;color:var(--t8);margin:0 0 20px}
 .div-pessoa b{font:600 44px 'Bricolage Grotesque',sans-serif;color:var(--papel)}.div-pessoa em{font:500 30px 'IBM Plex Mono',monospace;font-style:normal;color:var(--me);margin-left:12px}
 
 /* DER */
-.der{display:flex;justify-content:center}
+.der{display:flex;justify-content:center;position:relative}
+.der-leitura{position:absolute;left:0;top:0;width:640px;background:var(--papel);border-left:10px solid var(--mag);padding:18px 24px;font-size:24px;line-height:1.38;color:var(--t8)}
+.der-leitura b{display:block;font:600 24px 'IBM Plex Mono',monospace;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}.der-leitura p{margin:6px 0 0}
 .der-svg{display:block;flex:none;width:1728px;height:790px;font-family:'Archivo',sans-serif}
 .der-slide .titulo{margin-bottom:20px}
 .ent{fill:#F6F5F2;stroke:#16181C;stroke-width:2.5}.ent-t{fill:#16181C}
@@ -855,12 +903,12 @@ h3{font:600 28px/1.2 'Archivo',sans-serif;color:var(--t8);margin:0 0 20px}
 .der-slide .nota-baixo{bottom:92px}
 
 /* tabelas de texto */
-.tab{border-collapse:collapse;width:100%;font-size:26px}
+.tab{border-collapse:collapse;width:100%;font-size:28px}
 .tab th{text-align:left;font:500 24px 'IBM Plex Mono',monospace;letter-spacing:.04em;text-transform:uppercase;color:var(--cinza);border-bottom:2px solid var(--t8);padding:10px 14px}
-.tab td{border-bottom:1px solid var(--linha);padding:12px 14px;vertical-align:middle}
+.tab td{border-bottom:1px solid var(--linha);padding:15px 14px;vertical-align:middle}
 .tab td b{color:var(--t8)}
 .tipo{display:inline-block;font:600 24px 'IBM Plex Mono',monospace;padding:2px 10px;border-radius:2px;white-space:nowrap}
-.rel .impl{font-size:24px}
+.rel .impl{font-size:26px}
 .dupla{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:36px}
 .dupla p{background:var(--papel);padding:20px 26px;font-size:26px}.dupla b{font-family:'IBM Plex Mono',monospace;color:var(--t8)}
 .notacao p{font-size:40px;line-height:1.42;margin:0 0 32px;color:var(--t5)}
@@ -879,12 +927,12 @@ h3{font:600 28px/1.2 'Archivo',sans-serif;color:var(--t8);margin:0 0 20px}
 .anot{list-style:none;padding:0;margin:0;display:grid;gap:30px}
 .anot li{border-top:4px solid var(--t8);padding-top:14px}.anot b{display:block;font:800 34px 'Bricolage Grotesque',sans-serif;color:var(--t8);margin-bottom:8px}.anot span{font-size:29px}
 .carga{display:grid;grid-template-columns:1fr 1fr;gap:80px}
-.barras{display:grid;gap:20px}
+.barras{display:grid;gap:30px}
 .barra{display:grid;grid-template-columns:330px 1fr 56px;align-items:center;gap:16px}
-.barra .bn{font:500 24px 'IBM Plex Mono',monospace;color:var(--t8)}.bb{height:46px;background:var(--papel)}.bb i{display:block;height:100%}
+.barra .bn{font:500 24px 'IBM Plex Mono',monospace;color:var(--t8)}.bb{height:58px;background:var(--papel)}.bb i{display:block;height:100%}
 .barra b{font:800 34px 'Bricolage Grotesque',sans-serif;color:var(--t8);text-align:right}
 .pilha{display:grid;grid-template-columns:190px 1fr;align-items:center;gap:20px;margin-bottom:20px}.pilha b{font-size:28px;color:var(--t8)}
-.pilha-b{display:flex;height:56px;gap:3px}.pilha-b span{display:grid;place-items:center;min-width:44px;font:600 24px 'IBM Plex Mono',monospace}
+.pilha-b{display:flex;height:72px;gap:3px}.pilha-b span{display:grid;place-items:center;min-width:44px;font:600 24px 'IBM Plex Mono',monospace}
 .leg{display:flex;flex-wrap:wrap;gap:10px 26px;font-size:24px;margin-top:28px}.leg i{display:inline-block;width:20px;height:20px;margin-right:10px;vertical-align:-3px}
 
 /* mapa e ordem */
@@ -894,9 +942,9 @@ h3{font:600 28px/1.2 'Archivo',sans-serif;color:var(--t8);margin:0 0 20px}
 .mapa td{text-align:center;border-bottom:1px solid var(--linha);height:37px}
 .mapa td.sim i{display:inline-block;width:22px;height:22px;background:var(--t8);vertical-align:middle}
 .mapa tr.t th{border-left-color:transparent;color:var(--cinza);font-weight:500}.mapa td.tot{font:800 30px 'Bricolage Grotesque',sans-serif;color:var(--t8);border-bottom:0;padding-top:8px}
-.pipeline{display:grid;grid-template-columns:repeat(8,1fr);gap:14px;margin:56px 0 88px}
+.pipeline{display:grid;grid-template-columns:repeat(6,1fr);gap:18px;margin:56px 0 88px}
 .passo{background:var(--papel);border-top:10px solid var(--c);padding:30px 20px 36px;display:grid;gap:16px;justify-items:start;align-content:start;min-height:300px}
-.passo b{font:600 30px 'IBM Plex Mono',monospace;color:var(--t8)}.passo span:last-child{font-size:28px;line-height:1.3}
+.passo b{font:600 32px 'IBM Plex Mono',monospace;color:var(--t8)}.passo span:last-child{font-size:28px;line-height:1.3}
 .frase{font:600 46px/1.3 'Bricolage Grotesque',sans-serif;color:var(--t8);max-width:1500px;border-left:12px solid var(--mag);padding-left:36px}
 .et{display:inline-grid;place-items:center;width:38px;height:34px;font:600 24px/1 'IBM Plex Mono',monospace;border-radius:2px;flex:none}
 .et.vazio{background:transparent}
@@ -919,21 +967,21 @@ h3{font:600 28px/1.2 'Archivo',sans-serif;color:var(--t8);margin:0 0 20px}
 
 /* manutenção, sistema, critérios */
 .ops{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
-.op{background:var(--papel);border-top:10px solid var(--c);padding:34px 36px 38px;min-height:330px}
+.op{background:var(--papel);border-top:10px solid var(--c);padding:36px 38px 40px;min-height:370px}
 .op span{display:block;font:600 32px 'IBM Plex Mono',monospace;color:var(--t8);margin-bottom:18px}.op p{font-size:31px;line-height:1.38;color:var(--t8)}
 .op-tinta{background:var(--t8);border-top-color:var(--mag)}.op-tinta span{color:var(--papel)}.op-tinta p{color:var(--ce)}
-.sistema{display:grid;grid-template-columns:560px 1fr;gap:56px;align-items:start}
+.sistema{display:grid;grid-template-columns:640px 1000px;gap:88px;align-items:start}
 .mapa-sis{list-style:none;padding:0;margin:0}
-.mapa-sis li{display:grid;grid-template-columns:1fr;gap:4px;padding:14px 0;border-bottom:1px solid var(--linha);font-size:27px;color:var(--t8)}
+.mapa-sis li{display:grid;grid-template-columns:1fr;gap:4px;padding:16px 0;border-bottom:1px solid var(--linha);font-size:27px;color:var(--t8)}
 .mapa-sis li:first-child{border-top:2px solid var(--t8)}
 .mapa-sis code{font:600 24px 'IBM Plex Mono',monospace;color:var(--rox)}
 .tela{margin:0}.tela img{display:block;width:100%;height:auto;border:1px solid var(--linha)}
 .tela figcaption{font-size:24px;color:var(--cinza);margin-top:16px}
-.crit td{font-size:28px;padding:26px 14px}.crit .pts{font:600 26px 'IBM Plex Mono',monospace;color:var(--t8);white-space:nowrap}.crit .onde{font:500 24px 'IBM Plex Mono',monospace;white-space:nowrap;color:var(--t8)}
+.crit td{font-size:29px;padding:32px 14px}.crit .pts{font:600 26px 'IBM Plex Mono',monospace;color:var(--t8);white-space:nowrap}.crit .onde{font:500 24px 'IBM Plex Mono',monospace;white-space:nowrap;color:var(--t8)}
 
 /* encerramento */
-.fim-slide{padding:120px 120px 0}
-.fim{margin-top:80px}
+.fim{padding:190px 96px 0}
+.fim .barra4{margin-bottom:44px}
 .placa{display:inline-block;background:var(--papel);padding:22px 30px;border-radius:4px;margin-bottom:56px}.placa .logo-crie{width:260px;height:auto;display:block}
 .fim h2{font:800 150px/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.03em;color:var(--papel);margin-bottom:18px}
 .fim-sub{font-size:44px;color:var(--ce);margin-bottom:56px}
@@ -941,8 +989,17 @@ h3{font:600 28px/1.2 'Archivo',sans-serif;color:var(--t8);margin:0 0 20px}
 
 /* interface do deck (fora da impressão) */
 .ui{position:fixed;left:0;right:0;bottom:0;height:4px;background:#2A2D33;z-index:10}.ui i{display:block;height:100%;background:#E5006E;width:0}
-.notas{position:fixed;left:24px;right:24px;bottom:18px;background:#16181C;color:#F6F5F2;font:22px/1.4 'Archivo',sans-serif;padding:16px 22px;z-index:11;display:none}
-body.com-notas .notas{display:block}
+/* notas do apresentador: só com a tecla N; o slide encolhe para cima em vez de ficar coberto */
+.notas{position:fixed;left:0;right:0;bottom:0;height:46vh;background:#16181C;color:#F6F5F2;z-index:11;display:none;overflow:auto;padding:16px 28px 28px;font:18px/1.5 'Archivo',sans-serif;border-top:4px solid #E5006E}
+body.com-notas .notas{display:block}body.com-notas .palco{bottom:46vh}
+.relogio{position:fixed;right:20px;top:14px;z-index:12;background:#16181C;color:#F6F5F2;font:600 22px 'IBM Plex Mono',monospace;padding:6px 14px;display:none}body.modo-apresentador .relogio{display:block}
+.n-cab{display:flex;justify-content:space-between;gap:20px;font:500 15px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#B9B5AC;margin-bottom:12px}
+.n-corpo{display:grid;grid-template-columns:1.15fr .85fr;gap:36px}
+.n-bloco{margin-bottom:16px}.n-bloco h4{margin:0 0 6px;font:600 14px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#F2B300}
+.notas p{margin:0}.notas dl{margin:0}.notas dt{font-weight:600;color:#fff;margin-top:8px}.notas dd{margin:2px 0 0;color:#D9D6CF}
+.notas ul,.notas ol{margin:0;padding-left:22px}.notas li{margin:5px 0}.notas li b{color:#fff}
+.notas code{font:500 15px 'IBM Plex Mono',monospace;color:#7FD3F2;background:#0E1013;padding:1px 6px;overflow-wrap:anywhere}
+@media (max-width:900px){.notas{height:60vh;font-size:16px;padding:12px 16px 24px}body.com-notas .palco{bottom:60vh}.n-corpo{grid-template-columns:1fr;gap:0}}
 @media (prefers-reduced-motion:no-preference){.slide.ativo{animation:entra .16s ease-out}@keyframes entra{from{opacity:.5}to{opacity:1}}}
 @page{size:1920px 1080px;margin:0}
 @media print{html,body{background:#fff;height:auto;overflow:visible}.palco{position:static;display:block}
@@ -951,28 +1008,45 @@ body.com-notas .notas{display:block}
 
 JS = r'''
 const slides=[...document.querySelectorAll('.slide')];let atual=0;
-const barra=document.querySelector('.ui i'),notas=document.querySelector('.notas');
-function ajustar(){const s=Math.min(innerWidth/1920,innerHeight/1080);slides.forEach(x=>x.style.transform=`scale(${s})`)}
+const palco=document.querySelector('.palco'),barra=document.querySelector('.ui i'),notas=document.querySelector('.notas');
+function ajustar(){const s=Math.min(palco.clientWidth/1920,palco.clientHeight/1080);slides.forEach(x=>x.style.transform=`scale(${s})`)}
 function mostrar(n){atual=Math.max(0,Math.min(slides.length-1,n));slides.forEach((s,i)=>s.classList.toggle('ativo',i===atual));
-barra.style.width=((atual+1)/slides.length*100)+'%';notas.textContent=slides[atual].dataset.notas||'';history.replaceState(null,'','#'+(atual+1))}
+barra.style.width=((atual+1)/slides.length*100)+'%';const a=slides[atual].querySelector('.nota');notas.innerHTML=a?a.innerHTML:'';notas.scrollTop=0;
+history.replaceState(null,'',location.search+'#'+(atual+1));if(typeof avisar==='function')avisar()}
+const aberto=()=>document.body.classList.contains('com-notas');
+// Janela do apresentador (tecla P): abre as notas numa segunda janela, sincronizada com esta.
+const apresentador=new URLSearchParams(location.search).has('apresentador');
+const canal='BroadcastChannel' in window?new BroadcastChannel('deck-bd1-cortex'):null;
+let recebendo=false;
+function avisar(){if(recebendo)return;if(canal)canal.postMessage({slide:atual});try{localStorage.setItem('deck-bd1-slide',JSON.stringify({slide:atual,t:Date.now()}))}catch(_){}}
+if(canal)canal.onmessage=ev=>{if(ev.data&&Number.isInteger(ev.data.slide)&&ev.data.slide!==atual){recebendo=true;mostrar(ev.data.slide);recebendo=false}};
+addEventListener('storage',ev=>{if(ev.key!=='deck-bd1-slide'||!ev.newValue)return;const d=JSON.parse(ev.newValue);if(d.slide!==atual){recebendo=true;mostrar(d.slide);recebendo=false}});
+if(apresentador){document.body.classList.add('com-notas','modo-apresentador');const r=document.querySelector('.relogio'),t0=Date.now();
+setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);r.textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')},1000)}
 addEventListener('keydown',ev=>{const k=ev.key;
 if(['ArrowRight','PageDown',' ','Enter'].includes(k)){ev.preventDefault();mostrar(atual+1)}
 else if(['ArrowLeft','PageUp','Backspace'].includes(k)){ev.preventDefault();mostrar(atual-1)}
 else if(k==='Home')mostrar(0);else if(k==='End')mostrar(slides.length-1);
-else if(k==='n'||k==='N')document.body.classList.toggle('com-notas');
+else if((k==='ArrowDown'||k==='ArrowUp')&&aberto()){ev.preventDefault();notas.scrollBy(0,k==='ArrowDown'?140:-140)}
+else if(k==='n'||k==='N'){document.body.classList.toggle('com-notas');ajustar()}
+else if((k==='p'||k==='P')&&!apresentador){window.open(location.pathname+'?apresentador#'+(atual+1),'apresentador-bd1','width=1280,height=860')}
 else if(k==='f'||k==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}});
-addEventListener('click',ev=>{if(ev.clientX>innerWidth/2)mostrar(atual+1);else mostrar(atual-1)});
+addEventListener('click',ev=>{if(ev.target.closest('.notas'))return;if(ev.clientX>innerWidth/2)mostrar(atual+1);else mostrar(atual-1)});
 addEventListener('resize',ajustar);ajustar();mostrar((parseInt(location.hash.slice(1))||1)-1);
 '''
 
 
-def rodape(s, i, total):
-    pessoa = ''
-    if s['pessoa']:
-        n = PARTE_DE[s['pessoa']]
-        rotulo = 'Perguntas' if n == 6 else f'Parte {n}'
-        pessoa = f'<span class="rod-pessoa"><i style="background:{PESSOAS[s["pessoa"]]}"></i>{rotulo}</span>'
-    return f'<footer class="rodape"><span class="rod-secao">{e(s["secao"])}</span><span class="rod-dir">{pessoa}<span class="rod-num">{i:02d} / {total}</span></span></footer>'
+def rotulo_da_parte(s, parte):
+    if s.get('q'):
+        bloco, cor = bloco_da_consulta(s['q']['num'])
+        return f'Parte {parte} · {bloco}', cor
+    return ('Perguntas' if parte == 5 else f'Parte {parte}'), COR_PARTE[parte]
+
+
+def rodape(s, i, total, parte):
+    rotulo, cor = rotulo_da_parte(s, parte)
+    return (f'<footer class="rodape"><span class="rod-secao">{e(s["secao"])}</span><span class="rod-dir">'
+            f'<span class="rod-pessoa"><i style="background:{cor}"></i>{rotulo}</span><span class="rod-num">{i:02d} / {total}</span></span></footer>')
 
 
 def pagina():
@@ -985,24 +1059,29 @@ def pagina():
         fonte('ibm-plex-mono/ibm-plex-mono-latin-600-normal.woff2', 'IBM Plex Mono', 600)])
     total = len(SLIDES)
     numero = {s['id']: i for i, s in enumerate(SLIDES, 1) if s['id']}
-    corpo = ''
+    corpo, parte = '', 1
     for i, s in enumerate(SLIDES, 1):
         conteudo = re.sub(r'\{\{(\w+)\}\}', lambda m: f'{numero[m.group(1)]:02d}', s['corpo'])
-        rod = '' if 'capa' in s['classe'] or 'fim-slide' in s['classe'] else rodape(s, i, total)
-        corpo += (f'<section class="slide {s["classe"]}" aria-label="Slide {i} de {total}: {e(s["rotulo"])}" '
-                  f'data-notas="{e(s["notas"])}">{conteudo}{rod}</section>\n')
+        parte = s.get('parte_n', 5 if s['id'] == 'fim' else parte)
+        rod = '' if 'capa' in s['classe'] else rodape(s, i, total, parte)
+        extra = dados_da_consulta(s['q']) if s.get('q') else None
+        nota_html = notas.montar(s['id'], parte, extra)
+        assert not re.search('[\u2013\u2014]', notas.texto_puro(nota_html)), f'travessão nas notas do slide {i}'
+        cab = f'<header class="n-cab"><b>{i:02d} / {total} · {e(s["rotulo"])}</b><span>{rotulo_da_parte(s, parte)[0]}</span></header>'
+        corpo += (f'<section class="slide {s["classe"]}" aria-label="Slide {i} de {total}: {e(s["rotulo"])}">{conteudo}{rod}'
+                  f'<aside class="nota" hidden>{cab}<div class="n-corpo">{nota_html}</div></aside></section>\n')
     return f'''<!doctype html>
 <!-- FONTES
   Identidade: handoff do site do CRIE (site-crie/docs/handoff/README.md, Design Tokens): cores, barra de quatro cores,
   tipografia, cantos vivos, sem sombras e sem ícones.
   Logo do CRIE: recriado em vetor a partir de crie-logo-oficial.png (site-crie/public/brand, 150x70), com as 5 cores do original.
-  Logo do IFSP: marca horizontal 2015. Tela: protótipo do sistema (docs/volere-final, telas/T-02.png), dados fictícios.
-  Fontes (SIL OFL 1.1, licenças em assets/fontes/*/OFL.txt), embutidas: Bricolage Grotesque, Archivo, IBM Plex Mono.
+  Logo do IFSP: marca horizontal 2015. Tela: recorte do protótipo do sistema (telas/T-02.png do trabalho Volere), dados fictícios.
+  Fontes (SIL OFL 1.1), embutidas: Bricolage Grotesque, Archivo, IBM Plex Mono. Licenças em licencas/ (site) e assets/fontes/*/OFL.txt.
   Dados: scripts 01 a 04 da entrega e ferramentas/resultados.json (17 consultas no MySQL 8.4, SET TIMESTAMP 30/11/2026 19:00).
   Todos os dados são fictícios. -->
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Seminário BD1 · Equipe Cortex · O banco de dados das demandas do CRIE</title><style>{fontes}{CSS}</style></head>
-<body><main class="palco">{corpo}</main><div class="ui"><i></i></div><div class="notas" aria-live="polite"></div>
+<body><main class="palco">{corpo}</main><div class="ui"><i></i></div><div class="notas" role="region" aria-label="Notas do apresentador"></div><div class="relogio" aria-label="Tempo decorrido">00:00</div>
 <script>{JS}</script></body></html>'''
 
 

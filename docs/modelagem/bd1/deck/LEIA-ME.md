@@ -1,6 +1,6 @@
 # Deck do seminário de BD1 (equipe Cortex)
 
-39 slides para 20 minutos e 5 integrantes, na identidade visual do CRIE.
+38 slides para 20 minutos e 5 integrantes, na identidade visual do CRIE.
 
 ## Arquivos
 
@@ -8,13 +8,14 @@
 |---|---|
 | `index.html` | O deck. Arquivo único, abre offline em qualquer navegador. |
 | `Seminario_BD1_Equipe_Cortex.pdf` | Os mesmos slides em PDF (1920×1080), para reserva. |
+| `notas.py` | Notas do apresentador (tecla N): o que falar, conceitos das aulas, passo a passo das consultas e perguntas prováveis. |
 | `gerar_deck.py` | Gera o `index.html` (e o PDF com `--pdf`) a partir dos scripts e dos resultados. |
 | `qa_deck.py` | Confere o deck e, com `--prints`, salva um PNG por slide em `prints/`. |
 | `assets/` | Fontes com licença, logos e a tela do protótipo. |
 
 ## Como apresentar
 
-**F** tela cheia · **seta direita, espaço ou clique** avança · **seta esquerda** volta · **Home/End** · **N** notas de quem fala.
+**F** tela cheia · **seta direita, espaço ou clique** avança · **seta esquerda** volta · **Home/End** · **N** abre e fecha as notas de quem fala (seta para baixo e para cima rolam as notas) · **P** abre a janela do apresentador (notas e cronômetro), que acompanha a janela projetada.
 
 O roteiro de fala, com quem apresenta cada slide, está no `GUIA_APRESENTACAO.md` da pasta do BD1.
 
@@ -45,10 +46,10 @@ Em todos os slides, a 1920×1080:
   - acentos magenta, amarelo, roxo, ciano e verde;
   - barra de quatro cores;
   - cantos vivos, sem sombras e sem ícones.
-- **Fontes** (SIL OFL 1.1, licença ao lado de cada uma em `assets/fontes/`): Bricolage Grotesque (títulos), Archivo (texto) e IBM Plex Mono (SQL e rótulos).
+- **Fontes** (SIL OFL 1.1, licença ao lado de cada uma em `assets/fontes/` e, no site publicado, em `licencas/`): Bricolage Grotesque (títulos), Archivo (texto) e IBM Plex Mono (SQL e rótulos).
 - **Logo do CRIE:** recriado em vetor a partir de `crie-logo-oficial.png` (150×70, `site-crie/public/brand`), com as cinco cores do original.
 - **Logo do IFSP:** marca horizontal de 2015.
-- **Tela do slide 37:** painel da direção no protótipo do sistema (`entregas/engenharia-de-software/telas/T-02.png`), com dados fictícios.
+- **Tela do slide 36:** trecho do painel da direção no protótipo do sistema (`entregas/engenharia-de-software/telas/T-02.png`), com dados fictícios.
 - **Dados:**
   - dicionário lido do `01_criacao_banco.sql`;
   - contagem por tabela feita com `COUNT(*)` depois do `02`;
@@ -57,7 +58,7 @@ Em todos os slides, a 1920×1080:
 
 ## Escolhas de conteúdo
 
-- O DER do slide 7 mostra entidades, relacionamentos e cardinalidades em tamanho de telão. Os atributos ficam:
+- O DER do slide 7 mostra entidades, relacionamentos e cardinalidades em tamanho de telão, na notação (mín, máx) da Aula 02 (Elmasri, Figura 7.15), com o quadro "Como ler". Os atributos ficam:
   - na notação textual (slide 9);
   - no dicionário (slide 11);
   - no documento ABNT, que tem o DER completo.
