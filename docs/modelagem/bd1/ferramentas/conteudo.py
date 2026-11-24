@@ -13,16 +13,16 @@ UNIVERSO = [
     'Todos os dados usados nesta entrega são fictícios, como exige o minimundo do projeto.',
 ]
 
-RECORTE = ('O sistema completo, descrito no minimundo e no DER da equipe, tem 12 entidades. Como a especificação de Banco de Dados I pede de quatro a seis tabelas, este trabalho implementa o recorte central do sistema: <b>usuário, assistido, acompanhamento (assistido_profissional), reunião, demanda e evolução</b>. '
-           'Ficaram fora deste recorte o encaminhamento, o retorno de acompanhamento, o histórico da demanda, o registro de auditoria e os participantes da reunião. Os nomes de tabelas e colunas são os mesmos do back-end do sistema (Flask/SQLAlchemy), para que o banco desta disciplina e o do servidor contem a mesma história.')
+RECORTE = ('O DER do sistema completo (versão 2.0 da equipe) tem 13 entidades. Como a especificação de Banco de Dados I pede de quatro a seis tabelas, este trabalho implementa o recorte central do sistema em seis tabelas: cinco entidades (<b>usuário, assistido, reunião, demanda e evolução</b>) e a tabela associativa do relacionamento N:N acompanha (<b>assistido_profissional</b>). '
+           'Duas entidades do DER completo viraram atributos neste recorte: Setor (coluna setor de reuniao, com os três setores) e Categoria de Demanda (coluna categoria de demanda). Ficaram fora as outras seis: Serviço da Rede, Encaminhamento, Ação, Retorno de Acompanhamento, Histórico de Demanda e Registro de Auditoria, além do relacionamento N:N participa (participantes da reunião). Os nomes de tabelas e colunas são os mesmos do back-end do sistema (Flask/SQLAlchemy), para que o banco desta disciplina e o do servidor contem a mesma história.')
 
 RELACIONAMENTOS = [
-    ('origina', 'Reunião, Demanda', '1:N', 'Reunião (1,1) e Demanda (0,N)', 'FK reuniao_id em demanda'),
-    ('é responsável por', 'Usuário, Demanda', '1:N', 'Usuário (1,1) e Demanda (0,N)', 'FK responsavel_id em demanda'),
-    ('refere-se a', 'Assistido, Demanda', '1:N (opcional)', 'Assistido (0,1) e Demanda (0,N)', 'FK assistido_id em demanda, aceita NULL'),
+    ('origina', 'Reunião, Demanda', '1:N', 'Reunião (0,N) e Demanda (1,1)', 'FK reuniao_id em demanda'),
+    ('é responsável por', 'Usuário, Demanda', '1:N', 'Usuário (0,N) e Demanda (1,1)', 'FK responsavel_id em demanda'),
+    ('refere-se a', 'Assistido, Demanda', '1:N (opcional)', 'Assistido (0,N) e Demanda (0,1)', 'FK assistido_id em demanda, aceita NULL'),
     ('acompanha', 'Usuário, Assistido', 'N:N', 'Usuário (0,N) e Assistido (0,N)', 'tabela associativa assistido_profissional, com data_inicio'),
-    ('possui', 'Assistido, Evolução', '1:N', 'Assistido (1,1) e Evolução (0,N)', 'FK assistido_id em evolucao'),
-    ('escreve', 'Usuário, Evolução', '1:N', 'Usuário (1,1) e Evolução (0,N)', 'FK profissional_id em evolucao'),
+    ('possui', 'Assistido, Evolução', '1:N', 'Assistido (0,N) e Evolução (1,1)', 'FK assistido_id em evolucao'),
+    ('escreve', 'Usuário, Evolução', '1:N', 'Usuário (0,N) e Evolução (1,1)', 'FK profissional_id em evolucao'),
     ('retifica', 'Evolução, Evolução', '1:1', 'Evolução (0,1) e Evolução (0,1)', 'FK retifica_id em evolucao com UNIQUE (autorrelacionamento)'),
 ]
 

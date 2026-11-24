@@ -339,9 +339,11 @@ def corpo_html(paginas):
     t.append(d.secao(1, 'Modelo conceitual'))
     fig = d.legenda('Figura', 'Diagrama Entidade-Relacionamento do recorte')
     t.append(par(f'O modelo conceitual do recorte é representado pelo Diagrama Entidade-Relacionamento (DER) da {fig.rotulo}, '
-                 'na notação de Heuser (2000), como nas aulas 02 e 03: retângulos são entidades, losangos são relacionamentos '
-                 'e o par (mínimo, máximo) junto a cada entidade indica quantas ocorrências dela participam do '
-                 'relacionamento. Atributo com círculo preenchido e sublinhado é o identificador.'))
+                 'com as restrições estruturais na notação (mínimo, máximo) de Elmasri e Navathe (2002), a mesma da Figura 7.15 da '
+                 'Aula 02: retângulos são entidades, losangos são relacionamentos e o par junto a cada entidade indica de quantas '
+                 'ocorrências do relacionamento cada ocorrência dela participa. Por exemplo, em origina, Demanda (1,1) diz que cada '
+                 'demanda nasce em exatamente uma reunião, e Reunião (0,N) diz que uma reunião origina nenhuma, uma ou várias demandas. '
+                 'Atributo com círculo preenchido e sublinhado é o identificador.'))
     t.append(fig.bloco(f'<div class="der">{der_pb()}</div>'))
     t.append(d.secao(2, 'Relacionamentos e cardinalidades'))
     q = d.legenda('Quadro', 'Relacionamentos e cardinalidades do modelo')
@@ -439,15 +441,15 @@ def corpo_html(paginas):
     t.append(d.secao(1, 'Considerações finais'))
     t.append(par('Este trabalho apresentou o projeto e a implementação de um banco de dados relacional para o recorte central '
                  'do Sistema de Gestão de Demandas de Articulação do CRIE. A partir do universo de discurso, a equipe '
-                 'elaborou o DER na notação de Heuser, mapeou-o para seis tabelas com relacionamentos 1:1, 1:N e N:N, '
+                 'elaborou o DER com a notação (mínimo, máximo), mapeou-o para seis tabelas com relacionamentos 1:1, 1:N e N:N, '
                  'verificou a primeira, a segunda e a terceira formas normais e documentou cada coluna no dicionário de dados.'))
     t.append(par(f'A carga de {total} registros fictícios foi planejada para dar resultado significativo às 17 consultas, que '
                  'usam seleção, funções de data e matemáticas, agregação, junções interna, externa e autojunção, '
                  'agrupamento com HAVING e subconsultas. Os quatro scripts foram executados do zero, sem erro, no MySQL 8.4.'))
     t.append(par('Como os nomes de tabelas e colunas são os mesmos do back-end do sistema, o banco desta disciplina e o do '
                  'servidor contam a mesma história, e cada consulta corresponde a requisitos e rotas do sistema. As '
-                 'entidades que ficaram fora do recorte (encaminhamento, retorno de acompanhamento, histórico da demanda, '
-                 'registro de auditoria e participantes da reunião) fazem parte do sistema completo descrito no minimundo.'))
+                 'entidades que ficaram fora do recorte (Serviço da Rede, Encaminhamento, Ação, Retorno de Acompanhamento, '
+                 'Histórico de Demanda e Registro de Auditoria) fazem parte do sistema completo descrito no minimundo.'))
 
     # REFERÊNCIAS e APÊNDICES
     t.append(d.secao_sem_numero('REFERÊNCIAS', 'referencias'))

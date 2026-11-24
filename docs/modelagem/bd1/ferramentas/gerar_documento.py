@@ -54,15 +54,15 @@ def der_svg():
     # origina (Reunião 1:N Demanda)
     p.append(linha((500, 130), (500, 165))); p.append(linha((500, 215), (500, 250)))
     p.append(losango(500, 190, 'origina'))
-    p.append(card(508, 148, '(1,1)')); p.append(card(508, 244, '(0,N)'))
+    p.append(card(508, 148, '(0,N)')); p.append(card(508, 244, '(1,1)'))
     # é responsável por (Usuário 1:N Demanda)
     p.append(linha((220, 300), (250, 300))); p.append(linha((374, 300), (405, 300)))
     p.append(losango(312, 300, 'responde por'))
-    p.append(card(224, 292, '(1,1)')); p.append(card(401, 292, '(0,N)', 'end'))
+    p.append(card(224, 292, '(0,N)')); p.append(card(401, 292, '(1,1)', 'end'))
     # refere-se a (Assistido 0..1:N Demanda)
     p.append(linha((595, 325), (625, 325))); p.append(linha((749, 325), (780, 325)))
     p.append(losango(687, 325, 'refere-se a'))
-    p.append(card(599, 317, '(0,N)')); p.append(card(776, 317, '(0,1)', 'end'))
+    p.append(card(599, 317, '(0,1)')); p.append(card(776, 317, '(0,N)', 'end'))
     # acompanha (N:N) com atributo data_inicio
     p.append(linha((125, 414), (125, 500), (438, 500))); p.append(linha((562, 500), (875, 500), (875, 380)))
     p.append(losango(500, 500, 'acompanha'))
@@ -72,11 +72,11 @@ def der_svg():
     # possui (Assistido 1:N Evolução)
     p.append(linha((930, 380), (930, 619))); p.append(linha((868, 644), (790, 644)))
     p.append(losango(930, 644, 'possui'))
-    p.append(card(936, 398, '(1,1)')); p.append(card(796, 636, '(0,N)'))
+    p.append(card(936, 398, '(0,N)')); p.append(card(796, 636, '(1,1)'))
     # escreve (Usuário 1:N Evolução)
     p.append(linha((70, 414), (70, 644), (268, 644))); p.append(linha((392, 644), (600, 644)))
     p.append(losango(330, 644, 'escreve'))
-    p.append(card(76, 434, '(1,1)')); p.append(card(594, 636, '(0,N)', 'end'))
+    p.append(card(76, 434, '(0,N)')); p.append(card(594, 636, '(1,1)', 'end'))
     # retifica (Evolução 1:1 Evolução, autorrelacionamento)
     p.append(linha((640, 708), (640, 752), (650, 752))); p.append(linha((740, 752), (750, 752), (750, 708)))
     p.append(losango(695, 752, 'retifica', 92, 40))
@@ -247,7 +247,7 @@ table.dic {{ font-size: 9pt; }}
 <p>{RECORTE}</p>
 
 <h2 class="quebra">2. Diagrama Entidade-Relacionamento</h2>
-<p class="nota">Notação de Heuser, como nas aulas 02 e 03: retângulos são entidades, losangos são relacionamentos e o par (mínimo, máximo) junto a cada entidade indica quantas ocorrências dela participam do relacionamento. Atributo com círculo preenchido e sublinhado é o identificador.</p>
+<p class="nota">Notação (mínimo, máximo) de Elmasri e Navathe, a mesma da Figura 7.15 da Aula 02: retângulos são entidades, losangos são relacionamentos e o par junto a cada entidade indica de quantas ocorrências do relacionamento cada ocorrência dela participa. Atributo com círculo preenchido e sublinhado é o identificador.</p>
 <div class="der">{der_svg()}</div>
 <h3>2.1 Relacionamentos e cardinalidades</h3>
 <p>O modelo tem relacionamentos dos três tipos pedidos: <b>1:1</b> (retifica), <b>1:N</b> (origina, é responsável por, refere-se a, possui, escreve) e <b>N:N</b> (acompanha).</p>
