@@ -1,0 +1,38 @@
+TABLE_NAME	COLUMN_NAME	COLUMN_TYPE	IS_NULLABLE	COLUMN_KEY	IFNULL(COLUMN_DEFAULT,'')	EXTRA
+usuario	id	int	NO	PRI		auto_increment
+usuario	nome	varchar(120)	NO			
+usuario	email	varchar(254)	NO	UNI		
+usuario	senha_hash	varchar(255)	NO			
+usuario	perfil	enum('direcao','assistente_social','equipe_pedagogica')	NO			
+usuario	ativo	tinyint(1)	NO		1	
+usuario	criado_em	datetime	NO		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+assistido	id	int	NO	PRI		auto_increment
+assistido	nome_tratamento	varchar(120)	NO			
+assistido	ativo	tinyint(1)	NO		1	
+assistido	criado_em	datetime	NO		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+assistido_profissional	assistido_id	int	NO	PRI		
+assistido_profissional	profissional_id	int	NO	PRI		
+assistido_profissional	data_inicio	date	NO			
+reuniao	id	int	NO	PRI		auto_increment
+reuniao	data	date	NO			
+reuniao	setor	enum('pedagogico','saude','convivencia')	NO			
+reuniao	criado_em	datetime	NO		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+demanda	id	int	NO	PRI		auto_increment
+demanda	descricao	text	NO			
+demanda	categoria	varchar(80)	YES			
+demanda	prioridade	enum('baixa','media','alta')	NO			
+demanda	prazo	date	NO			
+demanda	estado	enum('aberta','em_andamento','aguardando_terceiros','concluida','cancelada')	NO		aberta	
+demanda	responsavel_id	int	NO	MUL		
+demanda	reuniao_id	int	NO	MUL		
+demanda	assistido_id	int	YES	MUL		
+demanda	criado_em	datetime	NO		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+demanda	atualizado_em	datetime	NO		CURRENT_TIMESTAMP	DEFAULT_GENERATED on update CURRENT_TIMESTAMP
+evolucao	id	int	NO	PRI		auto_increment
+evolucao	assistido_id	int	NO	MUL		
+evolucao	profissional_id	int	NO	MUL		
+evolucao	data	date	NO			
+evolucao	area_atuacao	varchar(80)	NO			
+evolucao	descricao	text	NO			
+evolucao	ocorrido_em	datetime	NO		CURRENT_TIMESTAMP	DEFAULT_GENERATED
+evolucao	retifica_id	int	YES	UNI		

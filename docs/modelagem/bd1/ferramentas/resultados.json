@@ -1,0 +1,857 @@
+[
+ {
+  "num": "Q01",
+  "enunciado": "Demandas que envolvem o CRAS ou o Conselho Tutelar, da mais urgente (menor prazo) para a menos urgente.",
+  "comandos": "LIKE com %, OR, ORDER BY",
+  "sql": "SELECT id, descricao, estado, prazo\nFROM demanda\nWHERE descricao LIKE '%CRAS%'\n   OR descricao LIKE '%Conselho Tutelar%'\nORDER BY prazo;",
+  "colunas": [
+   "id",
+   "descricao",
+   "estado",
+   "prazo"
+  ],
+  "linhas": [
+   [
+    "7",
+    "Acionar o Conselho Tutelar sobre suspeita de negligência",
+    "concluida",
+    "2026-08-26"
+   ],
+   [
+    "3",
+    "Verificar se a família está referenciada no CRAS",
+    "concluida",
+    "2026-09-05"
+   ],
+   [
+    "22",
+    "Inscrever em oficina de música do CRAS",
+    "aberta",
+    "2026-12-11"
+   ]
+  ]
+ },
+ {
+  "num": "Q02",
+  "enunciado": "Reuniões dos setores pedagógico e saúde realizadas em outubro de 2026, com a data no formato brasileiro.",
+  "comandos": "IN, BETWEEN com datas, DATE_FORMAT",
+  "sql": "SELECT id,\n       setor,\n       DATE_FORMAT(data, '%d/%m/%Y') AS data_reuniao\nFROM reuniao\nWHERE setor IN ('pedagogico', 'saude')\n  AND data BETWEEN '2026-10-01' AND '2026-10-31'\nORDER BY data;",
+  "colunas": [
+   "id",
+   "setor",
+   "data_reuniao"
+  ],
+  "linhas": [
+   [
+    "7",
+    "pedagogico",
+    "07/10/2026"
+   ],
+   [
+    "8",
+    "saude",
+    "14/10/2026"
+   ]
+  ]
+ },
+ {
+  "num": "Q03",
+  "enunciado": "Demandas em aberto com o prazo vencido e há quantos dias estão atrasadas, da mais atrasada para a menos atrasada.",
+  "comandos": "CURDATE, DATEDIFF, NOT IN, ORDER BY DESC",
+  "sql": "SELECT id,\n       descricao,\n       estado,\n       DATE_FORMAT(prazo, '%d/%m/%Y')   AS prazo,\n       DATEDIFF(CURDATE(), prazo)       AS dias_de_atraso\nFROM demanda\nWHERE estado NOT IN ('concluida', 'cancelada')\n  AND prazo < CURDATE()\nORDER BY dias_de_atraso DESC;",
+  "colunas": [
+   "id",
+   "descricao",
+   "estado",
+   "prazo",
+   "dias_de_atraso"
+  ],
+  "linhas": [
+   [
+    "5",
+    "Solicitar cadeira de banho adaptada à Secretaria de Saúde",
+    "aguardando_terceiros",
+    "30/09/2026",
+    "61"
+   ],
+   [
+    "13",
+    "Solicitar órtese de membro inferior ao Centro Especializado em Reabilitação",
+    "aguardando_terceiros",
+    "31/10/2026",
+    "30"
+   ],
+   [
+    "15",
+    "Revisar o plano de ensino individualizado (PEI) com a escola",
+    "em_andamento",
+    "07/11/2026",
+    "23"
+   ],
+   [
+    "16",
+    "Solicitar transporte escolar adaptado à Prefeitura",
+    "aguardando_terceiros",
+    "20/11/2026",
+    "10"
+   ],
+   [
+    "23",
+    "Solicitar segunda via de documento de identidade",
+    "em_andamento",
+    "21/11/2026",
+    "9"
+   ],
+   [
+    "26",
+    "Solicitar consulta com ortopedista pelo SUS",
+    "aguardando_terceiros",
+    "25/11/2026",
+    "5"
+   ]
+  ]
+ },
+ {
+  "num": "Q04",
+  "enunciado": "Demandas em aberto que vencem nos próximos 7 dias (alerta do painel).",
+  "comandos": "ADDDATE com INTERVAL, BETWEEN, CURDATE, DATEDIFF",
+  "sql": "SELECT id,\n       descricao,\n       prioridade,\n       prazo,\n       DATEDIFF(prazo, CURDATE()) AS dias_restantes\nFROM demanda\nWHERE estado NOT IN ('concluida', 'cancelada')\n  AND prazo BETWEEN CURDATE() AND ADDDATE(CURDATE(), INTERVAL 7 DAY)\nORDER BY prazo;",
+  "colunas": [
+   "id",
+   "descricao",
+   "prioridade",
+   "prazo",
+   "dias_restantes"
+  ],
+  "linhas": [
+   [
+    "20",
+    "Verificar com a família a vacinação em atraso",
+    "baixa",
+    "2026-12-01",
+    "1"
+   ],
+   [
+    "29",
+    "Reunir a rede para discutir caso de evasão escolar",
+    "alta",
+    "2026-12-03",
+    "3"
+   ],
+   [
+    "17",
+    "Atualizar o cadastro de contatos dos responsáveis legais",
+    "baixa",
+    "2026-12-04",
+    "4"
+   ],
+   [
+    "24",
+    "Planejar a adaptação da rotina escolar após cirurgia",
+    "media",
+    "2026-12-05",
+    "5"
+   ]
+  ]
+ },
+ {
+  "num": "Q05",
+  "enunciado": "Demandas de prioridade alta ligadas a um assistido, com o setor e a data da reunião de origem e o nome do responsável.",
+  "comandos": "INNER JOIN entre 4 tabelas, apelidos (AS), DATE_FORMAT",
+  "sql": "SELECT d.id,\n       a.nome_tratamento                     AS assistido,\n       d.descricao,\n       r.setor,\n       DATE_FORMAT(r.data, '%d/%m/%Y')       AS reuniao,\n       u.nome                                AS responsavel,\n       d.estado\nFROM demanda d\nINNER JOIN reuniao   r ON r.id = d.reuniao_id\nINNER JOIN usuario   u ON u.id = d.responsavel_id\nINNER JOIN assistido a ON a.id = d.assistido_id\nWHERE d.prioridade = 'alta'\nORDER BY r.data, d.id;",
+  "colunas": [
+   "id",
+   "assistido",
+   "descricao",
+   "setor",
+   "reuniao",
+   "responsavel",
+   "estado"
+  ],
+  "linhas": [
+   [
+    "1",
+    "Ana Clara M.",
+    "Solicitar à escola municipal o plano de atendimento educacional especializado (AEE)",
+    "pedagogico",
+    "05/08/2026",
+    "Beatriz Lemos Furtado",
+    "concluida"
+   ],
+   [
+    "4",
+    "Davi L.",
+    "Agendar avaliação com neuropediatra na unidade de saúde",
+    "saude",
+    "12/08/2026",
+    "Daniel Moura Teixeira",
+    "concluida"
+   ],
+   [
+    "7",
+    "Gabriela N.",
+    "Acionar o Conselho Tutelar sobre suspeita de negligência",
+    "convivencia",
+    "19/08/2026",
+    "Juliana Cardoso Neves",
+    "concluida"
+   ],
+   [
+    "11",
+    "Ana Clara M.",
+    "Encaminhar laudo atualizado para a escola regular",
+    "pedagogico",
+    "02/09/2026",
+    "Beatriz Lemos Furtado",
+    "concluida"
+   ],
+   [
+    "13",
+    "Davi L.",
+    "Solicitar órtese de membro inferior ao Centro Especializado em Reabilitação",
+    "saude",
+    "09/09/2026",
+    "Daniel Moura Teixeira",
+    "aguardando_terceiros"
+   ],
+   [
+    "15",
+    "João Pedro M.",
+    "Revisar o plano de ensino individualizado (PEI) com a escola",
+    "pedagogico",
+    "07/10/2026",
+    "Beatriz Lemos Furtado",
+    "em_andamento"
+   ],
+   [
+    "16",
+    "Bruno H.",
+    "Solicitar transporte escolar adaptado à Prefeitura",
+    "pedagogico",
+    "07/10/2026",
+    "Marcos Vieira Salgado",
+    "aguardando_terceiros"
+   ],
+   [
+    "19",
+    "Mateus H.",
+    "Encaminhar para avaliação psicológica",
+    "saude",
+    "14/10/2026",
+    "Daniel Moura Teixeira",
+    "concluida"
+   ],
+   [
+    "21",
+    "Mateus H.",
+    "Mediar conflito familiar relatado pela equipe",
+    "convivencia",
+    "21/10/2026",
+    "Juliana Cardoso Neves",
+    "concluida"
+   ],
+   [
+    "26",
+    "João Pedro M.",
+    "Solicitar consulta com ortopedista pelo SUS",
+    "saude",
+    "11/11/2026",
+    "Daniel Moura Teixeira",
+    "aguardando_terceiros"
+   ],
+   [
+    "29",
+    "Davi L.",
+    "Reunir a rede para discutir caso de evasão escolar",
+    "convivencia",
+    "12/11/2026",
+    "Juliana Cardoso Neves",
+    "aberta"
+   ]
+  ]
+ },
+ {
+  "num": "Q06",
+  "enunciado": "Assistidos ativos que ainda não têm nenhuma demanda registrada.",
+  "comandos": "LEFT JOIN, IS NULL (registros \"sem par\" na outra tabela)",
+  "sql": "SELECT a.id, a.nome_tratamento, DATE(a.criado_em) AS cadastrado_em\nFROM assistido a\nLEFT JOIN demanda d ON d.assistido_id = a.id\nWHERE a.ativo = TRUE\n  AND d.id IS NULL;",
+  "colunas": [
+   "id",
+   "nome_tratamento",
+   "cadastrado_em"
+  ],
+  "linhas": [
+   [
+    "8",
+    "Heitor G.",
+    "2026-08-03"
+   ],
+   [
+    "11",
+    "Larissa F.",
+    "2024-01-15"
+   ]
+  ]
+ },
+ {
+  "num": "Q07",
+  "enunciado": "Carga de trabalho: quantas demandas em aberto cada profissional ativo tem sob sua responsabilidade, incluindo quem tem zero.",
+  "comandos": "LEFT JOIN com condição no ON, COUNT(coluna), GROUP BY (COUNT(d.id) não conta as linhas sem demanda, que ficam NULL)",
+  "sql": "SELECT u.nome,\n       u.perfil,\n       COUNT(d.id) AS demandas_em_aberto\nFROM usuario u\nLEFT JOIN demanda d\n       ON d.responsavel_id = u.id\n      AND d.estado NOT IN ('concluida', 'cancelada')\nWHERE u.ativo = TRUE\nGROUP BY u.id, u.nome, u.perfil\nORDER BY demandas_em_aberto DESC, u.nome;",
+  "colunas": [
+   "nome",
+   "perfil",
+   "demandas_em_aberto"
+  ],
+  "linhas": [
+   [
+    "Daniel Moura Teixeira",
+    "assistente_social",
+    "3"
+   ],
+   [
+    "Marcos Vieira Salgado",
+    "assistente_social",
+    "3"
+   ],
+   [
+    "Beatriz Lemos Furtado",
+    "equipe_pedagogica",
+    "2"
+   ],
+   [
+    "Juliana Cardoso Neves",
+    "assistente_social",
+    "2"
+   ],
+   [
+    "Camila Rocha Vianna",
+    "equipe_pedagogica",
+    "1"
+   ],
+   [
+    "Fernanda Ishikawa Lopes",
+    "equipe_pedagogica",
+    "1"
+   ],
+   [
+    "Helena Duarte Campos",
+    "direcao",
+    "1"
+   ],
+   [
+    "Otávio Brandão Freitas",
+    "equipe_pedagogica",
+    "0"
+   ],
+   [
+    "Rafael Antunes Prado",
+    "direcao",
+    "0"
+   ]
+  ]
+ },
+ {
+  "num": "Q08",
+  "enunciado": "Tempo médio, em dias, para concluir uma demanda em cada prioridade, mostrando só as prioridades com média acima de 24 dias.",
+  "comandos": "GROUP BY, HAVING, AVG, ROUND, DATEDIFF, MIN, MAX",
+  "sql": "SELECT prioridade,\n       COUNT(*)                                            AS concluidas,\n       ROUND(AVG(DATEDIFF(atualizado_em, criado_em)), 1)   AS media_dias,\n       MIN(DATEDIFF(atualizado_em, criado_em))             AS mais_rapida,\n       MAX(DATEDIFF(atualizado_em, criado_em))             AS mais_lenta\nFROM demanda\nWHERE estado = 'concluida'\nGROUP BY prioridade\nHAVING AVG(DATEDIFF(atualizado_em, criado_em)) > 24\nORDER BY media_dias DESC;",
+  "colunas": [
+   "prioridade",
+   "concluidas",
+   "media_dias",
+   "mais_rapida",
+   "mais_lenta"
+  ],
+  "linhas": [
+   [
+    "baixa",
+    "1",
+    "29.0",
+    "29",
+    "29"
+   ],
+   [
+    "media",
+    "7",
+    "25.7",
+    "12",
+    "41"
+   ]
+  ]
+ },
+ {
+  "num": "Q09",
+  "enunciado": "Distribuição das demandas por setor e por estado, com o percentual de cada grupo sobre o total de demandas.",
+  "comandos": "INNER JOIN, GROUP BY com duas colunas, subconsulta no SELECT, cálculo de percentual e ROUND",
+  "sql": "SELECT r.setor,\n       d.estado,\n       COUNT(*) AS quantidade,\n       ROUND(COUNT(*) * 100 / (SELECT COUNT(*) FROM demanda), 1) AS percentual\nFROM demanda d\nINNER JOIN reuniao r ON r.id = d.reuniao_id\nGROUP BY r.setor, d.estado\nORDER BY r.setor, quantidade DESC;",
+  "colunas": [
+   "setor",
+   "estado",
+   "quantidade",
+   "percentual"
+  ],
+  "linhas": [
+   [
+    "pedagogico",
+    "concluida",
+    "5",
+    "17.2"
+   ],
+   [
+    "pedagogico",
+    "em_andamento",
+    "2",
+    "6.9"
+   ],
+   [
+    "pedagogico",
+    "aberta",
+    "2",
+    "6.9"
+   ],
+   [
+    "pedagogico",
+    "aguardando_terceiros",
+    "1",
+    "3.4"
+   ],
+   [
+    "saude",
+    "concluida",
+    "6",
+    "20.7"
+   ],
+   [
+    "saude",
+    "aguardando_terceiros",
+    "3",
+    "10.3"
+   ],
+   [
+    "saude",
+    "em_andamento",
+    "1",
+    "3.4"
+   ],
+   [
+    "saude",
+    "cancelada",
+    "1",
+    "3.4"
+   ],
+   [
+    "convivencia",
+    "concluida",
+    "3",
+    "10.3"
+   ],
+   [
+    "convivencia",
+    "aberta",
+    "3",
+    "10.3"
+   ],
+   [
+    "convivencia",
+    "cancelada",
+    "1",
+    "3.4"
+   ],
+   [
+    "convivencia",
+    "em_andamento",
+    "1",
+    "3.4"
+   ]
+  ]
+ },
+ {
+  "num": "Q10",
+  "enunciado": "Quantas demandas foram abertas em cada mês e quantas categorias diferentes apareceram no mês.",
+  "comandos": "YEAR, MONTH, COUNT(DISTINCT), GROUP BY por partes da data",
+  "sql": "SELECT YEAR(criado_em)            AS ano,\n       MONTH(criado_em)           AS mes,\n       COUNT(*)                   AS demandas_abertas,\n       COUNT(DISTINCT categoria)  AS categorias_diferentes\nFROM demanda\nGROUP BY YEAR(criado_em), MONTH(criado_em)\nORDER BY ano, mes;",
+  "colunas": [
+   "ano",
+   "mes",
+   "demandas_abertas",
+   "categorias_diferentes"
+  ],
+  "linhas": [
+   [
+    "2026",
+    "8",
+    "9",
+    "6"
+   ],
+   [
+    "2026",
+    "9",
+    "5",
+    "4"
+   ],
+   [
+    "2026",
+    "10",
+    "9",
+    "6"
+   ],
+   [
+    "2026",
+    "11",
+    "6",
+    "5"
+   ]
+  ]
+ },
+ {
+  "num": "Q11",
+  "enunciado": "A demanda em aberto mais antiga, quem é o responsável e há quantos dias ela foi aberta.",
+  "comandos": "subconsulta que devolve um valor (MIN) comparada com =, JOIN",
+  "sql": "SELECT d.id,\n       d.descricao,\n       u.nome                                AS responsavel,\n       DATE(d.criado_em)                     AS aberta_em,\n       DATEDIFF(CURDATE(), d.criado_em)      AS dias_em_aberto\nFROM demanda d\nINNER JOIN usuario u ON u.id = d.responsavel_id\nWHERE d.estado NOT IN ('concluida', 'cancelada')\n  AND d.criado_em = (SELECT MIN(criado_em)\n                     FROM demanda\n                     WHERE estado NOT IN ('concluida', 'cancelada'));",
+  "colunas": [
+   "id",
+   "descricao",
+   "responsavel",
+   "aberta_em",
+   "dias_em_aberto"
+  ],
+  "linhas": [
+   [
+    "5",
+    "Solicitar cadeira de banho adaptada à Secretaria de Saúde",
+    "Daniel Moura Teixeira",
+    "2026-08-12",
+    "110"
+   ]
+  ]
+ },
+ {
+  "num": "Q12",
+  "enunciado": "Demandas concluídas que levaram mais dias do que a média de todas as concluídas.",
+  "comandos": "subconsulta com AVG no WHERE, DATEDIFF, ROUND",
+  "sql": "SELECT id,\n       descricao,\n       DATEDIFF(atualizado_em, criado_em) AS dias_para_concluir,\n       (SELECT ROUND(AVG(DATEDIFF(atualizado_em, criado_em)), 1)\n          FROM demanda WHERE estado = 'concluida') AS media_geral\nFROM demanda\nWHERE estado = 'concluida'\n  AND DATEDIFF(atualizado_em, criado_em) >\n      (SELECT AVG(DATEDIFF(atualizado_em, criado_em))\n         FROM demanda\n        WHERE estado = 'concluida')\nORDER BY dias_para_concluir DESC;",
+  "colunas": [
+   "id",
+   "descricao",
+   "dias_para_concluir",
+   "media_geral"
+  ],
+  "linhas": [
+   [
+    "4",
+    "Agendar avaliação com neuropediatra na unidade de saúde",
+    "51",
+    "24.9"
+   ],
+   [
+    "3",
+    "Verificar se a família está referenciada no CRAS",
+    "41",
+    "24.9"
+   ],
+   [
+    "14",
+    "Orientar a família sobre o Benefício de Prestação Continuada (BPC)",
+    "41",
+    "24.9"
+   ],
+   [
+    "6",
+    "Revisar o protocolo interno de administração de medicamentos",
+    "29",
+    "24.9"
+   ],
+   [
+    "11",
+    "Encaminhar laudo atualizado para a escola regular",
+    "28",
+    "24.9"
+   ],
+   [
+    "10",
+    "Adaptar material didático com comunicação alternativa",
+    "27",
+    "24.9"
+   ],
+   [
+    "18",
+    "Acompanhar o resultado de exames na unidade básica de saúde",
+    "27",
+    "24.9"
+   ]
+  ]
+ },
+ {
+  "num": "Q13",
+  "enunciado": "Profissionais ativos que não acompanham nenhum assistido (candidatos a receber novos acompanhamentos).",
+  "comandos": "subconsulta que devolve uma lista, NOT IN",
+  "sql": "SELECT id, nome, perfil\nFROM usuario\nWHERE ativo = TRUE\n  AND perfil <> 'direcao'\n  AND id NOT IN (SELECT profissional_id FROM assistido_profissional);",
+  "colunas": [
+   "id",
+   "nome",
+   "perfil"
+  ],
+  "linhas": [
+   [
+    "10",
+    "Otávio Brandão Freitas",
+    "equipe_pedagogica"
+   ]
+  ]
+ },
+ {
+  "num": "Q14",
+  "enunciado": "Para cada profissional, quantos assistidos acompanha e há quanto tempo, em meses, em média, acompanha cada um (relacionamento N:N).",
+  "comandos": "JOIN pela tabela associativa, AVG, DATEDIFF, FLOOR, ROUND",
+  "sql": "SELECT u.nome,\n       COUNT(ap.assistido_id)                                   AS assistidos,\n       ROUND(AVG(DATEDIFF(CURDATE(), ap.data_inicio)) / 30, 1)  AS media_meses,\n       FLOOR(MAX(DATEDIFF(CURDATE(), ap.data_inicio)) / 365)    AS anos_do_mais_antigo\nFROM usuario u\nINNER JOIN assistido_profissional ap ON ap.profissional_id = u.id\nINNER JOIN assistido a ON a.id = ap.assistido_id\nWHERE a.ativo = TRUE\nGROUP BY u.id, u.nome\nORDER BY assistidos DESC, media_meses DESC;",
+  "colunas": [
+   "nome",
+   "assistidos",
+   "media_meses",
+   "anos_do_mais_antigo"
+  ],
+  "linhas": [
+   [
+    "Camila Rocha Vianna",
+    "5",
+    "18.1",
+    "2"
+   ],
+   [
+    "Marcos Vieira Salgado",
+    "3",
+    "41.8",
+    "5"
+   ],
+   [
+    "Daniel Moura Teixeira",
+    "3",
+    "34.4",
+    "4"
+   ],
+   [
+    "Beatriz Lemos Furtado",
+    "3",
+    "31.5",
+    "3"
+   ],
+   [
+    "Juliana Cardoso Neves",
+    "3",
+    "18.8",
+    "2"
+   ],
+   [
+    "Fernanda Ishikawa Lopes",
+    "3",
+    "10.7",
+    "1"
+   ]
+  ]
+ },
+ {
+  "num": "Q15",
+  "enunciado": "Evoluções retificadas: cada versão corrigida ao lado da versão que a corrigiu e quantos dias depois a correção foi feita (1:1).",
+  "comandos": "autojunção (a mesma tabela duas vezes com apelidos), DATEDIFF, DATE_FORMAT com hora e minuto",
+  "sql": "SELECT original.id                                        AS versao_corrigida,\n       nova.id                                            AS versao_nova,\n       a.nome_tratamento                                  AS assistido,\n       original.descricao                                 AS texto_anterior,\n       nova.descricao                                     AS texto_novo,\n       DATE_FORMAT(nova.ocorrido_em, '%d/%m/%Y %H:%i')    AS corrigida_em,\n       DATEDIFF(nova.ocorrido_em, original.ocorrido_em)   AS dias_depois\nFROM evolucao original\nINNER JOIN evolucao nova ON nova.retifica_id = original.id\nINNER JOIN assistido a   ON a.id = original.assistido_id\nORDER BY original.id;",
+  "colunas": [
+   "versao_corrigida",
+   "versao_nova",
+   "assistido",
+   "texto_anterior",
+   "texto_novo",
+   "corrigida_em",
+   "dias_depois"
+  ],
+  "linhas": [
+   [
+    "5",
+    "16",
+    "Carolina D.",
+    "Iniciou a produção de frases de duas palavras.",
+    "Iniciou a produção de frases de duas e três palavras.",
+    "10/10/2026 09:15",
+    "1"
+   ],
+   [
+    "10",
+    "15",
+    "Gabriela N.",
+    "Ausente três dias na semana; família informada.",
+    "Ausente dois dias na semana (correção); família informada.",
+    "09/10/2026 08:40",
+    "1"
+   ],
+   [
+    "16",
+    "17",
+    "Carolina D.",
+    "Iniciou a produção de frases de duas e três palavras.",
+    "Iniciou a produção de frases de duas e três palavras com apoio visual.",
+    "12/10/2026 08:05",
+    "2"
+   ]
+  ]
+ },
+ {
+  "num": "Q16",
+  "enunciado": "Assistidos ativos cuja evolução vigente mais recente tem mais de 20 dias (ou seja, precisam de nova anotação). Versões já retificadas não contam, porque foram substituídas.",
+  "comandos": "subconsulta NOT IN com IS NOT NULL, GROUP BY, MAX, HAVING com DATEDIFF",
+  "sql": "SELECT a.nome_tratamento,\n       COUNT(e.id)                         AS evolucoes_vigentes,\n       DATE_FORMAT(MAX(e.data), '%d/%m/%Y') AS ultima_evolucao,\n       DATEDIFF(CURDATE(), MAX(e.data))    AS dias_sem_evolucao\nFROM assistido a\nINNER JOIN evolucao e ON e.assistido_id = a.id\nWHERE a.ativo = TRUE\n  AND e.id NOT IN (SELECT retifica_id FROM evolucao WHERE retifica_id IS NOT NULL)\nGROUP BY a.id, a.nome_tratamento\nHAVING DATEDIFF(CURDATE(), MAX(e.data)) > 20\nORDER BY dias_sem_evolucao DESC;",
+  "colunas": [
+   "nome_tratamento",
+   "evolucoes_vigentes",
+   "ultima_evolucao",
+   "dias_sem_evolucao"
+  ],
+  "linhas": [
+   [
+    "Bruno H.",
+    "1",
+    "20/08/2026",
+    "102"
+   ],
+   [
+    "Eduarda S.",
+    "1",
+    "03/09/2026",
+    "88"
+   ],
+   [
+    "Ana Clara M.",
+    "2",
+    "14/09/2026",
+    "77"
+   ],
+   [
+    "Felipe A.",
+    "1",
+    "17/09/2026",
+    "74"
+   ],
+   [
+    "Davi L.",
+    "2",
+    "02/10/2026",
+    "59"
+   ],
+   [
+    "Gabriela N.",
+    "1",
+    "08/10/2026",
+    "53"
+   ],
+   [
+    "Carolina D.",
+    "2",
+    "09/10/2026",
+    "52"
+   ],
+   [
+    "João Pedro M.",
+    "1",
+    "15/10/2026",
+    "46"
+   ],
+   [
+    "Mateus H.",
+    "2",
+    "05/11/2026",
+    "25"
+   ]
+  ]
+ },
+ {
+  "num": "Q17",
+  "enunciado": "Todas as reuniões, com quantas demandas cada uma originou, incluindo as que não originaram nenhuma.",
+  "comandos": "RIGHT JOIN (todas as linhas da tabela da direita), COUNT(coluna), GROUP BY",
+  "sql": "SELECT r.id                               AS reuniao,\n       r.setor,\n       DATE_FORMAT(r.data, '%d/%m/%Y')    AS data,\n       COUNT(d.id)                        AS demandas_originadas\nFROM demanda d\nRIGHT JOIN reuniao r ON r.id = d.reuniao_id\nGROUP BY r.id, r.setor, r.data\nORDER BY r.data;",
+  "colunas": [
+   "reuniao",
+   "setor",
+   "data",
+   "demandas_originadas"
+  ],
+  "linhas": [
+   [
+    "1",
+    "pedagogico",
+    "05/08/2026",
+    "3"
+   ],
+   [
+    "2",
+    "saude",
+    "12/08/2026",
+    "3"
+   ],
+   [
+    "3",
+    "convivencia",
+    "19/08/2026",
+    "3"
+   ],
+   [
+    "4",
+    "pedagogico",
+    "02/09/2026",
+    "2"
+   ],
+   [
+    "5",
+    "saude",
+    "09/09/2026",
+    "3"
+   ],
+   [
+    "6",
+    "convivencia",
+    "16/09/2026",
+    "0"
+   ],
+   [
+    "7",
+    "pedagogico",
+    "07/10/2026",
+    "3"
+   ],
+   [
+    "8",
+    "saude",
+    "14/10/2026",
+    "3"
+   ],
+   [
+    "9",
+    "convivencia",
+    "21/10/2026",
+    "3"
+   ],
+   [
+    "10",
+    "pedagogico",
+    "04/11/2026",
+    "2"
+   ],
+   [
+    "11",
+    "saude",
+    "11/11/2026",
+    "2"
+   ],
+   [
+    "12",
+    "convivencia",
+    "12/11/2026",
+    "2"
+   ],
+   [
+    "13",
+    "pedagogico",
+    "13/11/2026",
+    "0"
+   ]
+  ]
+ }
+]

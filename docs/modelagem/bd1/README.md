@@ -1,6 +1,6 @@
 # Projeto Interdisciplinar de Banco de Dados I (Equipe Cortex)
 
-Sistema de Gestão de Demandas de Articulação do CRIE / APAE de Extrema-MG. Parte de BD1 (Profª Letícia, IFSP Bragança Paulista, ADS 2º semestre de 2026). Entrega no Moodle até 29/11/2026; seminário em 30/11/2026.
+Sistema de Gestão de Demandas de Articulação do CRIE / APAE de Extrema-MG. Parte de BD1 (Profª Letícia Souza Netto Brandi, IFSP Bragança Paulista, ADS 2º semestre de 2026). Entrega no Moodle até 29/11/2026; seminário em 30/11/2026.
 
 ## O que tem aqui
 

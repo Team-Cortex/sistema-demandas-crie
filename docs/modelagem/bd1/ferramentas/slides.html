@@ -1,0 +1,272 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Seminário BD1 - Equipe Cortex</title><style>
+@page { size: 1280px 720px; margin: 0; }
+html { color-scheme: light; }
+body { margin: 0; font-family: Arial, Helvetica, sans-serif; color: #16231a; background: #fff; }
+.s { width: 1280px; height: 720px; box-sizing: border-box; padding: 46px 64px 40px; position: relative; page-break-after: always; overflow: hidden; }
+.s h2 { margin: 0 0 18px; font-size: 32px; color: #1f7a33; border-bottom: 3px solid #2f9e41; padding-bottom: 10px; }
+.s.consulta h2 { font-size: 24px; line-height: 1.25; }
+.c { font-size: 24px; line-height: 1.45; }
+.c li { margin: 0 0 12px; }
+footer { position: absolute; bottom: 16px; right: 64px; font-size: 13px; color: #8a958d; }
+.capa { display: flex; align-items: center; background: #1f7a33; color: #fff; }
+.capa h1 { font-size: 50px; margin: 10px 0; } .capa .sub { font-size: 26px; } .capa .topo { font-size: 18px; opacity: .85; }
+.capa .eq { font-size: 18px; margin-top: 40px; opacity: .9; }
+.cheio .c { height: 560px; } .der svg { height: 550px; width: auto; display: block; margin: 0 auto; }
+pre.longa { font-size: 12.5px !important; }
+table { border-collapse: collapse; width: 100%; font-size: 17px; }
+th { background: #1f7a33; color: #fff; text-align: left; padding: 6px 8px; } td { border-bottom: 1px solid #dfe8e1; padding: 5px 8px; }
+.q table { font-size: 13px; } .q td, .q th { padding: 3px 5px; }
+.duas { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; } .duas h3 { margin: 0 0 8px; font-size: 22px; }
+.duas.q { grid-template-columns: 1.05fr 1fr; }
+pre { margin: 0; font: 15px/1.35 Consolas, monospace; background: #f4f7f4; border-left: 4px solid #1f7a33; padding: 12px 14px; white-space: pre-wrap; }
+.fala { position: absolute; left: 64px; right: 64px; bottom: 44px; font-size: 19px; background: #eef6ef; padding: 10px 14px; margin: 0; }
+.mais { font-size: 13px; color: #5f6d63; margin: 4px 0 0; }
+.nt .rel-txt { font: 19px/1.4 Consolas, monospace; margin: 6px 0 0; } .nt .ref { font-size: 14px; color: #5f6d63; margin: 0 0 6px 20px; }
+.obs { font-size: 17px; color: #5f6d63; } table.rel { font-size: 18px; }
+</style></head><body><section class="s capa"><div>
+<p class="topo">IFSP Bragança Paulista · ADS · Banco de Dados I</p>
+<h1>Sistema de Gestão de Demandas de Articulação</h1>
+<p class="sub">CRIE / APAE de Extrema-MG · Projeto Interdisciplinar</p>
+<p class="eq">Equipe Cortex: Gabriel Ribeiro de Borba, Henry Claro Maruca, Inácio Fontes Bueno, Miguel Vaz de Souza, Vinícius Fatichi Marrocos</p></div></section><section class="s "><h2>O problema</h2><div class="c"><ul>
+<li>O CRIE discute em <b>reuniões semanais</b> de cada setor as situações que exigem articulação com famílias e serviços da rede.</li>
+<li>Cada situação vira uma <b>demanda</b>, com responsável, prazo e estado; hoje isso se perde em papel e mensagens.</li>
+<li>Os profissionais registram <b>evoluções</b> dos assistidos, que nunca podem ser apagadas, só retificadas.</li>
+<li>Dados de pessoas com deficiência: só o mínimo necessário (LGPD) e tudo fictício nesta entrega.</li></ul></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s "><h2>Recorte desta disciplina: 6 tabelas</h2><div class="c"><ul>
+<li>O sistema completo tem 12 entidades; BD1 pede de 4 a 6 tabelas.</li>
+<li>Recorte central: <b>usuario, assistido, assistido_profissional, reuniao, demanda, evolucao</b>.</li>
+<li>Os nomes são os mesmos do back-end (Flask), então o banco da disciplina e o do sistema contam a mesma história.</li>
+<li>Ficaram de fora: encaminhamento, retorno, histórico, auditoria e participantes da reunião.</li></ul></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s cheio"><h2>Diagrama Entidade-Relacionamento</h2><div class="c"><div class="der"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 790" width="100%"><style>.ent{fill:#fff;stroke:#1f7a33;stroke-width:1.6}.enth{fill:#1f7a33}.entn{fill:#fff;font:700 13px Arial;text-anchor:middle}.att,.atpk{font:12px Arial;fill:#1b1b1b}.atpk{text-decoration:underline;font-weight:700}.pk{fill:#1b1b1b}.at{fill:#fff;stroke:#1b1b1b;stroke-width:1.2}.rel{fill:#eef6ef;stroke:#1f7a33;stroke-width:1.6}.reln{font:600 11.5px Arial;text-anchor:middle;fill:#1b1b1b}.lig{fill:none;stroke:#1b1b1b;stroke-width:1.3}.card{font:700 12px Arial;fill:#cd191e}.papel{font:italic 10.5px Arial;fill:#555}</style><rect x="405" y="20" width="190" height="110" rx="4" class="ent"/>
+<rect x="405" y="20" width="190" height="26" rx="4" class="enth"/>
+<text x="500.0" y="38" class="entn">REUNIÃO</text>
+<circle cx="419" cy="60" r="4" class="pk"/>
+<text x="429" y="64" class="atpk">id</text>
+<circle cx="419" cy="78" r="4" class="at"/>
+<text x="429" y="82" class="att">data</text>
+<circle cx="419" cy="96" r="4" class="at"/>
+<text x="429" y="100" class="att">setor</text>
+<circle cx="419" cy="114" r="4" class="at"/>
+<text x="429" y="118" class="att">criado_em</text><rect x="405" y="250" width="190" height="182" rx="4" class="ent"/>
+<rect x="405" y="250" width="190" height="26" rx="4" class="enth"/>
+<text x="500.0" y="268" class="entn">DEMANDA</text>
+<circle cx="419" cy="290" r="4" class="pk"/>
+<text x="429" y="294" class="atpk">id</text>
+<circle cx="419" cy="308" r="4" class="at"/>
+<text x="429" y="312" class="att">descricao</text>
+<circle cx="419" cy="326" r="4" class="at"/>
+<text x="429" y="330" class="att">categoria</text>
+<circle cx="419" cy="344" r="4" class="at"/>
+<text x="429" y="348" class="att">prioridade</text>
+<circle cx="419" cy="362" r="4" class="at"/>
+<text x="429" y="366" class="att">prazo</text>
+<circle cx="419" cy="380" r="4" class="at"/>
+<text x="429" y="384" class="att">estado</text>
+<circle cx="419" cy="398" r="4" class="at"/>
+<text x="429" y="402" class="att">criado_em</text>
+<circle cx="419" cy="416" r="4" class="at"/>
+<text x="429" y="420" class="att">atualizado_em</text><rect x="30" y="250" width="190" height="164" rx="4" class="ent"/>
+<rect x="30" y="250" width="190" height="26" rx="4" class="enth"/>
+<text x="125.0" y="268" class="entn">USUÁRIO</text>
+<circle cx="44" cy="290" r="4" class="pk"/>
+<text x="54" y="294" class="atpk">id</text>
+<circle cx="44" cy="308" r="4" class="at"/>
+<text x="54" y="312" class="att">nome</text>
+<circle cx="44" cy="326" r="4" class="at"/>
+<text x="54" y="330" class="att">email</text>
+<circle cx="44" cy="344" r="4" class="at"/>
+<text x="54" y="348" class="att">senha_hash</text>
+<circle cx="44" cy="362" r="4" class="at"/>
+<text x="54" y="366" class="att">perfil</text>
+<circle cx="44" cy="380" r="4" class="at"/>
+<text x="54" y="384" class="att">ativo</text>
+<circle cx="44" cy="398" r="4" class="at"/>
+<text x="54" y="402" class="att">criado_em</text><rect x="780" y="270" width="190" height="110" rx="4" class="ent"/>
+<rect x="780" y="270" width="190" height="26" rx="4" class="enth"/>
+<text x="875.0" y="288" class="entn">ASSISTIDO</text>
+<circle cx="794" cy="310" r="4" class="pk"/>
+<text x="804" y="314" class="atpk">id</text>
+<circle cx="794" cy="328" r="4" class="at"/>
+<text x="804" y="332" class="att">nome_tratamento</text>
+<circle cx="794" cy="346" r="4" class="at"/>
+<text x="804" y="350" class="att">ativo</text>
+<circle cx="794" cy="364" r="4" class="at"/>
+<text x="804" y="368" class="att">criado_em</text><rect x="600" y="580" width="190" height="128" rx="4" class="ent"/>
+<rect x="600" y="580" width="190" height="26" rx="4" class="enth"/>
+<text x="695.0" y="598" class="entn">EVOLUÇÃO</text>
+<circle cx="614" cy="620" r="4" class="pk"/>
+<text x="624" y="624" class="atpk">id</text>
+<circle cx="614" cy="638" r="4" class="at"/>
+<text x="624" y="642" class="att">data</text>
+<circle cx="614" cy="656" r="4" class="at"/>
+<text x="624" y="660" class="att">area_atuacao</text>
+<circle cx="614" cy="674" r="4" class="at"/>
+<text x="624" y="678" class="att">descricao</text>
+<circle cx="614" cy="692" r="4" class="at"/>
+<text x="624" y="696" class="att">ocorrido_em</text><polyline points="500,130 500,165" class="lig"/><polyline points="500,215 500,250" class="lig"/><polygon points="438.0,190 500,165.0 562.0,190 500,215.0" class="rel"/><text x="500" y="194" class="reln">origina</text><text x="508" y="148" class="card" text-anchor="start">(1,1)</text><text x="508" y="244" class="card" text-anchor="start">(0,N)</text><polyline points="220,300 250,300" class="lig"/><polyline points="374,300 405,300" class="lig"/><polygon points="250.0,300 312,275.0 374.0,300 312,325.0" class="rel"/><text x="312" y="304" class="reln">responde por</text><text x="224" y="292" class="card" text-anchor="start">(1,1)</text><text x="401" y="292" class="card" text-anchor="end">(0,N)</text><polyline points="595,325 625,325" class="lig"/><polyline points="749,325 780,325" class="lig"/><polygon points="625.0,325 687,300.0 749.0,325 687,350.0" class="rel"/><text x="687" y="329" class="reln">refere-se a</text><text x="599" y="317" class="card" text-anchor="start">(0,N)</text><text x="776" y="317" class="card" text-anchor="end">(0,1)</text><polyline points="125,414 125,500 438,500" class="lig"/><polyline points="562,500 875,500 875,380" class="lig"/><polygon points="438.0,500 500,475.0 562.0,500 500,525.0" class="rel"/><text x="500" y="504" class="reln">acompanha</text><polyline points="500,525 500,548" class="lig"/><circle cx="500" cy="552" r="4" class="at"/><text x="510" y="556" class="att">data_inicio</text><text x="131" y="434" class="card" text-anchor="start">(0,N)</text><text x="869" y="398" class="card" text-anchor="end">(0,N)</text><polyline points="930,380 930,619" class="lig"/><polyline points="868,644 790,644" class="lig"/><polygon points="868.0,644 930,619.0 992.0,644 930,669.0" class="rel"/><text x="930" y="648" class="reln">possui</text><text x="936" y="398" class="card" text-anchor="start">(1,1)</text><text x="796" y="636" class="card" text-anchor="start">(0,N)</text><polyline points="70,414 70,644 268,644" class="lig"/><polyline points="392,644 600,644" class="lig"/><polygon points="268.0,644 330,619.0 392.0,644 330,669.0" class="rel"/><text x="330" y="648" class="reln">escreve</text><text x="76" y="434" class="card" text-anchor="start">(1,1)</text><text x="594" y="636" class="card" text-anchor="end">(0,N)</text><polyline points="640,708 640,752 650,752" class="lig"/><polyline points="740,752 750,752 750,708" class="lig"/><polygon points="649.0,752 695,732.0 741.0,752 695,772.0" class="rel"/><text x="695" y="756" class="reln">retifica</text><text x="634" y="728" class="card" text-anchor="end">(0,1)</text><text x="756" y="728" class="card" text-anchor="start">(0,1)</text><text x="634" y="742" class="papel" text-anchor="end">original</text><text x="756" y="742" class="papel">nova versão</text></svg></div></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s "><h2>Os três tipos de relacionamento</h2><div class="c"><table class="rel"><thead><tr><th>Relacionamento</th><th>Entidades</th><th>Tipo</th><th>Implementação</th></tr></thead><tbody><tr><td>origina</td><td>Reunião, Demanda</td><td><b>1:N</b></td><td>FK reuniao_id em demanda</td></tr><tr><td>é responsável por</td><td>Usuário, Demanda</td><td><b>1:N</b></td><td>FK responsavel_id em demanda</td></tr><tr><td>refere-se a</td><td>Assistido, Demanda</td><td><b>1:N (opcional)</b></td><td>FK assistido_id em demanda, aceita NULL</td></tr><tr><td>acompanha</td><td>Usuário, Assistido</td><td><b>N:N</b></td><td>tabela associativa assistido_profissional, com data_inicio</td></tr><tr><td>possui</td><td>Assistido, Evolução</td><td><b>1:N</b></td><td>FK assistido_id em evolucao</td></tr><tr><td>escreve</td><td>Usuário, Evolução</td><td><b>1:N</b></td><td>FK profissional_id em evolucao</td></tr><tr><td>retifica</td><td>Evolução, Evolução</td><td><b>1:1</b></td><td>FK retifica_id em evolucao com UNIQUE (autorrelacionamento)</td></tr></tbody></table></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s "><h2>Notação textual (modelo relacional)</h2><div class="c"><div class="nt"><p class="rel-txt"><b>Usuario</b> (<u><b>id</b></u>, nome, email, senha_hash, perfil, ativo, criado_em)</p><p class="rel-txt"><b>Assistido</b> (<u><b>id</b></u>, nome_tratamento, ativo, criado_em)</p><p class="rel-txt"><b>AssistidoProfissional</b> (<i><u><b>assistido_id</b></u></i>, <i><u><b>profissional_id</b></u></i>, data_inicio)</p><p class="ref">assistido_id referencia Assistido; profissional_id referencia Usuario</p><p class="rel-txt"><b>Reuniao</b> (<u><b>id</b></u>, data, setor, criado_em)</p><p class="rel-txt"><b>Demanda</b> (<u><b>id</b></u>, descricao, categoria, prioridade, prazo, estado, <i>responsavel_id</i>, <i>reuniao_id</i>, <i>assistido_id</i>, criado_em, atualizado_em)</p><p class="ref">responsavel_id referencia Usuario; reuniao_id referencia Reuniao; assistido_id referencia Assistido (opcional, aceita nulo)</p><p class="rel-txt"><b>Evolucao</b> (<u><b>id</b></u>, <i>assistido_id</i>, <i>profissional_id</i>, data, area_atuacao, descricao, ocorrido_em, <i>retifica_id</i>)</p><p class="ref">assistido_id referencia Assistido; profissional_id referencia Usuario; retifica_id referencia Evolucao (único, o que torna o relacionamento 1:1)</p></div><p class="obs">PK sublinhada · FK em itálico · tabelas em 3FN: o setor da demanda vem da reunião, sem cópia.</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s "><h2>Scripts de criação e carga</h2><div class="c"><div class="duas"><div><h3>01_criacao_banco.sql</h3><ul>
+<li>DROP / CREATE DATABASE e CREATE TABLE das 6 tabelas</li><li>PK, FK, UNIQUE, NOT NULL, DEFAULT, AUTO_INCREMENT</li>
+<li>ENUM para domínios fechados (estado, prioridade, setor, perfil)</li><li><b>ALTER TABLE</b> cria o 1:1: FK retifica_id com UNIQUE</li></ul></div>
+<div><h3>02_carga_dados.sql</h3><ul><li>103 registros fictícios, pensados para cada consulta ter resultado</li>
+<li>5 estados, 3 prioridades, prazos vencidos e próximos</li><li>Senhas só como hash: SHA2(..., 256)</li>
+<li>Cadeia de retificações: 5 → 16 → 17</li></ul></div></div></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q01. Demandas que envolvem o CRAS ou o Conselho Tutelar, da mais urgente (menor prazo) para a menos urgente.</h2><div class="c"><div class="duas q"><pre>SELECT id, descricao, estado, prazo
+FROM demanda
+WHERE descricao LIKE &#x27;%CRAS%&#x27;
+   OR descricao LIKE &#x27;%Conselho Tutelar%&#x27;
+ORDER BY prazo;</pre>
+<div><table><thead><tr><th>id</th><th>descricao</th><th>estado</th><th>prazo</th></tr></thead><tbody><tr><td>7</td><td>Acionar o Conselho Tutelar sobre suspeita de n…</td><td>concluida</td><td>2026-08-26</td></tr><tr><td>3</td><td>Verificar se a família está referenciada no CRAS</td><td>concluida</td><td>2026-09-05</td></tr><tr><td>22</td><td>Inscrever em oficina de música do CRAS</td><td>aberta</td><td>2026-12-11</td></tr></tbody></table></div></div><p class="fala"><b>Como processa:</b> LIKE com % aceita qualquer texto antes e depois; com OR basta uma condição.</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q02. Reuniões dos setores pedagógico e saúde realizadas em outubro de 2026, com a data no formato brasileiro.</h2><div class="c"><div class="duas q"><pre>SELECT id,
+       setor,
+       DATE_FORMAT(data, &#x27;%d/%m/%Y&#x27;) AS data_reuniao
+FROM reuniao
+WHERE setor IN (&#x27;pedagogico&#x27;, &#x27;saude&#x27;)
+  AND data BETWEEN &#x27;2026-10-01&#x27; AND &#x27;2026-10-31&#x27;
+ORDER BY data;</pre>
+<div><table><thead><tr><th>id</th><th>setor</th><th>data_reuniao</th></tr></thead><tbody><tr><td>7</td><td>pedagogico</td><td>07/10/2026</td></tr><tr><td>8</td><td>saude</td><td>14/10/2026</td></tr></tbody></table></div></div><p class="fala"><b>Como processa:</b> IN testa uma lista de valores; BETWEEN inclui os dois extremos; DATE_FORMAT só muda a exibição.</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q03. Demandas em aberto com o prazo vencido e há quantos dias estão atrasadas, da mais atrasada para a menos atrasada.</h2><div class="c"><div class="duas q"><pre>SELECT id,
+       descricao,
+       estado,
+       DATE_FORMAT(prazo, &#x27;%d/%m/%Y&#x27;) AS prazo,
+       DATEDIFF(CURDATE(), prazo) AS dias_de_atraso
+FROM demanda
+WHERE estado NOT IN (&#x27;concluida&#x27;, &#x27;cancelada&#x27;)
+  AND prazo &lt; CURDATE()
+ORDER BY dias_de_atraso DESC;</pre>
+<div><table><thead><tr><th>id</th><th>descricao</th><th>estado</th><th>prazo</th><th>dias_de_atraso</th></tr></thead><tbody><tr><td>5</td><td>Solicitar cadeira de banho adaptada à Secretar…</td><td>aguardando_terceiros</td><td>30/09/2026</td><td>61</td></tr><tr><td>13</td><td>Solicitar órtese de membro inferior ao Centro …</td><td>aguardando_terceiros</td><td>31/10/2026</td><td>30</td></tr><tr><td>15</td><td>Revisar o plano de ensino individualizado (PEI…</td><td>em_andamento</td><td>07/11/2026</td><td>23</td></tr><tr><td>16</td><td>Solicitar transporte escolar adaptado à Prefei…</td><td>aguardando_terceiros</td><td>20/11/2026</td><td>10</td></tr><tr><td>23</td><td>Solicitar segunda via de documento de identidade</td><td>em_andamento</td><td>21/11/2026</td><td>9</td></tr><tr><td>26</td><td>Solicitar consulta com ortopedista pelo SUS</td><td>aguardando_terceiros</td><td>25/11/2026</td><td>5</td></tr></tbody></table></div></div><p class="fala"><b>Como processa:</b> WHERE tira as encerradas e as de prazo futuro; DATEDIFF calcula o atraso linha a linha.</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q04. Demandas em aberto que vencem nos próximos 7 dias (alerta do painel).</h2><div class="c"><div class="duas q"><pre>SELECT id,
+       descricao,
+       prioridade,
+       prazo,
+       DATEDIFF(prazo, CURDATE()) AS dias_restantes
+FROM demanda
+WHERE estado NOT IN (&#x27;concluida&#x27;, &#x27;cancelada&#x27;)
+  AND prazo BETWEEN CURDATE() AND ADDDATE(CURDATE(), INTERVAL 7 DAY)
+ORDER BY prazo;</pre>
+<div><table><thead><tr><th>id</th><th>descricao</th><th>prioridade</th><th>prazo</th><th>dias_restantes</th></tr></thead><tbody><tr><td>20</td><td>Verificar com a família a vacinação em atraso</td><td>baixa</td><td>2026-12-01</td><td>1</td></tr><tr><td>29</td><td>Reunir a rede para discutir caso de evasão esc…</td><td>alta</td><td>2026-12-03</td><td>3</td></tr><tr><td>17</td><td>Atualizar o cadastro de contatos dos responsáv…</td><td>baixa</td><td>2026-12-04</td><td>4</td></tr><tr><td>24</td><td>Planejar a adaptação da rotina escolar após ci…</td><td>media</td><td>2026-12-05</td><td>5</td></tr></tbody></table></div></div><p class="fala"><b>Como processa:</b> Janela de hoje até hoje + 7 dias com ADDDATE(... INTERVAL 7 DAY).</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q05. Demandas de prioridade alta ligadas a um assistido, com o setor e a data da reunião de origem e o nome do responsável.</h2><div class="c"><div class="duas q"><pre class="longa">SELECT d.id,
+       a.nome_tratamento AS assistido,
+       d.descricao,
+       r.setor,
+       DATE_FORMAT(r.data, &#x27;%d/%m/%Y&#x27;) AS reuniao,
+       u.nome AS responsavel,
+       d.estado
+FROM demanda d
+INNER JOIN reuniao r ON r.id = d.reuniao_id
+INNER JOIN usuario u ON u.id = d.responsavel_id
+INNER JOIN assistido a ON a.id = d.assistido_id
+WHERE d.prioridade = &#x27;alta&#x27;
+ORDER BY r.data, d.id;</pre>
+<div><table><thead><tr><th>id</th><th>assistido</th><th>descricao</th><th>setor</th><th>reuniao</th><th>responsavel</th><th>estado</th></tr></thead><tbody><tr><td>1</td><td>Ana Clara M.</td><td>Solicitar à escola municipal o plano de atendi…</td><td>pedagogico</td><td>05/08/2026</td><td>Beatriz Lemos Furtado</td><td>concluida</td></tr><tr><td>4</td><td>Davi L.</td><td>Agendar avaliação com neuropediatra na unidade…</td><td>saude</td><td>12/08/2026</td><td>Daniel Moura Teixeira</td><td>concluida</td></tr><tr><td>7</td><td>Gabriela N.</td><td>Acionar o Conselho Tutelar sobre suspeita de n…</td><td>convivencia</td><td>19/08/2026</td><td>Juliana Cardoso Neves</td><td>concluida</td></tr><tr><td>11</td><td>Ana Clara M.</td><td>Encaminhar laudo atualizado para a escola regu…</td><td>pedagogico</td><td>02/09/2026</td><td>Beatriz Lemos Furtado</td><td>concluida</td></tr></tbody></table><p class="mais">+ 7 linhas no documento</p></div></div><p class="fala"><b>Como processa:</b> Quatro tabelas ligadas pelas chaves estrangeiras; o INNER descarta demanda sem assistido.</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q06. Assistidos ativos que ainda não têm nenhuma demanda registrada.</h2><div class="c"><div class="duas q"><pre>SELECT a.id, a.nome_tratamento, DATE(a.criado_em) AS cadastrado_em
+FROM assistido a
+LEFT JOIN demanda d ON d.assistido_id = a.id
+WHERE a.ativo = TRUE
+  AND d.id IS NULL;</pre>
+<div><table><thead><tr><th>id</th><th>nome_tratamento</th><th>cadastrado_em</th></tr></thead><tbody><tr><td>8</td><td>Heitor G.</td><td>2026-08-03</td></tr><tr><td>11</td><td>Larissa F.</td><td>2024-01-15</td></tr></tbody></table></div></div><p class="fala"><b>Como processa:</b> LEFT JOIN mantém todos os assistidos; IS NULL acha os que ficaram sem par.</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q07. Carga de trabalho: quantas demandas em aberto cada profissional ativo tem sob sua responsabilidade, incluindo quem tem zero.</h2><div class="c"><div class="duas q"><pre>SELECT u.nome,
+       u.perfil,
+       COUNT(d.id) AS demandas_em_aberto
+FROM usuario u
+LEFT JOIN demanda d
+       ON d.responsavel_id = u.id
+      AND d.estado NOT IN (&#x27;concluida&#x27;, &#x27;cancelada&#x27;)
+WHERE u.ativo = TRUE
+GROUP BY u.id, u.nome, u.perfil
+ORDER BY demandas_em_aberto DESC, u.nome;</pre>
+<div><table><thead><tr><th>nome</th><th>perfil</th><th>demandas_em_aberto</th></tr></thead><tbody><tr><td>Daniel Moura Teixeira</td><td>assistente_social</td><td>3</td></tr><tr><td>Marcos Vieira Salgado</td><td>assistente_social</td><td>3</td></tr><tr><td>Beatriz Lemos Furtado</td><td>equipe_pedagogica</td><td>2</td></tr><tr><td>Juliana Cardoso Neves</td><td>assistente_social</td><td>2</td></tr><tr><td>Camila Rocha Vianna</td><td>equipe_pedagogica</td><td>1</td></tr><tr><td>Fernanda Ishikawa Lopes</td><td>equipe_pedagogica</td><td>1</td></tr></tbody></table><p class="mais">+ 3 linhas no documento</p></div></div><p class="fala"><b>Como processa:</b> Filtro no ON, não no WHERE, para manter quem tem zero; COUNT(coluna) ignora NULL.</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q08. Tempo médio, em dias, para concluir uma demanda em cada prioridade, mostrando só as prioridades com média acima de 24 dias.</h2><div class="c"><div class="duas q"><pre>SELECT prioridade,
+       COUNT(*) AS concluidas,
+       ROUND(AVG(DATEDIFF(atualizado_em, criado_em)), 1) AS media_dias,
+       MIN(DATEDIFF(atualizado_em, criado_em)) AS mais_rapida,
+       MAX(DATEDIFF(atualizado_em, criado_em)) AS mais_lenta
+FROM demanda
+WHERE estado = &#x27;concluida&#x27;
+GROUP BY prioridade
+HAVING AVG(DATEDIFF(atualizado_em, criado_em)) &gt; 24
+ORDER BY media_dias DESC;</pre>
+<div><table><thead><tr><th>prioridade</th><th>concluidas</th><th>media_dias</th><th>mais_rapida</th><th>mais_lenta</th></tr></thead><tbody><tr><td>baixa</td><td>1</td><td>29.0</td><td>29</td><td>29</td></tr><tr><td>media</td><td>7</td><td>25.7</td><td>12</td><td>41</td></tr></tbody></table></div></div><p class="fala"><b>Como processa:</b> HAVING filtra grupos depois do AVG; a prioridade alta (23,2 dias) sai.</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q09. Distribuição das demandas por setor e por estado, com o percentual de cada grupo sobre o total de demandas.</h2><div class="c"><div class="duas q"><pre>SELECT r.setor,
+       d.estado,
+       COUNT(*) AS quantidade,
+       ROUND(COUNT(*) * 100 / (SELECT COUNT(*) FROM demanda), 1) AS percentual
+FROM demanda d
+INNER JOIN reuniao r ON r.id = d.reuniao_id
+GROUP BY r.setor, d.estado
+ORDER BY r.setor, quantidade DESC;</pre>
+<div><table><thead><tr><th>setor</th><th>estado</th><th>quantidade</th><th>percentual</th></tr></thead><tbody><tr><td>pedagogico</td><td>concluida</td><td>5</td><td>17.2</td></tr><tr><td>pedagogico</td><td>em_andamento</td><td>2</td><td>6.9</td></tr><tr><td>pedagogico</td><td>aberta</td><td>2</td><td>6.9</td></tr><tr><td>pedagogico</td><td>aguardando_terceiros</td><td>1</td><td>3.4</td></tr><tr><td>saude</td><td>concluida</td><td>6</td><td>20.7</td></tr><tr><td>saude</td><td>aguardando_terceiros</td><td>3</td><td>10.3</td></tr></tbody></table><p class="mais">+ 6 linhas no documento</p></div></div><p class="fala"><b>Como processa:</b> GROUP BY com duas colunas; a subconsulta devolve o total para o percentual.</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q10. Quantas demandas foram abertas em cada mês e quantas categorias diferentes apareceram no mês.</h2><div class="c"><div class="duas q"><pre>SELECT YEAR(criado_em) AS ano,
+       MONTH(criado_em) AS mes,
+       COUNT(*) AS demandas_abertas,
+       COUNT(DISTINCT categoria) AS categorias_diferentes
+FROM demanda
+GROUP BY YEAR(criado_em), MONTH(criado_em)
+ORDER BY ano, mes;</pre>
+<div><table><thead><tr><th>ano</th><th>mes</th><th>demandas_abertas</th><th>categorias_diferentes</th></tr></thead><tbody><tr><td>2026</td><td>8</td><td>9</td><td>6</td></tr><tr><td>2026</td><td>9</td><td>5</td><td>4</td></tr><tr><td>2026</td><td>10</td><td>9</td><td>6</td></tr><tr><td>2026</td><td>11</td><td>6</td><td>5</td></tr></tbody></table></div></div><p class="fala"><b>Como processa:</b> YEAR e MONTH formam um grupo por mês; COUNT(DISTINCT) conta categorias diferentes.</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q11. A demanda em aberto mais antiga, quem é o responsável e há quantos dias ela foi aberta.</h2><div class="c"><div class="duas q"><pre>SELECT d.id,
+       d.descricao,
+       u.nome AS responsavel,
+       DATE(d.criado_em) AS aberta_em,
+       DATEDIFF(CURDATE(), d.criado_em) AS dias_em_aberto
+FROM demanda d
+INNER JOIN usuario u ON u.id = d.responsavel_id
+WHERE d.estado NOT IN (&#x27;concluida&#x27;, &#x27;cancelada&#x27;)
+  AND d.criado_em = (SELECT MIN(criado_em)
+                     FROM demanda
+                     WHERE estado NOT IN (&#x27;concluida&#x27;, &#x27;cancelada&#x27;));</pre>
+<div><table><thead><tr><th>id</th><th>descricao</th><th>responsavel</th><th>aberta_em</th><th>dias_em_aberto</th></tr></thead><tbody><tr><td>5</td><td>Solicitar cadeira de banho adaptada à Secretar…</td><td>Daniel Moura Teixeira</td><td>2026-08-12</td><td>110</td></tr></tbody></table></div></div><p class="fala"><b>Como processa:</b> A subconsulta devolve um valor (MIN), comparado com = pela consulta de fora.</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q12. Demandas concluídas que levaram mais dias do que a média de todas as concluídas.</h2><div class="c"><div class="duas q"><pre>SELECT id,
+       descricao,
+       DATEDIFF(atualizado_em, criado_em) AS dias_para_concluir,
+       (SELECT ROUND(AVG(DATEDIFF(atualizado_em, criado_em)), 1)
+          FROM demanda WHERE estado = &#x27;concluida&#x27;) AS media_geral
+FROM demanda
+WHERE estado = &#x27;concluida&#x27;
+  AND DATEDIFF(atualizado_em, criado_em) &gt;
+      (SELECT AVG(DATEDIFF(atualizado_em, criado_em))
+         FROM demanda
+        WHERE estado = &#x27;concluida&#x27;)
+ORDER BY dias_para_concluir DESC;</pre>
+<div><table><thead><tr><th>id</th><th>descricao</th><th>dias_para_concluir</th><th>media_geral</th></tr></thead><tbody><tr><td>4</td><td>Agendar avaliação com neuropediatra na unidade…</td><td>51</td><td>24.9</td></tr><tr><td>3</td><td>Verificar se a família está referenciada no CRAS</td><td>41</td><td>24.9</td></tr><tr><td>14</td><td>Orientar a família sobre o Benefício de Presta…</td><td>41</td><td>24.9</td></tr><tr><td>6</td><td>Revisar o protocolo interno de administração d…</td><td>29</td><td>24.9</td></tr><tr><td>11</td><td>Encaminhar laudo atualizado para a escola regu…</td><td>28</td><td>24.9</td></tr><tr><td>10</td><td>Adaptar material didático com comunicação alte…</td><td>27</td><td>24.9</td></tr></tbody></table><p class="mais">+ 1 linhas no documento</p></div></div><p class="fala"><b>Como processa:</b> A subconsulta calcula a média uma vez; ficam as concluídas acima dela.</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q13. Profissionais ativos que não acompanham nenhum assistido (candidatos a receber novos acompanhamentos).</h2><div class="c"><div class="duas q"><pre>SELECT id, nome, perfil
+FROM usuario
+WHERE ativo = TRUE
+  AND perfil &lt;&gt; &#x27;direcao&#x27;
+  AND id NOT IN (SELECT profissional_id FROM assistido_profissional);</pre>
+<div><table><thead><tr><th>id</th><th>nome</th><th>perfil</th></tr></thead><tbody><tr><td>10</td><td>Otávio Brandão Freitas</td><td>equipe_pedagogica</td></tr></tbody></table></div></div><p class="fala"><b>Como processa:</b> A subconsulta devolve uma lista; NOT IN mantém quem não está nela.</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q14. Para cada profissional, quantos assistidos acompanha e há quanto tempo, em meses, em média, acompanha cada um (relacionamento N:N).</h2><div class="c"><div class="duas q"><pre>SELECT u.nome,
+       COUNT(ap.assistido_id) AS assistidos,
+       ROUND(AVG(DATEDIFF(CURDATE(), ap.data_inicio)) / 30, 1) AS media_meses,
+       FLOOR(MAX(DATEDIFF(CURDATE(), ap.data_inicio)) / 365) AS anos_do_mais_antigo
+FROM usuario u
+INNER JOIN assistido_profissional ap ON ap.profissional_id = u.id
+INNER JOIN assistido a ON a.id = ap.assistido_id
+WHERE a.ativo = TRUE
+GROUP BY u.id, u.nome
+ORDER BY assistidos DESC, media_meses DESC;</pre>
+<div><table><thead><tr><th>nome</th><th>assistidos</th><th>media_meses</th><th>anos_do_mais_antigo</th></tr></thead><tbody><tr><td>Camila Rocha Vianna</td><td>5</td><td>18.1</td><td>2</td></tr><tr><td>Marcos Vieira Salgado</td><td>3</td><td>41.8</td><td>5</td></tr><tr><td>Daniel Moura Teixeira</td><td>3</td><td>34.4</td><td>4</td></tr><tr><td>Beatriz Lemos Furtado</td><td>3</td><td>31.5</td><td>3</td></tr><tr><td>Juliana Cardoso Neves</td><td>3</td><td>18.8</td><td>2</td></tr><tr><td>Fernanda Ishikawa Lopes</td><td>3</td><td>10.7</td><td>1</td></tr></tbody></table></div></div><p class="fala"><b>Como processa:</b> Passa pela tabela associativa do N:N; AVG em meses com ROUND, anos com FLOOR.</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q15. Evoluções retificadas: cada versão corrigida ao lado da versão que a corrigiu e quantos dias depois a correção foi feita (1:1).</h2><div class="c"><div class="duas q"><pre>SELECT original.id AS versao_corrigida,
+       nova.id AS versao_nova,
+       a.nome_tratamento AS assistido,
+       original.descricao AS texto_anterior,
+       nova.descricao AS texto_novo,
+       DATE_FORMAT(nova.ocorrido_em, &#x27;%d/%m/%Y %H:%i&#x27;) AS corrigida_em,
+       DATEDIFF(nova.ocorrido_em, original.ocorrido_em) AS dias_depois
+FROM evolucao original
+INNER JOIN evolucao nova ON nova.retifica_id = original.id
+INNER JOIN assistido a ON a.id = original.assistido_id
+ORDER BY original.id;</pre>
+<div><table><thead><tr><th>versao_corrigida</th><th>versao_nova</th><th>assistido</th><th>texto_anterior</th><th>texto_novo</th><th>corrigida_em</th><th>dias_depois</th></tr></thead><tbody><tr><td>5</td><td>16</td><td>Carolina D.</td><td>Iniciou a produção de frases de duas palavras.</td><td>Iniciou a produção de frases de duas e três pa…</td><td>10/10/2026 09:15</td><td>1</td></tr><tr><td>10</td><td>15</td><td>Gabriela N.</td><td>Ausente três dias na semana; família informada.</td><td>Ausente dois dias na semana (correção); famíli…</td><td>09/10/2026 08:40</td><td>1</td></tr><tr><td>16</td><td>17</td><td>Carolina D.</td><td>Iniciou a produção de frases de duas e três pa…</td><td>Iniciou a produção de frases de duas e três pa…</td><td>12/10/2026 08:05</td><td>2</td></tr></tbody></table></div></div><p class="fala"><b>Como processa:</b> Autojunção: evolucao duas vezes (original e nova), ligadas por retifica_id.</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q16. Assistidos ativos cuja evolução vigente mais recente tem mais de 20 dias (ou seja, precisam de nova anotação). Versões já retificadas não contam, porque foram substituídas.</h2><div class="c"><div class="duas q"><pre>SELECT a.nome_tratamento,
+       COUNT(e.id) AS evolucoes_vigentes,
+       DATE_FORMAT(MAX(e.data), &#x27;%d/%m/%Y&#x27;) AS ultima_evolucao,
+       DATEDIFF(CURDATE(), MAX(e.data)) AS dias_sem_evolucao
+FROM assistido a
+INNER JOIN evolucao e ON e.assistido_id = a.id
+WHERE a.ativo = TRUE
+  AND e.id NOT IN (SELECT retifica_id FROM evolucao WHERE retifica_id IS NOT NULL)
+GROUP BY a.id, a.nome_tratamento
+HAVING DATEDIFF(CURDATE(), MAX(e.data)) &gt; 20
+ORDER BY dias_sem_evolucao DESC;</pre>
+<div><table><thead><tr><th>nome_tratamento</th><th>evolucoes_vigentes</th><th>ultima_evolucao</th><th>dias_sem_evolucao</th></tr></thead><tbody><tr><td>Bruno H.</td><td>1</td><td>20/08/2026</td><td>102</td></tr><tr><td>Eduarda S.</td><td>1</td><td>03/09/2026</td><td>88</td></tr><tr><td>Ana Clara M.</td><td>2</td><td>14/09/2026</td><td>77</td></tr><tr><td>Felipe A.</td><td>1</td><td>17/09/2026</td><td>74</td></tr><tr><td>Davi L.</td><td>2</td><td>02/10/2026</td><td>59</td></tr><tr><td>Gabriela N.</td><td>1</td><td>08/10/2026</td><td>53</td></tr></tbody></table><p class="mais">+ 3 linhas no documento</p></div></div><p class="fala"><b>Como processa:</b> NOT IN descarta versões substituídas; HAVING sobre MAX(data).</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s consulta"><h2>Q17. Todas as reuniões, com quantas demandas cada uma originou, incluindo as que não originaram nenhuma.</h2><div class="c"><div class="duas q"><pre>SELECT r.id AS reuniao,
+       r.setor,
+       DATE_FORMAT(r.data, &#x27;%d/%m/%Y&#x27;) AS data,
+       COUNT(d.id) AS demandas_originadas
+FROM demanda d
+RIGHT JOIN reuniao r ON r.id = d.reuniao_id
+GROUP BY r.id, r.setor, r.data
+ORDER BY r.data;</pre>
+<div><table><thead><tr><th>reuniao</th><th>setor</th><th>data</th><th>demandas_originadas</th></tr></thead><tbody><tr><td>1</td><td>pedagogico</td><td>05/08/2026</td><td>3</td></tr><tr><td>2</td><td>saude</td><td>12/08/2026</td><td>3</td></tr><tr><td>3</td><td>convivencia</td><td>19/08/2026</td><td>3</td></tr><tr><td>4</td><td>pedagogico</td><td>02/09/2026</td><td>2</td></tr><tr><td>5</td><td>saude</td><td>09/09/2026</td><td>3</td></tr><tr><td>6</td><td>convivencia</td><td>16/09/2026</td><td>0</td></tr></tbody></table><p class="mais">+ 7 linhas no documento</p></div></div><p class="fala"><b>Como processa:</b> RIGHT JOIN mantém todas as reuniões; COUNT(d.id) dá 0 nas sem demanda.</p></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s "><h2>Manutenção: INSERT, UPDATE e DELETE</h2><div class="c"><ul>
+<li><b>INSERT</b> de demanda sem estado: o DEFAULT a faz nascer <i>aberta</i>.</li>
+<li><b>UPDATE</b> muda o estado e reatribui o responsável (sempre com WHERE).</li>
+<li>Usuário é <b>desativado</b> com UPDATE, nunca excluído.</li>
+<li><b>DELETE</b> só no vínculo de acompanhamento lançado por engano.</li>
+<li>Integridade referencial: apagar reunião com demandas gera <b>erro 1451</b>.</li></ul></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s "><h2>Do banco para o sistema</h2><div class="c"><table class="rel"><thead><tr><th>Consulta</th><th>Função no sistema</th><th>Rota do back-end</th></tr></thead><tbody>
+<tr><td>Q03, Q11</td><td>Painel: demandas vencidas e a mais antiga</td><td>GET /api/demandas/painel</td></tr>
+<tr><td>Q04</td><td>Aviso de prazo próximo ao entrar</td><td>login (card 25)</td></tr>
+<tr><td>Q01, Q05</td><td>Busca e filtros de demandas</td><td>GET /api/demandas</td></tr>
+<tr><td>Q07</td><td>Minhas demandas</td><td>GET /api/demandas/minhas</td></tr>
+<tr><td>Q15, Q16</td><td>Retificação e evoluções vigentes</td><td>/api/evolucoes, /api/assistidos/&lt;id&gt;/evolucoes</td></tr>
+<tr><td>Q02, Q17</td><td>Reuniões e demandas levantadas</td><td>GET /api/reunioes</td></tr>
+<tr><td>Q08, Q09, Q10, Q12</td><td>Indicadores e relatórios da direção</td><td>/api/relatorios (card 24)</td></tr></tbody></table></div><footer>Equipe Cortex · BD1 · CRIE</footer></section><section class="s capa"><div><h1>Obrigado!</h1><p class="sub">Perguntas?</p><p class="eq">Scripts e documento: 01 a 04 .sql + Documento_BD1_Equipe_Cortex.pdf</p></div></section></body></html>
