@@ -751,8 +751,8 @@ ALTER TABLE evolucao
     linhas_s = ''.join(f'<li><code>{e(a)}</code><span>{e(b)}</span></li>' for a, b in mapa_sis)
     img = base64.b64encode(open(os.path.join(AQUI, 'assets', 'telas', 'painel-direcao-prototipo-recorte.jpg'), 'rb').read()).decode()
     slide(titulo('Do banco ao sistema') + f'''<div class="sistema"><ul class="mapa-sis">{linhas_s}</ul>
-<figure class="tela"><img src="data:image/jpeg;base64,{img}" width="1000" height="703" alt="Painel de demandas da direção no protótipo do sistema, com dados fictícios">
-<figcaption>Trecho do painel da direção no protótipo do sistema (dados fictícios): vencidas e demandas por estado.</figcaption></figure></div>''',
+<figure class="tela"><img src="data:image/jpeg;base64,{img}" width="895" height="700" alt="Painel de demandas da direção no protótipo do sistema, com dados fictícios">
+<figcaption>Trecho do painel da direção no protótipo do sistema. Os dados do protótipo são outros (fictícios, de 23/11): não são os 103 registros do banco.</figcaption></figure></div>''',
           '', 'Integração', 'Miguel', 'As consultas não são só exercício: cada uma responde à pergunta de uma tela do sistema da equipe.',
           ident='sistema', rotulo='Do banco ao sistema')
 
@@ -975,7 +975,7 @@ h3{font:600 28px/1.2 'Archivo',sans-serif;color:var(--t8);margin:0 0 20px}
 .mapa-sis li{display:grid;grid-template-columns:1fr;gap:4px;padding:16px 0;border-bottom:1px solid var(--linha);font-size:27px;color:var(--t8)}
 .mapa-sis li:first-child{border-top:2px solid var(--t8)}
 .mapa-sis code{font:600 24px 'IBM Plex Mono',monospace;color:var(--rox)}
-.tela{margin:0}.tela img{display:block;width:100%;height:auto;border:1px solid var(--linha)}
+.tela{margin:0}.tela img{display:block;width:auto;height:660px;max-width:100%;border:1px solid var(--linha)}
 .tela figcaption{font-size:24px;color:var(--cinza);margin-top:16px}
 .crit td{font-size:29px;padding:32px 14px}.crit .pts{font:600 26px 'IBM Plex Mono',monospace;color:var(--t8);white-space:nowrap}.crit .onde{font:500 24px 'IBM Plex Mono',monospace;white-space:nowrap;color:var(--t8)}
 
