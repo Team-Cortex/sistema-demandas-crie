@@ -16,6 +16,7 @@ from app.routes.assistidos import bp as assistidos_bp
 from app.routes.auditoria import bp as auditoria_bp
 from app.routes.auth import bp as auth_bp
 from app.routes.demandas import bp as demandas_bp
+from app.routes.demo import bp as demo_bp
 from app.routes.encaminhamentos import bp as encaminhamentos_bp
 from app.routes.evolucoes import bp as evolucoes_bp
 from app.routes.relatorios import bp as relatorios_bp
@@ -71,6 +72,7 @@ def create_app(config_object=None):
 
     app.register_blueprint(saude_bp, url_prefix="/api")
     app.register_blueprint(auth_bp, url_prefix="/api")
+    app.register_blueprint(demo_bp, url_prefix="/api")
     app.register_blueprint(usuarios_bp, url_prefix="/api")
     app.register_blueprint(auditoria_bp, url_prefix="/api")
     app.register_blueprint(reunioes_bp, url_prefix="/api")

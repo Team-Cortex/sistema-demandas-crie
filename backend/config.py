@@ -42,6 +42,9 @@ class Config:
     LOGIN_JANELA_SEGUNDOS = 60
     # Spec 09 (decisão aberta A10): dias antes do prazo que contam como "perto".
     AVISO_DIAS_ANTES_DO_PRAZO = int(os.environ.get("AVISO_DIAS_ANTES_DO_PRAZO", "3"))
+    # Acesso rápido de demonstração (rotas /api/demo). Desligado por padrão;
+    # só ligar com a carga fictícia, nunca com dados reais do CRIE.
+    DEMO_ACESSO_RAPIDO = os.environ.get("DEMO_ACESSO_RAPIDO", "").strip().lower() in ("1", "true", "sim")
 
 
 class DevelopmentConfig(Config):

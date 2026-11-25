@@ -1,8 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowRight, Eye, EyeOff } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import cliente, { guardarSessao, mensagemDeErro } from '../api/cliente'
 import classes from './Entrar.module.css'
+
+// Acesso rápido de demonstração: só aparece quando a API diz que está ligado (DEMO_ACESSO_RAPIDO).
+const PERFIS_DEMO = {
+  direcao: 'Direção',
+  assistente_social: 'Assistente social',
+  equipe_pedagogica: 'Equipe pedagógica',
+}
 
 export default function Entrar() {
   const navegar = useNavigate()
@@ -13,9 +20,33 @@ export default function Entrar() {
   const [erros, setErros] = useState({})
   const [erro, setErro] = useState('')
   const [enviando, setEnviando] = useState(false)
+  const [perfisDemo, setPerfisDemo] = useState([])
   // Página de onde a sessão vencida saiu (o cliente guarda no 401).
   const retorno = sessionStorage.getItem('crie:retorno')
   const aviso = retorno ? 'Sua sessão terminou. Entre de novo.' : state?.aviso
+
+  useEffect(() => {
+    let ativo = true
+    cliente.get('/api/demo')
+      .then((resposta) => { if (ativo) setPerfisDemo(resposta.data.perfis || []) })
+      .catch(() => {})
+    return () => { ativo = false }
+  }, [])
+
+  async function entrarComoDemo(perfil) {
+    setErro('')
+    setEnviando(true)
+    try {
+      const resposta = await cliente.post('/api/demo/entrar', { perfil })
+      guardarSessao(resposta.data)
+      sessionStorage.removeItem('crie:retorno')
+      navegar('/', { replace: true })
+    } catch (falha) {
+      setErro(mensagemDeErro(falha))
+    } finally {
+      setEnviando(false)
+    }
+  }
 
   function atualizarEmail(evento) {
     setEmail(evento.target.value)
@@ -89,6 +120,20 @@ export default function Entrar() {
             {enviando ? 'Entrando…' : 'Entrar'}<ArrowRight size={18} aria-hidden="true" />
           </button>
         </form>
+        {perfisDemo.length > 0 && (
+          <section className={classes.demo} aria-labelledby="titulo-demo">
+            <h2 id="titulo-demo">Acesso rápido para demonstração</h2>
+            <p>Entra com um usuário fictício de cada perfil. Todos os dados são fictícios.</p>
+            <div className={classes.demoBotoes}>
+              {perfisDemo.filter((perfil) => PERFIS_DEMO[perfil]).map((perfil) => (
+                <button key={perfil} type="button" className="botao-secundario" disabled={enviando}
+                  onClick={() => entrarComoDemo(perfil)}>
+                  Entrar como {PERFIS_DEMO[perfil]}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
       </section>
     </main>
   )
