@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="900" viewBox="0 0 1300 900" font-family="Arial, Helvetica, sans-serif">
+<defs><marker id="s" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker></defs>
+<rect width="1300" height="900" fill="#fff"/>
+<rect x="520" y="15" width="260" height="62" rx="6" fill="#EEF2FA" stroke="#1F3864" stroke-width="2"/>
+<text x="650.0" y="41" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-01</text>
+<text x="650.0" y="65" text-anchor="middle" font-size="19">Entrar</text>
+<rect x="520" y="115" width="260" height="62" rx="6" fill="#EEF2FA" stroke="#1F3864" stroke-width="2"/>
+<text x="650.0" y="141" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-02</text>
+<text x="650.0" y="165" text-anchor="middle" font-size="19">Painel (tela inicial)</text>
+<line x1="650.0" y1="77" x2="650.0" y2="113" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<rect x="1010" y="115" width="270" height="62" rx="6" fill="#F3F3F3" stroke="#1F3864" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="1145.0" y="142.0" text-anchor="middle" font-size="19">Sair, de qualquer tela,</text>
+<text x="1145.0" y="164.0" text-anchor="middle" font-size="19">volta para T-01</text>
+<line x1="650" y1="177" x2="650" y2="205" stroke="#333" stroke-width="2"/>
+<line x1="140.0" y1="205" x2="1160.0" y2="205" stroke="#333" stroke-width="2"/>
+<line x1="140.0" y1="205" x2="140.0" y2="233" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<rect x="20" y="235" width="240" height="62" rx="6" fill="#EEF2FA" stroke="#1F3864" stroke-width="2"/>
+<text x="140.0" y="261" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-03</text>
+<text x="140.0" y="285" text-anchor="middle" font-size="19">Minhas demandas</text>
+<line x1="395.0" y1="205" x2="395.0" y2="233" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<rect x="275" y="235" width="240" height="62" rx="6" fill="#EEF2FA" stroke="#1F3864" stroke-width="2"/>
+<text x="395.0" y="261" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-04</text>
+<text x="395.0" y="285" text-anchor="middle" font-size="19">Demandas</text>
+<line x1="650.0" y1="205" x2="650.0" y2="233" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<rect x="530" y="235" width="240" height="62" rx="6" fill="#EEF2FA" stroke="#1F3864" stroke-width="2"/>
+<text x="650.0" y="261" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-07</text>
+<text x="650.0" y="285" text-anchor="middle" font-size="19">Reuniões</text>
+<line x1="905.0" y1="205" x2="905.0" y2="233" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<rect x="785" y="235" width="240" height="62" rx="6" fill="#EEF2FA" stroke="#1F3864" stroke-width="2"/>
+<text x="905.0" y="261" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-10</text>
+<text x="905.0" y="285" text-anchor="middle" font-size="19">Assistidos</text>
+<line x1="1160.0" y1="205" x2="1160.0" y2="233" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<rect x="1040" y="235" width="240" height="62" rx="6" fill="#EEF2FA" stroke="#1F3864" stroke-width="2"/>
+<text x="1160.0" y="261" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-15</text>
+<text x="1160.0" y="285" text-anchor="middle" font-size="19">Encaminhamentos</text>
+<rect x="275" y="335" width="240" height="62" rx="6" fill="#EEF2FA" stroke="#1F3864" stroke-width="2"/>
+<text x="395.0" y="361" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-05</text>
+<text x="395.0" y="385" text-anchor="middle" font-size="19">Registrar demanda</text>
+<line x1="395.0" y1="297" x2="395.0" y2="333" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<rect x="275" y="425" width="240" height="56" rx="6" fill="#F3F3F3" stroke="#1F3864" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="395.0" y="460.0" text-anchor="middle" font-size="19">confirmar registro</text>
+<line x1="395.0" y1="397" x2="395.0" y2="423" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<rect x="275" y="510" width="240" height="62" rx="6" fill="#EEF2FA" stroke="#1F3864" stroke-width="2"/>
+<text x="395.0" y="536" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-06</text>
+<text x="395.0" y="560" text-anchor="middle" font-size="19">Demanda (detalhe)</text>
+<line x1="395.0" y1="481" x2="395.0" y2="508" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<rect x="275" y="600" width="240" height="44" rx="6" fill="#F3F3F3" stroke="#1F3864" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="395.0" y="629.0" text-anchor="middle" font-size="19">mudar estado</text>
+<rect x="275" y="652" width="240" height="44" rx="6" fill="#F3F3F3" stroke="#1F3864" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="395.0" y="681.0" text-anchor="middle" font-size="19">trocar responsável</text>
+<rect x="275" y="704" width="240" height="44" rx="6" fill="#F3F3F3" stroke="#1F3864" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="395.0" y="733.0" text-anchor="middle" font-size="19">anotar</text>
+<line x1="395.0" y1="572" x2="395.0" y2="598" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<path d="M140.0,297 L140.0,541 L272,541" fill="none" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<rect x="530" y="335" width="240" height="62" rx="6" fill="#EEF2FA" stroke="#1F3864" stroke-width="2"/>
+<text x="650.0" y="361" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-08</text>
+<text x="650.0" y="385" text-anchor="middle" font-size="19">Registrar ou editar</text>
+<line x1="650.0" y1="297" x2="650.0" y2="333" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<rect x="530" y="425" width="240" height="62" rx="6" fill="#EEF2FA" stroke="#1F3864" stroke-width="2"/>
+<text x="650.0" y="451" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-09</text>
+<text x="650.0" y="475" text-anchor="middle" font-size="19">Reunião (ficha)</text>
+<path d="M760,297 L760,318 L777,318 L777,456 L771,456" fill="none" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<path d="M650.0,487 L650.0,530 L518,530" fill="none" stroke="#333" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#s)"/>
+<text x="542" y="560" font-size="16" fill="#333">nova demanda desta reunião</text>
+<rect x="785" y="335" width="240" height="62" rx="6" fill="#EEF2FA" stroke="#1F3864" stroke-width="2"/>
+<text x="905.0" y="361" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-11</text>
+<text x="905.0" y="385" text-anchor="middle" font-size="19">Cadastrar assistido</text>
+<line x1="905.0" y1="297" x2="905.0" y2="333" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<rect x="785" y="425" width="240" height="62" rx="6" fill="#EEF2FA" stroke="#1F3864" stroke-width="2"/>
+<text x="905.0" y="451" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-12</text>
+<text x="905.0" y="475" text-anchor="middle" font-size="19">Ficha do assistido</text>
+<path d="M1015,297 L1015,318 L1032,318 L1032,456 L1026,456" fill="none" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<rect x="785" y="515" width="240" height="62" rx="6" fill="#EEF2FA" stroke="#1F3864" stroke-width="2"/>
+<text x="905.0" y="541" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-13</text>
+<text x="905.0" y="565" text-anchor="middle" font-size="19">Lançar evolução</text>
+<line x1="905.0" y1="487" x2="905.0" y2="513" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<rect x="785" y="605" width="240" height="62" rx="6" fill="#EEF2FA" stroke="#1F3864" stroke-width="2"/>
+<text x="905.0" y="631" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-14</text>
+<text x="905.0" y="655" text-anchor="middle" font-size="19">Evolução (versões)</text>
+<line x1="905.0" y1="577" x2="905.0" y2="603" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<rect x="1040" y="335" width="240" height="56" rx="6" fill="#F3F3F3" stroke="#1F3864" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="1160.0" y="370.0" text-anchor="middle" font-size="19">desfecho (uma vez)</text>
+<line x1="1160.0" y1="297" x2="1160.0" y2="333" stroke="#333" stroke-width="2" marker-end="url(#s)"/>
+<rect x="1040" y="425" width="240" height="62" rx="6" fill="#EEF2FA" stroke="#1F3864" stroke-width="2"/>
+<text x="1160.0" y="451" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-16</text>
+<text x="1160.0" y="475" text-anchor="middle" font-size="19">Novo encaminhamento</text>
+<text x="1160.0" y="512" text-anchor="middle" font-size="16" fill="#333">aberto pela demanda (T-06)</text>
+<text x="1160.0" y="532" text-anchor="middle" font-size="16" fill="#333">ou pela ficha (T-12)</text>
+<rect x="780" y="700" width="505" height="185" rx="8" fill="none" stroke="#B07A1C" stroke-width="2" stroke-dasharray="8 5"/>
+<text x="790" y="724" font-size="17" font-weight="700" fill="#7A5310">Só a Direção (fora do menu dos outros perfis)</text>
+<rect x="790" y="740" width="150" height="62" rx="6" fill="#FFF7E6" stroke="#1F3864" stroke-width="2"/>
+<text x="865.0" y="766" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-17</text>
+<text x="865.0" y="790" text-anchor="middle" font-size="19">Usuários</text>
+<rect x="955" y="740" width="150" height="62" rx="6" fill="#FFF7E6" stroke="#1F3864" stroke-width="2"/>
+<text x="1030.0" y="766" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-18</text>
+<text x="1030.0" y="790" text-anchor="middle" font-size="19">Relatórios</text>
+<rect x="1120" y="740" width="150" height="62" rx="6" fill="#FFF7E6" stroke="#1F3864" stroke-width="2"/>
+<text x="1195.0" y="766" text-anchor="middle" font-size="19" font-weight="700" fill="#1F3864">T-19</text>
+<text x="1195.0" y="790" text-anchor="middle" font-size="19">Auditoria</text>
+<text x="790" y="835" font-size="16" fill="#333">Acesso pelo menu lateral, a partir de</text>
+<text x="790" y="855" font-size="16" fill="#333">qualquer tela, como os itens do nível 1.</text>
+<rect x="20" y="790" width="26" height="18" fill="#EEF2FA" stroke="#1F3864"/><text x="56" y="805" font-size="17">tela para todos os perfis</text>
+<rect x="20" y="820" width="26" height="18" fill="#FFF7E6" stroke="#1F3864"/><text x="56" y="835" font-size="17">tela só da Direção</text>
+<rect x="20" y="850" width="26" height="18" fill="#F3F3F3" stroke="#1F3864" stroke-dasharray="4 3"/><text x="56" y="865" font-size="17">diálogo ou ação dentro da tela</text>
+<text x="300" y="805" font-size="17">Profundidade máxima: três níveis</text>
+<text x="300" y="827" font-size="17">a partir do Painel.</text>
+</svg>
