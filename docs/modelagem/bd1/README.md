@@ -11,15 +11,18 @@ Sistema de Gestão de Demandas de Articulação do CRIE / APAE de Extrema-MG. Pa
 | `docs/modelagem/sql/03_consultas.sql` | 17 consultas comentadas |
 | `docs/modelagem/sql/04_manutencao_dados.sql` | INSERT, UPDATE e DELETE de manutenção |
 | `docs/modelagem/bd1/Documento_BD1_Equipe_Cortex.pdf` | Documento único: capa, universo de discurso, DER, notação textual, 3FN, dicionário, scripts e consultas com resultado |
-| `docs/modelagem/bd1/DER_recorte_BD1.svg` | DER do recorte (notação de Heuser) |
-| `docs/modelagem/bd1/Slides_Seminario_BD1_Equipe_Cortex.pdf` | 27 slides para os 20 minutos |
+| `docs/modelagem/bd1/DER_recorte_BD1.svg` | DER do recorte (notação (mín, máx) da Aula 02) |
+| `docs/modelagem/bd1/deck/index.html` | Deck do seminário: 38 slides na identidade do CRIE, abre offline no navegador (F tela cheia, N notas, P janela do apresentador) |
+| `docs/modelagem/bd1/deck/Seminario_BD1_Equipe_Cortex.pdf` | O mesmo deck em PDF, para reserva |
+| `docs/modelagem/bd1/deck/LEIA-ME.md` | Como gerar de novo, o que a checagem confere e a origem de cada coisa |
+| `docs/modelagem/bd1/Slides_Seminario_BD1_Equipe_Cortex.pdf` | Versão anterior dos slides (27), substituída pelo deck |
 | `docs/modelagem/bd1/GUIA_APRESENTACAO.md` | Divisão da fala, fala de cada consulta, perguntas prováveis |
 
 ## Critérios do enunciado e onde estão atendidos
 
 | Critério (pontos) | Onde |
 |---|---|
-| Apresentação (1,0) | slides + guia; cada um explica o processamento das próprias consultas |
+| Apresentação (1,0) | deck + guia; cada um explica o processamento das próprias consultas |
 | Universo de discurso, DER, notação textual (1,0) | seções 2, 3 e 4 do documento |
 | Scripts create/drop/alter e carga com diversidade (1,0) | `01` e `02`; seção 5 |
 | Mínimo de 12 consultas diferentes, com datas, matemática, junção e GROUP BY (5,0) | 17 consultas em `03`; seção 6, cada uma com resultado e explicação |
